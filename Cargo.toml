@@ -2,6 +2,8 @@
 name = "moho"
 version = "0.0.1"
 authors = ["Andres <andresnrx@gmail.com>"]
+description = "Barebones Rust Game Library"
+license = "MIT"
 
 [dependencies]
 glm = ">=0.2.2"
