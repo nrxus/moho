@@ -1,11 +1,10 @@
-use std::path::Path;
 use std::collections::HashMap;
 use std::cell::RefCell;
 
 use glm;
 use sdl2::rect;
 
-use renderer::{ImageDims, Renderer};
+use renderer::Renderer;
 use window_wrapper::*;
 use errors::*;
 
@@ -29,9 +28,9 @@ pub struct Texture {
 
 pub struct ResourceManager<R: Renderer> {
     pub wrap_coords: Option<glm::UVec2>,
-    texture_cache: RefCell<HashMap<&'static str, Texture>>,
-    data_cache: RefCell<HashMap<TextureId, R::Texture>>,
-    renderer: R,
+    pub texture_cache: RefCell<HashMap<&'static str, Texture>>,
+    pub data_cache: RefCell<HashMap<TextureId, R::Texture>>,
+    pub renderer: R,
 }
 
 impl<R: Renderer> ResourceManager<R> {
@@ -42,10 +41,6 @@ impl<R: Renderer> ResourceManager<R> {
             data_cache: RefCell::new(HashMap::new()),
             renderer: renderer,
         }
-    }
-
-    pub fn load_texture(&self, path: &'static str) -> Result<Texture> {
-        self.load_cached_texture(path).map_or_else(|| self.load_new_texture(path), Ok)
     }
 
     pub fn draw(&mut self,
@@ -82,26 +77,6 @@ impl<R: Renderer> ResourceManager<R> {
     pub fn output_size(&self) -> Result<glm::UVec2> {
         let (x, y) = self.renderer.output_size()?;
         Ok(glm::uvec2(x, y))
-    }
-
-    fn load_cached_texture(&self, path: &'static str) -> Option<Texture> {
-        let cache = self.texture_cache.borrow();
-        cache.get(path).cloned()
-    }
-
-    fn load_new_texture(&self, path: &'static str) -> Result<Texture> {
-        let mut cache = self.texture_cache.borrow_mut();
-        let mut data_cache = self.data_cache.borrow_mut();
-        let id = TextureId(data_cache.len());
-        let texture_path = Path::new(path);
-        let texture_data = self.renderer.load_texture(texture_path)?;
-        let texture = Texture {
-            id: id,
-            dims: texture_data.dims(),
-        };
-        cache.insert(path, texture);
-        data_cache.insert(id, texture_data);
-        Ok(texture)
     }
 
     fn draw_and_wrap(&mut self,

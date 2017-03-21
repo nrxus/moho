@@ -12,6 +12,7 @@ use renderer::Renderer;
 use resource_manager::ResourceManager;
 use input_manager::*;
 
+pub mod resource_loader;
 pub mod frame_animator;
 pub mod input_manager;
 pub mod renderer;

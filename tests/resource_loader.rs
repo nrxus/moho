@@ -9,6 +9,7 @@ use sdl2::rect;
 use moho::errors::*;
 use moho::renderer::*;
 use moho::resource_manager::*;
+use moho::resource_loader::*;
 
 #[test]
 fn loads_texture_data() {
