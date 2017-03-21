@@ -59,48 +59,48 @@ mod tests {
     #[test]
     fn single_frame() {
         let texture = Texture {
-            id: 1,
+            id: TextureId(1),
             dims: glm::uvec2(10, 10),
         };
         let sheet = TileSheet::new(glm::uvec2(1, 1), texture);
         let tile = sheet.tile(0);
-        assert_eq!(tile.id, 1);
+        assert_eq!(tile.id, TextureId(1));
         assert_eq!(tile.src, glm::uvec4(0, 0, 10, 10));
     }
 
     #[test]
     fn single_row() {
         let texture = Texture {
-            id: 2,
+            id: TextureId(2),
             dims: glm::uvec2(10, 10),
         };
         let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
         let tile = sheet.tile(4);
-        assert_eq!(tile.id, 2);
+        assert_eq!(tile.id, TextureId(2));
         assert_eq!(tile.src, glm::uvec4(4, 0, 1, 10));
     }
 
     #[test]
     fn single_column() {
         let texture = Texture {
-            id: 1,
+            id: TextureId(1),
             dims: glm::uvec2(10, 10),
         };
         let sheet = TileSheet::new(glm::uvec2(1, 5), texture);
         let tile = sheet.tile(4);
-        assert_eq!(tile.id, 1);
+        assert_eq!(tile.id, TextureId(1));
         assert_eq!(tile.src, glm::uvec4(0, 8, 10, 2));
     }
 
     #[test]
     fn mult_frames() {
         let texture = Texture {
-            id: 10,
+            id: TextureId(10),
             dims: glm::uvec2(20, 10),
         };
         let sheet = TileSheet::new(glm::uvec2(4, 2), texture);
         let tile = sheet.tile(5);
-        assert_eq!(tile.id, 10);
+        assert_eq!(tile.id, TextureId(10));
         assert_eq!(tile.src, glm::uvec4(5, 5, 5, 5));
     }
 }

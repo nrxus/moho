@@ -18,8 +18,8 @@ pub trait Scene {
     fn show<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()>;
 }
 
-#[derive(Copy,Clone,Hash,PartialEq,Eq)]
-pub struct TextureId(usize);
+#[derive(Copy,Clone,Hash,PartialEq,Eq,Debug)]
+pub struct TextureId(pub usize);
 
 #[derive(Copy,Clone)]
 pub struct Texture {
