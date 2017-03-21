@@ -20,12 +20,11 @@ use std::cell::RefCell;
 use glm;
 
 pub trait Drawable {
-    fn draw<R>(&self, dst_rect: glm::IVec4, renderer: &mut ResourceManager<R>) -> Result<()>
-        where R: BackEndRenderer;
+    fn draw<R: Renderer>(&self, dst_rect: glm::IVec4, renderer: &mut R) -> Result<()>;
 }
 
 pub trait Scene {
-    fn show<R: BackEndRenderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()>;
+    fn show<R: Renderer>(&self, renderer: &mut R) -> Result<()>;
 }
 
 #[derive(Copy,Clone,Hash,PartialEq,Eq,Debug)]
@@ -63,15 +62,13 @@ impl<R: BackEnd> ResourceManager<R> {
 }
 
 impl Scene for TextureId {
-    fn show<R: BackEndRenderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
-        renderer.draw(*self, None, None).map_err(Into::into)
+    fn show<R: Renderer>(&self, renderer: &mut R) -> Result<()> {
+        renderer.draw(*self, None, None)
     }
 }
 
 impl Drawable for TextureId {
-    fn draw<R>(&self, dst_rect: glm::IVec4, renderer: &mut ResourceManager<R>) -> Result<()>
-        where R: BackEndRenderer
-    {
-        renderer.draw(*self, Some(dst_rect), None).map_err(Into::into)
+    fn draw<R: Renderer>(&self, dst_rect: glm::IVec4, renderer: &mut R) -> Result<()> {
+        renderer.draw(*self, Some(dst_rect), None)
     }
 }
