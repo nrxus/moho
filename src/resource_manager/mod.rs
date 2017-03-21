@@ -1,10 +1,10 @@
-mod renderer;
+mod backend;
 mod frame_animator;
 mod resource_loader;
 mod tile_sheet;
 
 pub use self::frame_animator::FrameAnimator;
-pub use self::renderer::{BackEndRenderer, BackEndWindow, ImageDims, BackEnd};
+pub use self::backend::{BackEndRenderer, BackEndWindow, ImageDims, BackEnd};
 pub use self::resource_loader::{BackEndLoader, ResourceLoader};
 pub use self::tile_sheet::{Tile, TileSheet};
 
