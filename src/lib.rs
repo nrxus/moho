@@ -8,7 +8,7 @@ use sdl2::render::Renderer as SdlRenderer;
 use sdl2::EventPump as SdlEventPump;
 use sdl2::image::{INIT_PNG, INIT_JPG};
 
-use resource_manager::{BackEndLoader, BackEndRenderer, ResourceManager};
+use resource_manager::{BackEndLoader, BackEndRenderer, BackEndWindow, ResourceManager, Renderer};
 use input_manager::*;
 
 pub mod resource_manager;
@@ -28,7 +28,7 @@ error_chain!{
 }
 
 pub trait MohoEngine {
-    type Renderer: BackEndRenderer + BackEndLoader;
+    type Renderer: BackEndRenderer + BackEndLoader + BackEndWindow;
     type EventPump: EventPump;
 }
 

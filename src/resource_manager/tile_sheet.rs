@@ -1,4 +1,4 @@
-use super::BackEndRenderer;
+use super::renderer::{BackEndRenderer, Renderer};
 use super::{Drawable, ResourceManager, Scene, Texture, TextureId};
 use errors::*;
 

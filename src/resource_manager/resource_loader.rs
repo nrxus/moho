@@ -16,7 +16,7 @@ pub trait BackEndLoader: backend::BackEnd {
 
 impl BackEndLoader for SdlRenderer<'static> {
     fn load_texture(&self, path: &Path) -> Result<SdlTexture> {
-        Ok(LoadTexture::load_texture(self, path)?)
+        LoadTexture::load_texture(self, path).map_err(Into::into)
     }
 }
 
