@@ -1,12 +1,21 @@
+mod renderer;
+mod frame_animator;
+mod resource_loader;
+mod tile_sheet;
+
+pub use self::frame_animator::FrameAnimator;
+pub use self::renderer::{Renderer, ImageDims};
+pub use self::resource_loader::ResourceLoader;
+pub use self::tile_sheet::{Tile, TileSheet};
+
+use window_wrapper::*;
+use errors::*;
+
 use std::collections::HashMap;
 use std::cell::RefCell;
 
 use glm;
 use sdl2::rect;
-
-use renderer::Renderer;
-use window_wrapper::*;
-use errors::*;
 
 pub trait Drawable {
     fn draw<R>(&self, dst_rect: glm::IVec4, renderer: &mut ResourceManager<R>) -> Result<()>

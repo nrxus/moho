@@ -1,5 +1,5 @@
-use renderer::Renderer;
-use resource_manager::{Drawable, ResourceManager, Scene, Texture, TextureId};
+use super::Renderer;
+use super::{Drawable, ResourceManager, Scene, Texture, TextureId};
 use errors::*;
 
 use glm;

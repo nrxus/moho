@@ -1,6 +1,6 @@
 use errors::*;
-use resource_manager::{ResourceManager, Texture, TextureId};
-use renderer::{Renderer, ImageDims};
+use super::{ResourceManager, Texture, TextureId};
+use super::renderer::{Renderer, ImageDims};
 
 use std::collections::HashMap;
 use std::cell::{Ref, RefMut};
