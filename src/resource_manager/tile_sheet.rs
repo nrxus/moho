@@ -1,4 +1,4 @@
-use super::Renderer;
+use super::BackEndRenderer;
 use super::{Drawable, ResourceManager, Scene, Texture, TextureId};
 use errors::*;
 
@@ -39,14 +39,14 @@ impl TileSheet {
 }
 
 impl Scene for Tile {
-    fn show<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+    fn show<R: BackEndRenderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         renderer.draw(self.id, None, Some(self.src))
     }
 }
 
 impl Drawable for Tile {
     fn draw<R>(&self, dst_rect: glm::IVec4, renderer: &mut ResourceManager<R>) -> Result<()>
-        where R: Renderer
+        where R: BackEndRenderer
     {
         renderer.draw(self.id, Some(dst_rect), Some(self.src))
     }

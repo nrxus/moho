@@ -5,7 +5,6 @@ extern crate glm;
 use std::path::Path;
 use std::cell::RefCell;
 use std::rc::Rc;
-use sdl2::rect;
 use moho::errors::*;
 use moho::resource_manager::*;
 
@@ -56,30 +55,26 @@ impl ImageDims for MockTexture {
     }
 }
 
-struct RendererTracker {
+struct LoaderTracker {
     load_count: u16,
-    last_src: Option<rect::Rect>,
-    last_dst: Option<rect::Rect>,
 }
 
-impl RendererTracker {
+impl LoaderTracker {
     fn new() -> Self {
-        RendererTracker {
-            load_count: 0,
-            last_dst: None,
-            last_src: None,
-        }
+        LoaderTracker { load_count: 0 }
     }
 }
 
-struct MockRenderer {
+struct MockBackEnd {
     error: Option<String>,
-    tracker: Rc<RefCell<RendererTracker>>,
+    tracker: Rc<RefCell<LoaderTracker>>,
 }
 
-impl Renderer for MockRenderer {
+impl BackEnd for MockBackEnd {
     type Texture = MockTexture;
+}
 
+impl BackEndLoader for MockBackEnd {
     fn load_texture(&self, path: &Path) -> Result<MockTexture> {
         self.tracker.borrow_mut().load_count += 1;
         match self.error {
@@ -90,40 +85,12 @@ impl Renderer for MockRenderer {
             Some(ref e) => Err(e.clone().into()),
         }
     }
-
-    fn copy(&mut self,
-            texture: &MockTexture,
-            src: Option<rect::Rect>,
-            dst: Option<rect::Rect>)
-            -> Result<()> {
-        match self.error {
-            None => {
-                let mut tracker = self.tracker.borrow_mut();
-                tracker.last_src = src;
-                tracker.last_dst = dst;
-                Ok(())
-            }
-            Some(ref e) => Err(e.clone().into()),
-        }
-    }
-
-    fn clear(&mut self) {}
-
-    fn present(&mut self) {}
-
-    fn output_size(&self) -> Result<(u32, u32)> {
-        Ok((0, 0))
-    }
-
-    fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()> {
-        Ok(())
-    }
 }
 
 fn new_subject(error: Option<String>)
-               -> (ResourceManager<MockRenderer>, Rc<RefCell<RendererTracker>>) {
-    let tracker = Rc::new(RefCell::new(RendererTracker::new()));
-    let renderer = MockRenderer {
+               -> (ResourceManager<MockBackEnd>, Rc<RefCell<LoaderTracker>>) {
+    let tracker = Rc::new(RefCell::new(LoaderTracker::new()));
+    let renderer = MockBackEnd {
         error: error,
         tracker: tracker.clone(),
     };

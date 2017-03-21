@@ -2,11 +2,8 @@ use errors::*;
 
 use glm;
 use sdl2::rect;
-use sdl2::image::LoadTexture;
 use sdl2::render::Renderer as SdlRenderer;
 use sdl2::render::Texture as SdlTexture;
-
-use std::path::Path;
 
 pub trait ImageDims {
     fn dims(&self) -> glm::UVec2;
@@ -19,13 +16,11 @@ impl ImageDims for SdlTexture {
     }
 }
 
-pub trait Renderer {
+pub trait BackEnd {
     type Texture: ImageDims;
+}
 
-    fn load_texture(&self, path: &Path) -> Result<Self::Texture>;
-    fn output_size(&self) -> Result<(u32, u32)>;
-
-    // Drawing methods
+pub trait BackEndRenderer: BackEnd {
     fn clear(&mut self);
     fn present(&mut self);
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
@@ -36,17 +31,21 @@ pub trait Renderer {
             -> Result<()>;
 }
 
-impl Renderer for SdlRenderer<'static> {
+pub trait BackEndWindow: BackEnd {
+    fn output_size(&self) -> Result<(u32, u32)>;
+}
+
+impl BackEnd for SdlRenderer<'static> {
     type Texture = SdlTexture;
+}
 
-    fn load_texture(&self, path: &Path) -> Result<SdlTexture> {
-        Ok(LoadTexture::load_texture(self, path)?)
-    }
-
+impl BackEndWindow for SdlRenderer<'static> {
     fn output_size(&self) -> Result<(u32, u32)> {
         Ok(self.output_size()?)
     }
+}
 
+impl BackEndRenderer for SdlRenderer<'static> {
     fn copy(&mut self,
             texture: &SdlTexture,
             src: Option<rect::Rect>,

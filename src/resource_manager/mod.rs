@@ -4,8 +4,8 @@ mod resource_loader;
 mod tile_sheet;
 
 pub use self::frame_animator::FrameAnimator;
-pub use self::renderer::{Renderer, ImageDims};
-pub use self::resource_loader::ResourceLoader;
+pub use self::renderer::{BackEndRenderer, BackEndWindow, ImageDims, BackEnd};
+pub use self::resource_loader::{BackEndLoader, ResourceLoader};
 pub use self::tile_sheet::{Tile, TileSheet};
 
 use window_wrapper::*;
@@ -19,11 +19,11 @@ use sdl2::rect;
 
 pub trait Drawable {
     fn draw<R>(&self, dst_rect: glm::IVec4, renderer: &mut ResourceManager<R>) -> Result<()>
-        where R: Renderer;
+        where R: BackEndRenderer;
 }
 
 pub trait Scene {
-    fn show<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()>;
+    fn show<R: BackEndRenderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()>;
 }
 
 #[derive(Copy,Clone,Hash,PartialEq,Eq,Debug)]
@@ -35,14 +35,21 @@ pub struct Texture {
     pub dims: glm::UVec2,
 }
 
-pub struct ResourceManager<R: Renderer> {
+pub struct ResourceManager<R: BackEnd> {
     pub wrap_coords: Option<glm::UVec2>,
     pub texture_cache: RefCell<HashMap<&'static str, Texture>>,
     pub data_cache: RefCell<HashMap<TextureId, R::Texture>>,
     pub renderer: R,
 }
 
-impl<R: Renderer> ResourceManager<R> {
+impl<R: BackEndWindow> ResourceManager<R> {
+    pub fn output_size(&self) -> Result<glm::UVec2> {
+        let (x, y) = self.renderer.output_size()?;
+        Ok(glm::uvec2(x, y))
+    }
+}
+
+impl<R: BackEnd> ResourceManager<R> {
     pub fn new(renderer: R) -> Self {
         ResourceManager {
             wrap_coords: None,
@@ -51,7 +58,9 @@ impl<R: Renderer> ResourceManager<R> {
             renderer: renderer,
         }
     }
+}
 
+impl<R: BackEndRenderer> ResourceManager<R> {
     pub fn draw(&mut self,
                 id: TextureId,
                 dst: Option<glm::IVec4>,
@@ -81,11 +90,6 @@ impl<R: Renderer> ResourceManager<R> {
 
     pub fn render<D: Drawable>(&mut self, drawable: &D, dst_rect: glm::IVec4) -> Result<()> {
         drawable.draw(dst_rect, self)
-    }
-
-    pub fn output_size(&self) -> Result<glm::UVec2> {
-        let (x, y) = self.renderer.output_size()?;
-        Ok(glm::uvec2(x, y))
     }
 
     fn draw_and_wrap(&mut self,
@@ -119,14 +123,14 @@ impl<R: Renderer> ResourceManager<R> {
 }
 
 impl Scene for TextureId {
-    fn show<R: Renderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
+    fn show<R: BackEndRenderer>(&self, renderer: &mut ResourceManager<R>) -> Result<()> {
         renderer.draw(*self, None, None).map_err(Into::into)
     }
 }
 
 impl Drawable for TextureId {
     fn draw<R>(&self, dst_rect: glm::IVec4, renderer: &mut ResourceManager<R>) -> Result<()>
-        where R: Renderer
+        where R: BackEndRenderer
     {
         renderer.draw(*self, Some(dst_rect), None).map_err(Into::into)
     }
