@@ -9,9 +9,6 @@ license = "MIT"
 glm = ">=0.2.2"
 num-traits = ">=0.1.36"
 error-chain = ">=0.9"
-serde = ">=0.9"
-serde_yaml = ">=0.6"
-serde_derive = ">=0.9"
 
 [dependencies.sdl2]
 version = ">=0.29"
