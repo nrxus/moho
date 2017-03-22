@@ -1,11 +1,10 @@
-use super::backend;
 use super::ResourceManager;
 use errors::*;
 
 use glm;
 use sdl2::render::Renderer as SdlRenderer;
 
-pub trait BackEndWindow: backend::BackEnd {
+pub trait BackEndWindow: super::BackEnd {
     fn output_size(&self) -> Result<(u32, u32)>;
 }
 

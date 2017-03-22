@@ -1,6 +1,5 @@
+use super::{ImageDims, ResourceManager, Texture, TextureId};
 use errors::*;
-use super::{ResourceManager, Texture, TextureId};
-use super::backend::{self, ImageDims};
 
 use sdl2::image::LoadTexture;
 use sdl2::render::Renderer as SdlRenderer;
@@ -10,7 +9,7 @@ use std::collections::HashMap;
 use std::cell::{Ref, RefMut};
 use std::path::Path;
 
-pub trait BackEndLoader: backend::BackEnd {
+pub trait BackEndLoader: super::BackEnd {
     fn load_texture(&self, path: &Path) -> Result<Self::Texture>;
 }
 
@@ -124,7 +123,7 @@ mod tests {
         tracker: Rc<RefCell<LoaderTracker>>,
     }
 
-    impl backend::BackEnd for MockBackEnd {
+    impl super::super::BackEnd for MockBackEnd {
         type Texture = MockTexture;
     }
 

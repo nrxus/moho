@@ -1,4 +1,3 @@
-mod backend;
 mod frame_animator;
 mod window;
 mod renderer;
@@ -6,11 +5,12 @@ mod resource_loader;
 mod tile_sheet;
 
 pub use self::frame_animator::FrameAnimator;
-pub use self::backend::{ImageDims, BackEnd};
-pub use self::window::{BackEndWindow, Window};
-pub use self::renderer::{BackEndRenderer, Renderer};
-pub use self::resource_loader::{BackEndLoader, ResourceLoader};
+pub use self::window::Window;
+pub use self::renderer::Renderer;
+pub use self::resource_loader::ResourceLoader;
 pub use self::tile_sheet::{Tile, TileSheet};
+
+use self::window::BackEndWindow;
 
 use errors::*;
 
@@ -18,6 +18,27 @@ use std::collections::HashMap;
 use std::cell::RefCell;
 
 use glm;
+use sdl2::render::Renderer as SdlRenderer;
+use sdl2::render::Texture as SdlTexture;
+
+pub trait ImageDims {
+    fn dims(&self) -> glm::UVec2;
+}
+
+impl ImageDims for SdlTexture {
+    fn dims(&self) -> glm::UVec2 {
+        let query = self.query();
+        glm::uvec2(query.width, query.height)
+    }
+}
+
+pub trait BackEnd {
+    type Texture: ImageDims;
+}
+
+impl BackEnd for SdlRenderer<'static> {
+    type Texture = SdlTexture;
+}
 
 pub trait Drawable {
     fn draw<R: Renderer>(&self, dst_rect: glm::IVec4, renderer: &mut R) -> Result<()>;

@@ -1,4 +1,3 @@
-use super::backend;
 use super::{Drawable, Scene, ResourceManager, TextureId};
 use window_wrapper::*;
 use errors::*;
@@ -11,7 +10,7 @@ use sdl2::render::Texture as SdlTexture;
 use std::cell::{Ref, RefCell};
 use std::collections::HashMap;
 
-pub trait BackEndRenderer: backend::BackEnd {
+pub trait BackEndRenderer: super::BackEnd {
     fn clear(&mut self);
     fn present(&mut self);
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
