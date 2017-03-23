@@ -59,7 +59,7 @@ pub struct Texture {
 
 pub struct ResourceManager<R: BackEnd> {
     pub wrap_coords: Option<glm::UVec2>,
-    pub texture_cache: RefCell<HashMap<&'static str, Texture>>,
+    pub texture_cache: RefCell<HashMap<String, Texture>>,
     pub data_cache: RefCell<HashMap<TextureId, R::Texture>>,
     pub renderer: R,
 }

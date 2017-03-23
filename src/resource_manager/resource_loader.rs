@@ -20,26 +20,24 @@ impl BackEndLoader for SdlRenderer<'static> {
 }
 
 pub trait ResourceLoader {
-    fn load_texture(&self, path: &'static str) -> Result<Texture>;
+    fn load_texture(&self, path: &str) -> Result<Texture>;
 }
 
 impl<R: BackEndLoader> ResourceLoader for ResourceManager<R> {
-    fn load_texture(&self, path: &'static str) -> Result<Texture> {
+    fn load_texture(&self, path: &str) -> Result<Texture> {
         load_cached_texture(self.texture_cache.borrow(), path)
             .map_or_else(|| load_new_texture(self.texture_cache.borrow_mut(),
                                              self.data_cache.borrow_mut(), path, &self.renderer),Ok)
     }
 }
 
-fn load_cached_texture(cache: Ref<HashMap<&'static str, Texture>>,
-                       path: &'static str)
-                       -> Option<Texture> {
+fn load_cached_texture(cache: Ref<HashMap<String, Texture>>, path: &str) -> Option<Texture> {
     cache.get(path).cloned()
 }
 
-fn load_new_texture<R: BackEndLoader>(mut cache: RefMut<HashMap<&'static str, Texture>>,
+fn load_new_texture<R: BackEndLoader>(mut cache: RefMut<HashMap<String, Texture>>,
                                       mut data_cache: RefMut<HashMap<TextureId, R::Texture>>,
-                                      path: &'static str,
+                                      path: &str,
                                       renderer: &R)
                                       -> Result<Texture> {
     let id = TextureId(data_cache.len());
@@ -49,7 +47,7 @@ fn load_new_texture<R: BackEndLoader>(mut cache: RefMut<HashMap<&'static str, Te
         id: id,
         dims: texture_data.dims(),
     };
-    cache.insert(path, texture);
+    cache.insert(path.into(), texture);
     data_cache.insert(id, texture_data);
     Ok(texture)
 }
