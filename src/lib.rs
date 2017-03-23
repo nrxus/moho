@@ -11,8 +11,9 @@ use sdl2::image::{INIT_PNG, INIT_JPG};
 use resource_manager::{ResourceLoader, ResourceManager, Renderer, Window};
 use input_manager::*;
 
-pub mod resource_manager;
 pub mod input_manager;
+pub mod shape;
+pub mod resource_manager;
 pub mod timer;
 pub mod window_wrapper;
 
