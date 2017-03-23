@@ -58,7 +58,6 @@ pub struct Texture {
 }
 
 pub struct ResourceManager<R: BackEnd> {
-    pub wrap_coords: Option<glm::UVec2>,
     pub texture_cache: RefCell<HashMap<String, Texture>>,
     pub data_cache: RefCell<HashMap<TextureId, R::Texture>>,
     pub renderer: R,
@@ -74,7 +73,6 @@ impl<R: BackEndWindow> ResourceManager<R> {
 impl<R: BackEnd> ResourceManager<R> {
     pub fn new(renderer: R) -> Self {
         ResourceManager {
-            wrap_coords: None,
             texture_cache: RefCell::new(HashMap::new()),
             data_cache: RefCell::new(HashMap::new()),
             renderer: renderer,
