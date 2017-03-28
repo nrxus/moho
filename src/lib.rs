@@ -8,7 +8,7 @@ use sdl2::render::Renderer as SdlRenderer;
 use sdl2::EventPump as SdlEventPump;
 use sdl2::image::{INIT_PNG, INIT_JPG};
 
-use resource_manager::{ResourceLoader, ResourceManager, Renderer, Window};
+use resource_manager::{FontRenderer, ResourceLoader, ResourceManager, Renderer, Window};
 use input_manager::*;
 
 pub mod input_manager;
@@ -25,11 +25,13 @@ error_chain!{
     foreign_links {
         WindowBuild(sdl2::video::WindowBuildError);
         SdlContext(sdl2::IntegerOrSdlError);
+        TtfInit(sdl2::ttf::InitError);
+        TextureCreateError(sdl2::render::TextureValueError);
     }
 }
 
 pub trait MohoEngine {
-    type Renderer: Renderer + ResourceLoader + Window;
+    type Renderer: Renderer + ResourceLoader + Window + FontRenderer<SdlRenderer<'static>>;
     type EventPump: EventPump;
 }
 

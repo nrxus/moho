@@ -1,12 +1,14 @@
 mod frame_animator;
+mod font_manager;
 mod window;
 mod renderer;
 mod resource_loader;
 mod tile_sheet;
 
+pub use self::font_manager::FontManager;
 pub use self::frame_animator::FrameAnimator;
 pub use self::window::Window;
-pub use self::renderer::Renderer;
+pub use self::renderer::{FontRenderer, Renderer};
 pub use self::resource_loader::ResourceLoader;
 pub use self::tile_sheet::{Tile, TileSheet};
 

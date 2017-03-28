@@ -2,9 +2,11 @@ use super::{Drawable, Scene, ResourceManager, TextureId};
 use errors::*;
 
 use glm;
+use sdl2::pixels::Color;
 use sdl2::rect;
 use sdl2::render::Renderer as SdlRenderer;
 use sdl2::render::Texture as SdlTexture;
+use sdl2::ttf::Font;
 
 pub trait BackEndRenderer: super::BackEnd {
     fn clear(&mut self);
@@ -15,6 +17,21 @@ pub trait BackEndRenderer: super::BackEnd {
             src: Option<rect::Rect>,
             dst: Option<rect::Rect>)
             -> Result<()>;
+}
+
+pub trait BackEndFont: super::BackEnd {
+    fn texturize(&self, font: &Font, text: &str) -> Result<Self::Texture>;
+}
+
+impl BackEndFont for SdlRenderer<'static> {
+    fn texturize(&self, font: &Font, text: &str) -> Result<SdlTexture> {
+        let surface = font.render(text)
+            .blended(Color::RGBA(255, 0, 0, 255))
+            .chain_err(|| "error when creatinga a blended font surface")?;
+
+        self.create_texture_from_surface(&surface)
+            .chain_err(|| "error creating a texture from a surface")
+    }
 }
 
 impl BackEndRenderer for SdlRenderer<'static> {
@@ -50,6 +67,21 @@ pub trait Renderer {
     fn present(&mut self);
     fn show<S: Scene>(&mut self, scene: &S) -> Result<()>;
     fn render<D: Drawable>(&mut self, drawable: &D, dst_rect: glm::IVec4) -> Result<()>;
+}
+
+pub trait FontRenderer<R: BackEndFont> {
+    fn texturize(&self, font: &Font, text: &str) -> Result<R::Texture>;
+    fn draw_texture(&mut self, texture: &R::Texture) -> Result<()>;
+}
+
+impl<R: BackEndFont + BackEndRenderer> FontRenderer<R> for ResourceManager<R> {
+    fn texturize(&self, font: &Font, text: &str) -> Result<R::Texture> {
+        self.renderer.texturize(font, text)
+    }
+
+    fn draw_texture(&mut self, texture: &R::Texture) -> Result<()> {
+        self.renderer.copy(texture, None, None)
+    }
 }
 
 impl<R: BackEndRenderer> Renderer for ResourceManager<R> {
