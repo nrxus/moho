@@ -1,23 +1,9 @@
-use super::BackEnd;
+use super::{BackEnd, ResourceLoader};
 use errors::*;
-
-use sdl2::image::LoadTexture;
-use sdl2::render::Renderer as SdlRenderer;
-use sdl2::render::Texture as SdlTexture;
 
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::path::Path;
-
-pub trait ResourceLoader: super::BackEnd {
-    fn load_texture(&self, path: &Path) -> Result<Self::Texture>;
-}
-
-impl ResourceLoader for SdlRenderer<'static> {
-    fn load_texture(&self, path: &Path) -> Result<SdlTexture> {
-        LoadTexture::load_texture(self, path).map_err(Into::into)
-    }
-}
 
 pub struct ResourceManager<R: BackEnd> {
     cache: HashMap<String, Rc<R::Texture>>,

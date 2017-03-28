@@ -1,4 +1,4 @@
-use super::renderer::Renderer;
+use super::Renderer;
 use super::{BackEnd, Drawable, ImageDims, Scene};
 use errors::*;
 
