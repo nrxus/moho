@@ -8,16 +8,11 @@ mod tile_sheet;
 pub use self::font_manager::FontManager;
 pub use self::frame_animator::FrameAnimator;
 pub use self::window::Window;
-pub use self::renderer::{FontRenderer, Renderer};
-pub use self::resource_loader::ResourceLoader;
+pub use self::renderer::{FontTexturizer, Renderer};
+pub use self::resource_loader::{ResourceLoader, ResourceManager};
 pub use self::tile_sheet::{Tile, TileSheet};
 
-use self::window::BackEndWindow;
-
 use errors::*;
-
-use std::collections::HashMap;
-use std::cell::RefCell;
 
 use glm;
 use sdl2::render::Renderer as SdlRenderer;
@@ -42,54 +37,22 @@ impl BackEnd for SdlRenderer<'static> {
     type Texture = SdlTexture;
 }
 
-pub trait Drawable {
-    fn draw<R: Renderer>(&self, dst_rect: glm::IVec4, renderer: &mut R) -> Result<()>;
+pub trait Drawable<R> {
+    fn draw(&self, dst_rect: glm::IVec4, renderer: &mut R) -> Result<()>;
 }
 
-pub trait Scene {
-    fn show<R: Renderer>(&self, renderer: &mut R) -> Result<()>;
+pub trait Scene<R> {
+    fn show(&self, renderer: &mut R) -> Result<()>;
 }
 
-#[derive(Copy,Clone,Hash,PartialEq,Eq,Debug)]
-pub struct TextureId(pub usize);
-
-#[derive(Copy,Clone)]
-pub struct Texture {
-    pub id: TextureId,
-    pub dims: glm::UVec2,
-}
-
-pub struct ResourceManager<R: BackEnd> {
-    pub texture_cache: RefCell<HashMap<String, Texture>>,
-    pub data_cache: RefCell<HashMap<TextureId, R::Texture>>,
-    pub renderer: R,
-}
-
-impl<R: BackEndWindow> ResourceManager<R> {
-    pub fn output_size(&self) -> Result<glm::UVec2> {
-        let (x, y) = self.renderer.output_size()?;
-        Ok(glm::uvec2(x, y))
+impl<R: Renderer<Texture = SdlTexture>> Scene<R> for SdlTexture {
+    fn show(&self, renderer: &mut R) -> Result<()> {
+        renderer.copy(self, None, None)
     }
 }
 
-impl<R: BackEnd> ResourceManager<R> {
-    pub fn new(renderer: R) -> Self {
-        ResourceManager {
-            texture_cache: RefCell::new(HashMap::new()),
-            data_cache: RefCell::new(HashMap::new()),
-            renderer: renderer,
-        }
-    }
-}
-
-impl Scene for TextureId {
-    fn show<R: Renderer>(&self, renderer: &mut R) -> Result<()> {
-        renderer.draw(*self, None, None)
-    }
-}
-
-impl Drawable for TextureId {
-    fn draw<R: Renderer>(&self, dst_rect: glm::IVec4, renderer: &mut R) -> Result<()> {
-        renderer.draw(*self, Some(dst_rect), None)
+impl<R: Renderer<Texture = SdlTexture>> Drawable<R> for SdlTexture {
+    fn draw(&self, dst_rect: glm::IVec4, renderer: &mut R) -> Result<()> {
+        renderer.copy(self, Some(dst_rect), None)
     }
 }

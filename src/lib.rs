@@ -8,7 +8,7 @@ use sdl2::render::Renderer as SdlRenderer;
 use sdl2::EventPump as SdlEventPump;
 use sdl2::image::{INIT_PNG, INIT_JPG};
 
-use resource_manager::{FontRenderer, ResourceLoader, ResourceManager, Renderer, Window};
+use resource_manager::{FontTexturizer, ResourceLoader, Renderer, Window};
 use input_manager::*;
 
 pub mod input_manager;
@@ -31,21 +31,21 @@ error_chain!{
 }
 
 pub trait MohoEngine {
-    type Renderer: Renderer + ResourceLoader + Window + FontRenderer<SdlRenderer<'static>>;
+    type Renderer: Renderer + ResourceLoader + Window + FontTexturizer;
     type EventPump: EventPump;
 }
 
 pub struct SdlMohoEngine {}
 
 impl MohoEngine for SdlMohoEngine {
-    type Renderer = ResourceManager<SdlRenderer<'static>>;
+    type Renderer = SdlRenderer<'static>;
     type EventPump = SdlEventPump;
 }
 
 pub fn init(name: &'static str,
             width: u32,
             height: u32)
-            -> Result<(ResourceManager<SdlRenderer>, InputManager<SdlEventPump>)> {
+            -> Result<(SdlRenderer, InputManager<SdlEventPump>)> {
     let sdl_ctx = sdl2::init()?;
     let video_ctx = sdl_ctx.video()?;
     let _image_ctx = sdl2::image::init(INIT_PNG | INIT_JPG)?;
@@ -55,14 +55,14 @@ pub fn init(name: &'static str,
         .opengl()
         .build()?;
 
-    let renderer = window.renderer()
+    let mut renderer = window.renderer()
         .present_vsync()
         .build()?;
-    let mut resource_manager = ResourceManager::new(renderer);
-    resource_manager.clear();
-    resource_manager.present();
+
+    renderer.clear();
+    renderer.present();
 
     let event_pump = sdl_ctx.event_pump()?;
     let input_manager = InputManager::new(event_pump);
-    Ok((resource_manager, input_manager))
+    Ok((renderer, input_manager))
 }

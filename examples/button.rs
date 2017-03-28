@@ -38,7 +38,7 @@ impl<E: MohoEngine> MainGame<E> {
         self.renderer.clear();
         let fps = format!("{}", fps as u32);
         let texture = self.renderer.texturize(font, &fps)?;
-        self.renderer.draw_texture(&texture)?;
+        self.renderer.copy(&texture, None, None)?;
         self.renderer.present();
         Ok(())
     }
