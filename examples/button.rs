@@ -3,23 +3,28 @@ extern crate moho;
 extern crate sdl2;
 
 use moho::errors::*;
-use moho::MohoEngine;
 use moho::input_manager::*;
 use moho::resource_manager::*;
 use moho::timer::*;
 
-pub struct MainGame<'ttf, E: MohoEngine<'ttf>> {
-    input_manager: InputManager<E::EventPump>,
-    font_manager: FontManager<E::FontLoader>,
-    resource_manager: ResourceManager<E::Renderer>,
-    renderer: E::Renderer,
+pub struct MainGame<'ttf,
+                    E: EventPump,
+                    F: 'ttf + FontLoader<'ttf>,
+                    R: ResourceLoader + Renderer + FontTexturizer<'ttf, F>>
+{
+    input_manager: InputManager<E>,
+    font_manager: FontManager<F>,
+    resource_manager: ResourceManager<R>,
+    renderer: R,
+    _marker: std::marker::PhantomData<&'ttf F>,
 }
 
-impl<'ttf, E: MohoEngine<'ttf>> MainGame<'ttf, E> {
-    pub fn new(renderer: E::Renderer,
-               input_manager: InputManager<E::EventPump>,
-               font_loader: E::FontLoader)
-               -> Self {
+impl<'ttf, E, F, R> MainGame<'ttf, E, F, R>
+    where E: EventPump,
+          F: FontLoader<'ttf>,
+          R: ResourceLoader + Renderer + FontTexturizer<'ttf, F>
+{
+    pub fn new(renderer: R, input_manager: InputManager<E>, font_loader: F) -> Self {
         let font_manager = FontManager::init(font_loader);
         let resource_manager = ResourceManager::new();
         MainGame {
@@ -27,6 +32,7 @@ impl<'ttf, E: MohoEngine<'ttf>> MainGame<'ttf, E> {
             font_manager: font_manager,
             resource_manager: resource_manager,
             renderer: renderer,
+            _marker: std::marker::PhantomData,
         }
     }
 
@@ -62,6 +68,6 @@ fn main() {
     const WINDOW_HEIGHT: u32 = 720;
     let (renderer, input_manager) = moho::init("MohoGame", WINDOW_WIDTH, WINDOW_HEIGHT).unwrap();
     let loader = sdl2::ttf::init().chain_err(|| "cannot init loader").unwrap();
-    let mut game = MainGame::<moho::SdlMohoEngine>::new(renderer, input_manager, loader);
+    let mut game = MainGame::new(renderer, input_manager, loader);
     game.run().unwrap();
 }

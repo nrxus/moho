@@ -13,7 +13,6 @@ use errors::*;
 
 use glm;
 use sdl2::rect;
-use sdl2::ttf::Font;
 
 use std::path::Path;
 

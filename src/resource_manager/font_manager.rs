@@ -1,8 +1,6 @@
 use errors::*;
 use super::FontLoader;
 
-use sdl2::ttf::{self, Font, Sdl2TtfContext};
-
 pub struct FontManager<L> {
     loader: L,
 }

@@ -4,12 +4,10 @@ extern crate glm;
 extern crate num_traits;
 extern crate sdl2;
 
-use sdl2::ttf::Sdl2TtfContext;
 use sdl2::render::Renderer as SdlRenderer;
 use sdl2::EventPump as SdlEventPump;
 use sdl2::image::{INIT_PNG, INIT_JPG};
 
-use resource_manager::{FontLoader, FontTexturizer, ResourceLoader, Renderer, Window};
 use input_manager::*;
 
 pub mod input_manager;
@@ -29,20 +27,6 @@ error_chain!{
         TtfInit(sdl2::ttf::InitError);
         TextureCreateError(sdl2::render::TextureValueError);
     }
-}
-
-pub trait MohoEngine<'a> {
-    type FontLoader: FontLoader<'a>;
-    type Renderer: Renderer + ResourceLoader + Window + FontTexturizer<'a, Self::FontLoader>;
-    type EventPump: EventPump;
-}
-
-pub struct SdlMohoEngine {}
-
-impl<'a> MohoEngine<'a> for SdlMohoEngine {
-    type FontLoader = Sdl2TtfContext;
-    type Renderer = SdlRenderer<'static>;
-    type EventPump = SdlEventPump;
 }
 
 pub fn init(name: &'static str,
