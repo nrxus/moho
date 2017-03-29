@@ -1,5 +1,5 @@
 use errors::*;
-use resource_manager::{BackEnd, Drawable, FontTexturizer, ImageDims, Scene, Renderer,
+use resource_manager::{BackEnd, Drawable, FontLoader, FontTexturizer, ImageDims, Scene, Renderer,
                        ResourceLoader, Window};
 
 use glm;
@@ -8,7 +8,8 @@ use sdl2::pixels::Color;
 use sdl2::rect;
 use sdl2::render::Renderer as SdlRenderer;
 use sdl2::render::Texture as SdlTexture;
-use sdl2::ttf::Font;
+use sdl2::ttf::Font as SdlFont;
+use sdl2::ttf::Sdl2TtfContext;
 
 use std::path::Path;
 
@@ -23,14 +24,21 @@ impl BackEnd for SdlRenderer<'static> {
     type Texture = SdlTexture;
 }
 
+impl<'a> FontLoader<'a> for Sdl2TtfContext {
+    type Font = SdlFont<'a, 'static>;
+    fn load(&'a self, path: &str, size: u16) -> Result<SdlFont<'a, 'static>> {
+        self.load_font(path, size).map_err(Into::into)
+    }
+}
+
 impl ResourceLoader for SdlRenderer<'static> {
     fn load_texture(&self, path: &Path) -> Result<SdlTexture> {
         LoadTexture::load_texture(self, path).map_err(Into::into)
     }
 }
 
-impl FontTexturizer for SdlRenderer<'static> {
-    fn texturize(&self, font: &Font, text: &str) -> Result<SdlTexture> {
+impl<'a> FontTexturizer<'a, Sdl2TtfContext> for SdlRenderer<'static> {
+    fn texturize(&self, font: &SdlFont<'a, 'static>, text: &str) -> Result<SdlTexture> {
         let surface = font.render(text)
             .blended(Color::RGBA(255, 0, 0, 255))
             .chain_err(|| "error when creatinga a blended font surface")?;

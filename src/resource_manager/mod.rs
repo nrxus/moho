@@ -41,6 +41,11 @@ pub trait Scene<R> {
     fn show(&self, renderer: &mut R) -> Result<()>;
 }
 
+pub trait FontLoader<'a> {
+    type Font;
+    fn load(&'a self, path: &str, size: u16) -> Result<Self::Font>;
+}
+
 pub trait Renderer: BackEnd + Sized {
     fn clear(&mut self);
     fn present(&mut self);
@@ -54,6 +59,6 @@ pub trait Renderer: BackEnd + Sized {
     fn render<D: Drawable<Self>>(&mut self, drawable: &D, dst_rect: glm::IVec4) -> Result<()>;
 }
 
-pub trait FontTexturizer: BackEnd {
-    fn texturize(&self, font: &Font, text: &str) -> Result<Self::Texture>;
+pub trait FontTexturizer<'a, L: FontLoader<'a>>: BackEnd {
+    fn texturize(&self, font: &L::Font, text: &str) -> Result<Self::Texture>;
 }
