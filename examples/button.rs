@@ -13,9 +13,9 @@ pub struct MainGame<'ttf,
                     R: ResourceLoader + Renderer + FontTexturizer<'ttf, F>>
 {
     input_manager: InputManager<E>,
-    font_manager: FontManager<F>,
     resource_manager: ResourceManager<R>,
     renderer: R,
+    font_loader: F,
     _marker: std::marker::PhantomData<&'ttf F>,
 }
 
@@ -25,20 +25,19 @@ impl<'ttf, E, F, R> MainGame<'ttf, E, F, R>
           R: ResourceLoader + Renderer + FontTexturizer<'ttf, F>
 {
     pub fn new(renderer: R, input_manager: InputManager<E>, font_loader: F) -> Self {
-        let font_manager = FontManager::init(font_loader);
         let resource_manager = ResourceManager::new();
         MainGame {
             input_manager: input_manager,
-            font_manager: font_manager,
             resource_manager: resource_manager,
             renderer: renderer,
+            font_loader: font_loader,
             _marker: std::marker::PhantomData,
         }
     }
 
     pub fn run(&'ttf mut self) -> Result<()> {
         let image = self.resource_manager.load_texture("examples/background.png", &self.renderer)?;
-        let font = self.font_manager.load("examples/fonts/kenpixel_mini.ttf", 48)?;
+        let font = self.font_loader.load("examples/fonts/kenpixel_mini.ttf", 48)?;
         let mut timer = Timer::new();
         while !self.game_quit() {
             let game_time = timer.update();

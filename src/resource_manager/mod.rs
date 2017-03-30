@@ -1,10 +1,8 @@
 mod frame_animator;
-mod font_manager;
 mod resource_loader;
 mod tile_sheet;
 mod sdl2;
 
-pub use self::font_manager::FontManager;
 pub use self::frame_animator::FrameAnimator;
 pub use self::resource_loader::ResourceManager;
 pub use self::tile_sheet::{Tile, TileSheet};
