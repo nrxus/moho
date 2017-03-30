@@ -9,7 +9,7 @@ pub struct Circle {
 }
 
 impl Shape for Circle {
-    fn get_center(&self) -> glm::DVec2 {
+    fn center(&self) -> glm::DVec2 {
         self.center
     }
 
@@ -21,14 +21,14 @@ impl Shape for Circle {
 
 impl Intersect<Rectangle> for Circle {
     fn intersects(&self, other: &Rectangle) -> bool {
-        self.contains(&other.get_center()) || other.contains(&self.center) ||
+        self.contains(&other.top_left) || other.contains(&self.center) ||
         other.get_lines().iter().any(|l| self.intersects(l))
     }
 }
 
 impl Intersect<Circle> for Circle {
     fn intersects(&self, other: &Circle) -> bool {
-        let distance = glm::distance(self.center, other.center);
+        let distance = self.distance(other);
         distance < (self.radius + other.radius)
     }
 }
@@ -115,7 +115,7 @@ mod test {
     fn rectangle_circle_no_intersect() {
         let rectangle = Rectangle {
             dims: glm::dvec2(5_f64, 2_f64),
-            center: glm::dvec2(6_f64, 0_f64),
+            top_left: glm::dvec2(3.5, -1.),
         };
 
         let circle = Circle {
@@ -130,7 +130,7 @@ mod test {
     fn rectangle_inside_circle() {
         let rectangle = Rectangle {
             dims: glm::dvec2(1_f64, 2_f64),
-            center: glm::dvec2(3_f64, 5_f64),
+            top_left: glm::dvec2(2.5, 4_f64),
         };
 
         let circle = Circle {
@@ -145,7 +145,7 @@ mod test {
     fn circle_inside_rectangle() {
         let rectangle = Rectangle {
             dims: glm::dvec2(5_f64, 7_f64),
-            center: glm::dvec2(4_f64, 2_f64),
+            top_left: glm::dvec2(1.5, -1.5),
         };
 
         let circle = Circle {
@@ -160,7 +160,7 @@ mod test {
     fn rectangle_circle_intersect() {
         let rectangle = Rectangle {
             dims: glm::dvec2(2_f64, 2_f64),
-            center: glm::dvec2(5_f64, 3_f64),
+            top_left: glm::dvec2(4_f64, 2_f64),
         };
 
         let circle = Circle {
