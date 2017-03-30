@@ -12,7 +12,7 @@ use input_manager::*;
 
 pub mod input_manager;
 pub mod shape;
-pub mod resource_manager;
+pub mod renderer;
 pub mod timer;
 pub mod window_wrapper;
 

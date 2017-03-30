@@ -4,7 +4,7 @@ extern crate sdl2;
 
 use moho::errors::*;
 use moho::input_manager::*;
-use moho::resource_manager::*;
+use moho::renderer::*;
 use moho::timer::*;
 
 pub struct MainGame<'ttf,

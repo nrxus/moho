@@ -1,6 +1,6 @@
 use errors::*;
-use resource_manager::{BackEnd, Drawable, FontLoader, FontTexturizer, ImageDims, Scene, Renderer,
-                       ResourceLoader, Window};
+use renderer::{BackEnd, Drawable, FontLoader, FontTexturizer, ImageDims, Scene, Renderer,
+               ResourceLoader, Window};
 
 use glm;
 use sdl2::image::LoadTexture;
