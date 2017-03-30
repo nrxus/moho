@@ -14,6 +14,8 @@ use sdl2::rect;
 
 use std::path::Path;
 
+pub struct ColorRGBA(pub u8, pub u8, pub u8, pub u8);
+
 pub trait ImageDims {
     fn dims(&self) -> glm::UVec2;
 }
@@ -57,5 +59,5 @@ pub trait Renderer: BackEnd + Sized {
 }
 
 pub trait FontTexturizer<'a, L: FontLoader<'a>>: BackEnd {
-    fn texturize(&self, font: &L::Font, text: &str) -> Result<Self::Texture>;
+    fn texturize(&self, font: &L::Font, text: &str, color: ColorRGBA) -> Result<Self::Texture>;
 }

@@ -44,7 +44,7 @@ impl<'ttf, E, F, R> MainGame<'ttf, E, F, R>
             self.input_manager.update();
             self.renderer.clear();
             let fps = format!("{}", game_time.fps() as u32);
-            let font_texture = self.renderer.texturize(&font, &fps)?;
+            let font_texture = self.renderer.texturize(&font, &fps, ColorRGBA(255, 255, 0, 255))?;
             let font_dst = glm::ivec4(0,
                                       0,
                                       font_texture.dims().x as i32,

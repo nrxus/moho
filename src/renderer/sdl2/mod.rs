@@ -37,9 +37,15 @@ impl renderer::ResourceLoader for SdlRenderer<'static> {
 }
 
 impl<'a> renderer::FontTexturizer<'a, Sdl2TtfContext> for SdlRenderer<'static> {
-    fn texturize(&self, font: &SdlFont<'a, 'static>, text: &str) -> Result<SdlTexture> {
+    fn texturize(&self,
+                 font: &SdlFont<'a, 'static>,
+                 text: &str,
+                 color: renderer::ColorRGBA)
+                 -> Result<SdlTexture> {
+        let renderer::ColorRGBA(red, green, blue, alpha) = color;
+        let color = Color::RGBA(red, green, blue, alpha);
         let surface = font.render(text)
-            .blended(Color::RGBA(255, 0, 0, 255))
+            .blended(color)
             .chain_err(|| "error when creatinga a blended font surface")?;
 
         self.create_texture_from_surface(&surface)
