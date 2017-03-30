@@ -42,7 +42,7 @@ impl<R: ResourceLoader> ResourceManager<R> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use resource_manager::ImageDims;
+    use renderer::ImageDims;
     use glm;
     use std::rc::Rc;
     use std::cell::RefCell;

@@ -1,10 +1,10 @@
 mod frame_animator;
-mod resource_loader;
+mod resource_manager;
 mod tile_sheet;
 mod sdl2;
 
 pub use self::frame_animator::FrameAnimator;
-pub use self::resource_loader::ResourceManager;
+pub use self::resource_manager::ResourceManager;
 pub use self::tile_sheet::{Tile, TileSheet};
 
 use errors::*;

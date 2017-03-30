@@ -1,6 +1,5 @@
 use errors::*;
-use renderer::{BackEnd, Drawable, FontLoader, FontTexturizer, ImageDims, Scene, Renderer,
-               ResourceLoader, Window};
+use renderer;
 
 use glm;
 use sdl2::image::LoadTexture;
@@ -13,31 +12,31 @@ use sdl2::ttf::Sdl2TtfContext;
 
 use std::path::Path;
 
-impl ImageDims for SdlTexture {
+impl renderer::ImageDims for SdlTexture {
     fn dims(&self) -> glm::UVec2 {
         let query = self.query();
         glm::uvec2(query.width, query.height)
     }
 }
 
-impl BackEnd for SdlRenderer<'static> {
+impl renderer::BackEnd for SdlRenderer<'static> {
     type Texture = SdlTexture;
 }
 
-impl<'a> FontLoader<'a> for Sdl2TtfContext {
+impl<'a> renderer::FontLoader<'a> for Sdl2TtfContext {
     type Font = SdlFont<'a, 'static>;
     fn load(&'a self, path: &str, size: u16) -> Result<SdlFont<'a, 'static>> {
         self.load_font(path, size).map_err(Into::into)
     }
 }
 
-impl ResourceLoader for SdlRenderer<'static> {
+impl renderer::ResourceLoader for SdlRenderer<'static> {
     fn load_texture(&self, path: &Path) -> Result<SdlTexture> {
         LoadTexture::load_texture(self, path).map_err(Into::into)
     }
 }
 
-impl<'a> FontTexturizer<'a, Sdl2TtfContext> for SdlRenderer<'static> {
+impl<'a> renderer::FontTexturizer<'a, Sdl2TtfContext> for SdlRenderer<'static> {
     fn texturize(&self, font: &SdlFont<'a, 'static>, text: &str) -> Result<SdlTexture> {
         let surface = font.render(text)
             .blended(Color::RGBA(255, 0, 0, 255))
@@ -48,7 +47,7 @@ impl<'a> FontTexturizer<'a, Sdl2TtfContext> for SdlRenderer<'static> {
     }
 }
 
-impl Renderer for SdlRenderer<'static> {
+impl renderer::Renderer for SdlRenderer<'static> {
     fn copy(&mut self,
             texture: &SdlTexture,
             dst: Option<glm::IVec4>,
@@ -71,16 +70,19 @@ impl Renderer for SdlRenderer<'static> {
         self.fill_rects(rects).map_err(Into::into)
     }
 
-    fn show<S: Scene<Self>>(&mut self, scene: &S) -> Result<()> {
+    fn show<S: renderer::Scene<Self>>(&mut self, scene: &S) -> Result<()> {
         scene.show(self)
     }
 
-    fn render<D: Drawable<Self>>(&mut self, drawable: &D, dst_rect: glm::IVec4) -> Result<()> {
+    fn render<D: renderer::Drawable<Self>>(&mut self,
+                                           drawable: &D,
+                                           dst_rect: glm::IVec4)
+                                           -> Result<()> {
         drawable.draw(dst_rect, self)
     }
 }
 
-impl Window for SdlRenderer<'static> {
+impl renderer::Window for SdlRenderer<'static> {
     fn output_size(&self) -> Result<glm::UVec2> {
         let (width, height) = self.output_size()?;
         Ok(glm::uvec2(width, height))
