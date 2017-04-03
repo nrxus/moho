@@ -7,23 +7,15 @@ use moho::input_manager::*;
 use moho::renderer::*;
 use moho::timer::*;
 
-pub struct MainGame<'ttf,
-                    E: EventPump,
-                    F: 'ttf + FontLoader<'ttf>,
-                    R: ResourceLoader + Renderer + FontTexturizer<'ttf, F>>
-{
+pub struct MainGame<'ttf, E: EventPump, T, R, FL: 'ttf> {
     input_manager: InputManager<E>,
-    resource_manager: ResourceManager<R>,
+    resource_manager: ResourceManager<T, String>,
     renderer: R,
-    font_loader: &'ttf F,
+    font_loader: &'ttf FL,
 }
 
-impl<'ttf, E, F, R> MainGame<'ttf, E, F, R>
-    where E: EventPump,
-          F: FontLoader<'ttf>,
-          R: ResourceLoader + Renderer + FontTexturizer<'ttf, F>
-{
-    pub fn new(renderer: R, input_manager: InputManager<E>, font_loader: &'ttf F) -> Self {
+impl<'ttf, E: EventPump, T: Texture, R, FL> MainGame<'ttf, E, T, R, FL> {
+    pub fn new(renderer: R, input_manager: InputManager<E>, font_loader: &'ttf FL) -> Self {
         let resource_manager = ResourceManager::new();
         MainGame {
             input_manager: input_manager,
@@ -33,9 +25,16 @@ impl<'ttf, E, F, R> MainGame<'ttf, E, F, R>
         }
     }
 
-    pub fn run(&mut self) -> Result<()> {
-        let image = self.resource_manager.load_texture("examples/background.png", &self.renderer)?;
-        let font = self.font_loader.load("examples/fonts/kenpixel_mini.ttf", 48)?;
+    pub fn run<F: Font>(&mut self) -> Result<()>
+        where FL: FontLoader<'ttf, F>,
+          R: for<'a> ResourceLoader<'a, T> + Renderer<T> + FontTexturizer<'ttf, F, FL, Texture = T>
+    {
+        let image = self.resource_manager.load("examples/background.png", &self.renderer)?;
+        let font_details = FontDetails {
+            path: "examples/fonts/kenpixel_mini.ttf",
+            size: 48,
+        };
+        let font = self.font_loader.load(&font_details)?;
         let mut timer = Timer::new();
         while !self.game_quit() {
             let game_time = timer.update();

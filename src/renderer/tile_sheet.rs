@@ -1,5 +1,5 @@
 use super::Renderer;
-use super::{BackEnd, Drawable, ImageDims, Scene};
+use super::{Texture, Drawable, Scene};
 use errors::*;
 
 use glm;
@@ -7,19 +7,19 @@ use glm;
 use std::rc::Rc;
 
 #[derive(Clone)]
-pub struct TileSheet<R: BackEnd> {
-    texture: Rc<R::Texture>,
+pub struct TileSheet<T: Texture> {
+    texture: Rc<T>,
     tiles: glm::UVec2,
     pub dimensions: glm::UVec2,
 }
 
-pub struct Tile<R: BackEnd> {
-    pub texture: Rc<R::Texture>,
+pub struct Tile<T: Texture> {
+    pub texture: Rc<T>,
     pub src: glm::UVec4,
 }
 
-impl<R: BackEnd> TileSheet<R> {
-    pub fn new(tiles: glm::UVec2, texture: Rc<R::Texture>) -> Self {
+impl<T: Texture> TileSheet<T> {
+    pub fn new(tiles: glm::UVec2, texture: Rc<T>) -> Self {
         let dimensions = texture.dims() / tiles;
         TileSheet {
             texture: texture,
@@ -28,7 +28,7 @@ impl<R: BackEnd> TileSheet<R> {
         }
     }
 
-    pub fn tile(&self, index: u32) -> Tile<R> {
+    pub fn tile(&self, index: u32) -> Tile<T> {
         let tile_pos = glm::uvec2(index % self.tiles.x, index / self.tiles.x);
         let position = tile_pos * self.dimensions;
         let src = glm::uvec4(position.x, position.y, self.dimensions.x, self.dimensions.y);
@@ -40,13 +40,13 @@ impl<R: BackEnd> TileSheet<R> {
     }
 }
 
-impl<R: Renderer> Scene<R> for Tile<R> {
+impl<T: Texture, R: Renderer<T>> Scene<R> for Tile<T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
         renderer.copy(&*self.texture, None, Some(self.src))
     }
 }
 
-impl<R: Renderer> Drawable<R> for Tile<R> {
+impl<T: Texture, R: Renderer<T>> Drawable<R> for Tile<T> {
     fn draw(&self, dst_rect: glm::IVec4, renderer: &mut R) -> Result<()> {
         renderer.copy(&*self.texture, Some(dst_rect), Some(self.src))
     }
@@ -54,13 +54,14 @@ impl<R: Renderer> Drawable<R> for Tile<R> {
 
 #[cfg(test)]
 mod tests {
+    use renderer::Resource;
     use super::*;
 
     #[test]
     fn single_frame() {
         let texture = MockTexture { dims: glm::uvec2(10, 10) };
         let rc_texture = Rc::new(texture);
-        let sheet: TileSheet<MockBackEnd> = TileSheet::new(glm::uvec2(1, 1), rc_texture.clone());
+        let sheet = TileSheet::new(glm::uvec2(1, 1), rc_texture.clone());
         let tile = sheet.tile(0);
         assert_eq!(tile.texture, rc_texture);
         assert_eq!(tile.src, glm::uvec4(0, 0, 10, 10));
@@ -70,7 +71,7 @@ mod tests {
     fn single_row() {
         let texture = MockTexture { dims: glm::uvec2(10, 10) };
         let rc_texture = Rc::new(texture);
-        let sheet: TileSheet<MockBackEnd> = TileSheet::new(glm::uvec2(10, 1), rc_texture.clone());
+        let sheet = TileSheet::new(glm::uvec2(10, 1), rc_texture.clone());
         let tile = sheet.tile(4);
         assert_eq!(tile.texture, rc_texture);
         assert_eq!(tile.src, glm::uvec4(4, 0, 1, 10));
@@ -80,7 +81,7 @@ mod tests {
     fn single_column() {
         let texture = MockTexture { dims: glm::uvec2(10, 10) };
         let rc_texture = Rc::new(texture);
-        let sheet: TileSheet<MockBackEnd> = TileSheet::new(glm::uvec2(1, 5), rc_texture.clone());
+        let sheet = TileSheet::new(glm::uvec2(1, 5), rc_texture.clone());
         let tile = sheet.tile(4);
         assert_eq!(tile.texture, rc_texture);
         assert_eq!(tile.src, glm::uvec4(0, 8, 10, 2));
@@ -90,25 +91,22 @@ mod tests {
     fn mult_frames() {
         let texture = MockTexture { dims: glm::uvec2(20, 10) };
         let rc_texture = Rc::new(texture);
-        let sheet: TileSheet<MockBackEnd> = TileSheet::new(glm::uvec2(4, 2), rc_texture.clone());
+        let sheet = TileSheet::new(glm::uvec2(4, 2), rc_texture.clone());
         let tile = sheet.tile(5);
         assert_eq!(tile.texture, rc_texture);
         assert_eq!(tile.src, glm::uvec4(5, 5, 5, 5));
     }
 
-    struct MockBackEnd {}
     #[derive(Debug, PartialEq)]
     struct MockTexture {
         dims: glm::UVec2,
     }
 
-    impl ImageDims for MockTexture {
+    impl Texture for MockTexture {
         fn dims(&self) -> glm::UVec2 {
             self.dims
         }
     }
 
-    impl BackEnd for MockBackEnd {
-        type Texture = MockTexture;
-    }
+    impl Resource for MockTexture {}
 }

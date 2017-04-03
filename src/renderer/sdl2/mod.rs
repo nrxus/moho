@@ -10,33 +10,39 @@ use sdl2::render::Texture as SdlTexture;
 use sdl2::ttf::Font as SdlFont;
 use sdl2::ttf::Sdl2TtfContext;
 
-use std::path::Path;
+impl renderer::Resource for SdlTexture {}
+impl<'a> renderer::Font for SdlFont<'a, 'static> {}
+impl<'a> renderer::Resource for SdlFont<'a, 'static> {}
 
-impl renderer::ImageDims for SdlTexture {
+impl renderer::Texture for SdlTexture {
     fn dims(&self) -> glm::UVec2 {
         let query = self.query();
         glm::uvec2(query.width, query.height)
     }
 }
 
-impl renderer::BackEnd for SdlRenderer<'static> {
+impl<'a> renderer::FontLoader<'a, SdlFont<'a, 'static>> for Sdl2TtfContext {}
+
+impl<'a> renderer::ResourceLoader<'a, SdlTexture> for SdlRenderer<'static> {}
+
+impl<'a> renderer::Loader<'a, SdlFont<'a, 'static>> for Sdl2TtfContext {
+    type LoadData = renderer::FontDetails;
+    fn load(&'a self, data: &renderer::FontDetails) -> Result<SdlFont<'a, 'static>> {
+        self.load_font(data.path, data.size).map_err(Into::into)
+    }
+}
+
+impl<'a> renderer::Loader<'a, SdlTexture> for SdlRenderer<'static> {
+    type LoadData = str;
+    fn load(&'a self, path: &str) -> Result<SdlTexture> {
+        self.load_texture(path).map_err(Into::into)
+    }
+}
+
+impl<'a> renderer::FontTexturizer<'a, SdlFont<'a, 'static>, Sdl2TtfContext>
+    for
+    SdlRenderer<'static> {
     type Texture = SdlTexture;
-}
-
-impl<'a> renderer::FontLoader<'a> for Sdl2TtfContext {
-    type Font = SdlFont<'a, 'static>;
-    fn load(&'a self, path: &str, size: u16) -> Result<SdlFont<'a, 'static>> {
-        self.load_font(path, size).map_err(Into::into)
-    }
-}
-
-impl renderer::ResourceLoader for SdlRenderer<'static> {
-    fn load_texture(&self, path: &Path) -> Result<SdlTexture> {
-        LoadTexture::load_texture(self, path).map_err(Into::into)
-    }
-}
-
-impl<'a> renderer::FontTexturizer<'a, Sdl2TtfContext> for SdlRenderer<'static> {
     fn texturize(&self,
                  font: &SdlFont<'a, 'static>,
                  text: &str,
@@ -53,7 +59,7 @@ impl<'a> renderer::FontTexturizer<'a, Sdl2TtfContext> for SdlRenderer<'static> {
     }
 }
 
-impl renderer::Renderer for SdlRenderer<'static> {
+impl renderer::Renderer<SdlTexture> for SdlRenderer<'static> {
     fn copy(&mut self,
             texture: &SdlTexture,
             dst: Option<glm::IVec4>,

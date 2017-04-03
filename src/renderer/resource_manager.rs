@@ -1,140 +1,122 @@
-use super::{BackEnd, ResourceLoader};
+use renderer::{Loader, Resource};
 use errors::*;
 
+use std::borrow::Borrow;
+use std::hash::Hash;
 use std::collections::HashMap;
 use std::rc::Rc;
-use std::path::Path;
 
-pub struct ResourceManager<R: BackEnd> {
-    cache: HashMap<String, Rc<R::Texture>>,
+pub struct ResourceManager<R, C: Hash + Eq> {
+    cache: HashMap<C, Rc<R>>,
 }
 
-impl<R: BackEnd> ResourceManager<R> {
+impl<R: Resource, C: Hash + Eq> ResourceManager<R, C> {
     pub fn new() -> Self {
         ResourceManager { cache: HashMap::new() }
     }
-}
 
-impl<R: ResourceLoader> ResourceManager<R> {
-    pub fn load_texture(&mut self, path: &str, loader: &R) -> Result<Rc<R::Texture>> {
-        Self::load_cached_texture(&self.cache, path)
-            .map_or_else(|| Self::load_new_texture(&mut self.cache, path, loader),Ok)
-    }
-
-    fn load_cached_texture(cache: &HashMap<String, Rc<R::Texture>>,
-                           path: &str)
-                           -> Option<Rc<R::Texture>> {
-        cache.get(path).cloned()
-    }
-
-    fn load_new_texture(cache: &mut HashMap<String, Rc<R::Texture>>,
-                        path: &str,
-                        renderer: &R)
-                        -> Result<Rc<R::Texture>> {
-        let texture_path = Path::new(path);
-        let texture = renderer.load_texture(texture_path)?;
-        let texture = Rc::new(texture);
-        cache.insert(path.into(), texture.clone());
-        Ok(texture)
+    pub fn load<'a, L>(&mut self, details: &L::LoadData, loader: &'a L) -> Result<Rc<R>>
+        where L: Loader<'a, R>,
+              L::LoadData: Eq + Hash,
+              C: Borrow<L::LoadData> + for<'b> From<&'b L::LoadData>
+    {
+        self.cache
+            .get(details)
+            .cloned()
+            .map_or_else(|| {
+                             let resource = Rc::new(loader.load(details)?);
+                             self.cache.insert(details.into(), resource.clone());
+                             Ok(resource)
+                         },
+                         Ok)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use renderer::ImageDims;
-    use glm;
-    use std::rc::Rc;
-    use std::cell::RefCell;
+    type LoadTracker = Rc<Cell<Counter>>;
 
     #[test]
-    fn loads_texture_data() {
-        let (mut subject, mut loader, tracker) = new_subject(None);
-        let texture = subject.load_texture("mypath/", &mut loader).unwrap();
+    fn loads_resource() {
+        let (mut subject, mut loader, tracker) = init(None);
+        let texture = subject.load("mypath/", &mut loader).unwrap();
         assert_eq!(texture.path, "mypath/");
-        assert_eq!(tracker.borrow().load_count, 1);
+        assert_eq!(tracker.get(), Counter(1));
     }
 
     #[test]
     fn returns_error() {
-        let (mut subject, mut loader, tracker) = new_subject(Some("FAIL".into()));
-        let texture_data = subject.load_texture("mypath/", &mut loader);
-        assert_eq!(texture_data.err().is_some(), true);
-        assert_eq!(tracker.borrow().load_count, 1);
+        let (mut subject, mut loader, tracker) = init(Some("FAIL".into()));
+        let result = subject.load("mypath/", &mut loader);
+        assert_eq!(result.is_err(), true);
+        assert_eq!(tracker.get(), Counter(1));
     }
 
     #[test]
-    fn caches_texture_datas() {
-        let (mut subject, mut loader, tracker) = new_subject(None);
+    fn caches_resources() {
+        let (mut subject, mut loader, tracker) = init(None);
 
-        // get a new texture_data - number of calls is 1
-        let texture1 = subject.load_texture("mypath/1", &mut loader).unwrap();
-        assert_eq!(texture1.path, "mypath/1");
-        assert_eq!(tracker.borrow().load_count, 1);
+        //get new resource - number of calls 1
+        let texture = subject.load("mypath/1", &mut loader).unwrap();
+        assert_eq!(texture.path, "mypath/1");
+        assert_eq!(tracker.get(), Counter(1));
 
-        // load the same texture_data - number of calls should still be 1
-        let texture2 = subject.load_texture("mypath/1", &mut loader).unwrap();
-        assert_eq!(texture2.path, "mypath/1");
-        assert_eq!(tracker.borrow().load_count, 1);
+        //get new resource - number of calls 1
+        let texture = subject.load("mypath/1", &mut loader).unwrap();
+        assert_eq!(texture.path, "mypath/1");
+        assert_eq!(tracker.get(), Counter(1));
 
-        // load a different texture_data - number of calls should increase
-        let texture3 = subject.load_texture("mypath/2", &mut loader).unwrap();
-        assert_eq!(texture3.path, "mypath/2");
-        assert_eq!(tracker.borrow().load_count, 2);
+        //get new resource - number of calls 1
+        let texture = subject.load("mypath/2", &mut loader).unwrap();
+        assert_eq!(texture.path, "mypath/2");
+        assert_eq!(tracker.get(), Counter(2));
     }
 
+    use std::cell::Cell;
+
     #[derive(Debug)]
-    struct MockTexture {
+    struct MockResource {
         path: String,
     }
 
-    impl ImageDims for MockTexture {
-        fn dims(&self) -> glm::UVec2 {
-            glm::uvec2(50, 50)
-        }
-    }
-
-    struct LoaderTracker {
-        load_count: u16,
-    }
-
-    impl LoaderTracker {
-        fn new() -> Self {
-            LoaderTracker { load_count: 0 }
-        }
-    }
-
-    struct MockBackEnd {
+    struct MockLoader {
         error: Option<String>,
-        tracker: Rc<RefCell<LoaderTracker>>,
+        tracker: LoadTracker,
     }
 
-    impl super::super::BackEnd for MockBackEnd {
-        type Texture = MockTexture;
+    #[derive(Debug, PartialEq, Clone, Copy)]
+    struct Counter(u16);
+
+    impl Counter {
+        fn increase(&mut self) {
+            self.0 += 1;
+        }
     }
 
-    impl ResourceLoader for MockBackEnd {
-        fn load_texture(&self, path: &Path) -> Result<MockTexture> {
-            self.tracker.borrow_mut().load_count += 1;
+    impl Resource for MockResource {}
+    impl<'a> Loader<'a, MockResource> for MockLoader {
+        type LoadData = str;
+        fn load(&self, data: &str) -> Result<MockResource> {
+            let mut counter = self.tracker.get();
+            counter.increase();
+            self.tracker.set(counter);
             match self.error {
-                None => {
-                    let texture = MockTexture { path: path.to_str().unwrap_or("").into() };
-                    Ok(texture)
-                }
+                None => Ok(MockResource { path: data.into() }),
                 Some(ref e) => Err(e.clone().into()),
             }
         }
     }
 
-    fn new_subject(error: Option<String>)
-                   -> (ResourceManager<MockBackEnd>, MockBackEnd, Rc<RefCell<LoaderTracker>>) {
-        let tracker = Rc::new(RefCell::new(LoaderTracker::new()));
-        let renderer = MockBackEnd {
+    fn init(error: Option<String>)
+            -> (ResourceManager<MockResource, String>, MockLoader, LoadTracker) {
+        let tracker = Rc::new(Cell::new(Counter(0)));
+        let loader = MockLoader {
             error: error,
             tracker: tracker.clone(),
         };
 
         let subject = ResourceManager::new();
-        (subject, renderer, tracker)
+        (subject, loader, tracker)
     }
 }
