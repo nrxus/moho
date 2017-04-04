@@ -39,28 +39,26 @@ impl<'ttf, E: EventPump, T: Texture, R, FL, F: Font> MainGame<'ttf, E, T, R, FL,
             path: "examples/fonts/kenpixel_mini.ttf",
             size: 48,
         };
+        let button_text = "HOVER ON ME";
         let font = self.font_manager.load(&font_details, self.font_loader)?;
-        let mut color = ColorRGBA(255, 255, 0, 255);
-        let mut button_texture = self.renderer.texturize(&font, "HOVER ON TOP OF ME", color)?;
+        let button_dims = font.measure(button_text)?;
+
         let rect = Rectangle {
             top_left: glm::dvec2(60., 60.),
-            dims: glm::to_dvec2(button_texture.dims()),
+            dims: glm::to_dvec2(button_dims),
         };
-        let button_dst = glm::ivec4(60,
-                                    60,
-                                    button_texture.dims().x as i32,
-                                    button_texture.dims().y as i32);
+        let button_dst = glm::ivec4(60, 60, button_dims.x as i32, button_dims.y as i32);
         let mut timer = Timer::new();
         while !self.game_quit() {
             let game_time = timer.update();
             self.input_manager.update();
             let cursor_position = self.input_manager.mouse_coords();
-            if rect.contains(&glm::to_dvec2(cursor_position)) {
-                color = ColorRGBA(255, 0, 0, 255);
+            let color = if rect.contains(&glm::to_dvec2(cursor_position)) {
+                ColorRGBA(255, 0, 0, 255)
             } else {
-                color = ColorRGBA(255, 255, 0, 255);
-            }
-            button_texture = self.renderer.texturize(&font, "CLICK ME", color)?;
+                ColorRGBA(255, 255, 0, 255)
+            };
+            let button_texture = self.renderer.texturize(&font, button_text, color)?;
             let fps = format!("{}", game_time.fps() as u32);
             let font_texture = self.renderer.texturize(&font, &fps, ColorRGBA(255, 255, 0, 255))?;
             let font_dst = glm::ivec4(0,
