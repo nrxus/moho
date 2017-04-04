@@ -1,6 +1,6 @@
 [package]
 name = "moho"
-version = "0.0.6"
+version = "0.0.7"
 authors = ["Andres <andresnrx@gmail.com>"]
 description = "Barebones Rust Game Library"
 license = "MIT"
