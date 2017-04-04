@@ -7,34 +7,38 @@ use moho::input_manager::*;
 use moho::renderer::*;
 use moho::timer::*;
 
-pub struct MainGame<'ttf, E: EventPump, T, R, FL: 'ttf> {
+pub struct MainGame<'ttf, E: EventPump, T, R, FL: 'ttf, F> {
     input_manager: InputManager<E>,
-    resource_manager: ResourceManager<T, String>,
+    texture_manager: ResourceManager<T, String>,
+    font_manager: ResourceManager<F, FontDetails>,
     renderer: R,
     font_loader: &'ttf FL,
 }
 
-impl<'ttf, E: EventPump, T: Texture, R, FL> MainGame<'ttf, E, T, R, FL> {
+impl<'ttf, E: EventPump, T: Texture, R, FL, F: Font> MainGame<'ttf, E, T, R, FL, F> {
     pub fn new(renderer: R, input_manager: InputManager<E>, font_loader: &'ttf FL) -> Self {
-        let resource_manager = ResourceManager::new();
+        let texture_manager = ResourceManager::new();
+        let font_manager = ResourceManager::new();
         MainGame {
             input_manager: input_manager,
-            resource_manager: resource_manager,
+            texture_manager: texture_manager,
+            font_manager: font_manager,
             renderer: renderer,
             font_loader: font_loader,
         }
     }
 
-    pub fn run<F: Font>(&mut self) -> Result<()>
+    pub fn run(&mut self) -> Result<()>
         where FL: FontLoader<'ttf, F>,
-          R: for<'a> ResourceLoader<'a, T> + Renderer<T> + FontTexturizer<'ttf, F, FL, Texture = T>
+              R: for<'a> ResourceLoader<'a, T>,
+              R: Renderer<T> + FontTexturizer<'ttf, F, FL, Texture = T>
     {
-        let image = self.resource_manager.load("examples/background.png", &self.renderer)?;
+        let image = self.texture_manager.load("examples/background.png", &self.renderer)?;
         let font_details = FontDetails {
             path: "examples/fonts/kenpixel_mini.ttf",
             size: 48,
         };
-        let font = self.font_loader.load(&font_details)?;
+        let font = self.font_manager.load(&font_details, self.font_loader)?;
         let mut timer = Timer::new();
         while !self.game_quit() {
             let game_time = timer.update();
