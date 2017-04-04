@@ -1,7 +1,11 @@
 use errors::*;
 use super::{ColorRGBA, Loader, Resource, Texture};
 
-pub trait Font: Resource {}
+use glm;
+
+pub trait Font: Resource {
+    fn measure(&self, text: &str) -> Result<glm::UVec2>;
+}
 
 #[derive(PartialEq, Eq, Hash)]
 pub struct FontDetails {

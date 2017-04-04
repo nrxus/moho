@@ -2,13 +2,19 @@ use errors::*;
 use renderer;
 use renderer::font;
 
+use glm;
 use sdl2::pixels::Color;
 use sdl2::ttf::Font as SdlFont;
 use sdl2::ttf::Sdl2TtfContext;
 use sdl2::render::Renderer as SdlRenderer;
 use sdl2::render::Texture as SdlTexture;
 
-impl<'a> font::Font for SdlFont<'a, 'static> {}
+impl<'a> font::Font for SdlFont<'a, 'static> {
+    fn measure(&self, text: &str) -> Result<glm::UVec2> {
+        self.size_of(text).map(|(x, y)| glm::uvec2(x, y)).chain_err(|| "error measuring font")
+    }
+}
+
 impl<'a> renderer::Resource for SdlFont<'a, 'static> {}
 
 impl<'a> renderer::FontLoader<'a, SdlFont<'a, 'static>> for Sdl2TtfContext {}
