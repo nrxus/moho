@@ -46,17 +46,17 @@ pub trait Window {
     fn output_size(&self) -> Result<glm::UVec2>;
 }
 
-pub trait Drawable<R> {
+pub trait Drawable<R: ?Sized> {
     fn draw(&self, dst_rect: glm::IVec4, renderer: &mut R) -> Result<()>;
 }
 
-pub trait Scene<R> {
+pub trait Scene<R: ?Sized> {
     fn show(&self, renderer: &mut R) -> Result<()>;
 }
 
 pub trait FontLoader<'a, T: Font>: Loader<'a, T, LoadData = FontDetails> {}
 
-pub trait Renderer<T: Texture>: Sized {
+pub trait Renderer<T: Texture> {
     fn clear(&mut self);
     fn present(&mut self);
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
