@@ -31,7 +31,7 @@ impl<'ttf, E: EventPump, T: Texture, R, FL, F: Font> MainGame<'ttf, E, T, R, FL,
     pub fn run(&mut self) -> Result<()>
         where FL: FontLoader<'ttf, F>,
               R: for<'a> ResourceLoader<'a, T>,
-              R: Renderer<T> + FontTexturizer<'ttf, F, FL, Texture = T>
+              R: Renderer<T> + FontTexturizer<'ttf, F, Texture = T>
     {
         let image = self.texture_manager.load("examples/background.png", &self.renderer)?;
         let font_details = FontDetails {

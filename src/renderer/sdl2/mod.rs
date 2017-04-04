@@ -39,9 +39,7 @@ impl<'a> renderer::Loader<'a, SdlTexture> for SdlRenderer<'static> {
     }
 }
 
-impl<'a> renderer::FontTexturizer<'a, SdlFont<'a, 'static>, Sdl2TtfContext>
-    for
-    SdlRenderer<'static> {
+impl<'a> renderer::FontTexturizer<'a, SdlFont<'a, 'static>> for SdlRenderer<'static> {
     type Texture = SdlTexture;
     fn texturize(&self,
                  font: &SdlFont<'a, 'static>,

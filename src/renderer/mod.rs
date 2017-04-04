@@ -69,7 +69,7 @@ pub trait Renderer<T: Texture>: Sized {
     fn render<D: Drawable<Self>>(&mut self, drawable: &D, dst_rect: glm::IVec4) -> Result<()>;
 }
 
-pub trait FontTexturizer<'a, F: Font, L: FontLoader<'a, F>> {
+pub trait FontTexturizer<'a, F: Font> {
     type Texture: Texture;
     fn texturize(&self, font: &F, text: &str, color: ColorRGBA) -> Result<Self::Texture>;
 }
