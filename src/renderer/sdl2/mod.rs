@@ -1,18 +1,15 @@
+mod font;
+
 use errors::*;
 use renderer;
 
 use glm;
 use sdl2::image::LoadTexture;
-use sdl2::pixels::Color;
 use sdl2::rect;
 use sdl2::render::Renderer as SdlRenderer;
 use sdl2::render::Texture as SdlTexture;
-use sdl2::ttf::Font as SdlFont;
-use sdl2::ttf::Sdl2TtfContext;
 
 impl renderer::Resource for SdlTexture {}
-impl<'a> renderer::Font for SdlFont<'a, 'static> {}
-impl<'a> renderer::Resource for SdlFont<'a, 'static> {}
 
 impl renderer::Texture for SdlTexture {
     fn dims(&self) -> glm::UVec2 {
@@ -21,39 +18,12 @@ impl renderer::Texture for SdlTexture {
     }
 }
 
-impl<'a> renderer::FontLoader<'a, SdlFont<'a, 'static>> for Sdl2TtfContext {}
-
 impl<'a> renderer::ResourceLoader<'a, SdlTexture> for SdlRenderer<'static> {}
-
-impl<'a> renderer::Loader<'a, SdlFont<'a, 'static>> for Sdl2TtfContext {
-    type LoadData = renderer::FontDetails;
-    fn load(&'a self, data: &renderer::FontDetails) -> Result<SdlFont<'a, 'static>> {
-        self.load_font(data.path, data.size).map_err(Into::into)
-    }
-}
 
 impl<'a> renderer::Loader<'a, SdlTexture> for SdlRenderer<'static> {
     type LoadData = str;
     fn load(&'a self, path: &str) -> Result<SdlTexture> {
         self.load_texture(path).map_err(Into::into)
-    }
-}
-
-impl<'a> renderer::FontTexturizer<'a, SdlFont<'a, 'static>> for SdlRenderer<'static> {
-    type Texture = SdlTexture;
-    fn texturize(&self,
-                 font: &SdlFont<'a, 'static>,
-                 text: &str,
-                 color: renderer::ColorRGBA)
-                 -> Result<SdlTexture> {
-        let renderer::ColorRGBA(red, green, blue, alpha) = color;
-        let color = Color::RGBA(red, green, blue, alpha);
-        let surface = font.render(text)
-            .blended(color)
-            .chain_err(|| "error when creatinga a blended font surface")?;
-
-        self.create_texture_from_surface(&surface)
-            .chain_err(|| "error creating a texture from a surface")
     }
 }
 
