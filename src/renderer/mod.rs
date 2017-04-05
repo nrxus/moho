@@ -16,12 +16,11 @@ use sdl2::rect;
 
 pub struct ColorRGBA(pub u8, pub u8, pub u8, pub u8);
 
-pub trait Resource {}
-pub trait Texture: Resource {
+pub trait Texture {
     fn dims(&self) -> glm::UVec2;
 }
 
-pub trait Loader<'a, T: Resource, D: ?Sized> {
+pub trait Loader<'a, T, D: ?Sized> {
     fn load(&'a self, data: &D) -> Result<T>;
 }
 
@@ -44,6 +43,7 @@ pub trait Scene<R: ?Sized> {
 
 pub trait Renderer {
     type Texture;
+
     fn clear(&mut self);
     fn present(&mut self);
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;

@@ -56,7 +56,6 @@ impl<T, R: Renderer<Texture = T>> Drawable<R> for Tile<T> {
 
 #[cfg(test)]
 mod tests {
-    use renderer::Resource;
     use super::*;
 
     #[test]
@@ -109,6 +108,4 @@ mod tests {
             self.dims
         }
     }
-
-    impl Resource for MockTexture {}
 }

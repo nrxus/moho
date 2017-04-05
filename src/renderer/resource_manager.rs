@@ -1,4 +1,4 @@
-use renderer::{Loader, Resource};
+use renderer::Loader;
 use errors::*;
 
 use std::borrow::Borrow;
@@ -10,7 +10,7 @@ pub struct ResourceManager<R, C: Hash + Eq> {
     cache: HashMap<C, Rc<R>>,
 }
 
-impl<R: Resource, C: Hash + Eq> ResourceManager<R, C> {
+impl<R, C: Hash + Eq> ResourceManager<R, C> {
     pub fn new() -> Self {
         ResourceManager { cache: HashMap::new() }
     }
@@ -94,7 +94,6 @@ mod tests {
         }
     }
 
-    impl Resource for MockResource {}
     impl<'a> Loader<'a, MockResource, str> for MockLoader {
         fn load(&self, data: &str) -> Result<MockResource> {
             let mut counter = self.tracker.get();

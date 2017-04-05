@@ -1,9 +1,9 @@
 use errors::*;
-use super::{ColorRGBA, Loader, Resource, Texture};
+use super::{ColorRGBA, Loader, Texture};
 
 use glm;
 
-pub trait Font: Resource {
+pub trait Font {
     fn measure(&self, text: &str) -> Result<glm::UVec2>;
 }
 

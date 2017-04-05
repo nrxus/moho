@@ -15,8 +15,6 @@ impl<'a> font::Font for SdlFont<'a, 'static> {
     }
 }
 
-impl<'a> renderer::Resource for SdlFont<'a, 'static> {}
-
 impl<'a> renderer::FontLoader<'a> for Sdl2TtfContext {
     type Font = SdlFont<'a, 'static>;
 }

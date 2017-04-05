@@ -8,8 +8,6 @@ use sdl2::image::LoadTexture;
 use sdl2::rect;
 use sdl2::render;
 
-impl renderer::Resource for render::Texture {}
-
 impl renderer::Texture for render::Texture {
     fn dims(&self) -> glm::UVec2 {
         let query = self.query();
