@@ -46,7 +46,9 @@ impl FrameAnimator {
     }
 
     pub fn animate(&mut self, delta: Duration) {
-        self.current = self.current.as_ref().and_then(|f| self.next(f.frame, f.elapsed + delta));
+        self.current = self.current
+            .as_ref()
+            .and_then(|f| self.next(f.frame, f.elapsed + delta));
     }
 
     fn next(&self, current: u32, elapsed: Duration) -> Option<FrameInfo> {

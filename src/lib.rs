@@ -42,9 +42,7 @@ pub fn init(name: &'static str,
         .opengl()
         .build()?;
 
-    let mut renderer = window.renderer()
-        .present_vsync()
-        .build()?;
+    let mut renderer = window.renderer().present_vsync().build()?;
 
     renderer.clear();
     renderer.present();

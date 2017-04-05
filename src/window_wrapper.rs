@@ -48,7 +48,10 @@ mod test {
     fn no_wrapping() {
         let max_coords = glm::uvec2(40, 30);
         let rect = glm::ivec4(25, 15, 10, 7);
-        let rects: Vec<_> = wrap_rects(rect, max_coords).iter().filter_map(|&x| x).collect();
+        let rects: Vec<_> = wrap_rects(rect, max_coords)
+            .iter()
+            .filter_map(|&x| x)
+            .collect();
         assert_eq!(rects.len(), 1);
         assert_eq!(rect, rects[0]);
     }
@@ -57,7 +60,10 @@ mod test {
     fn wrapping_left() {
         let max_coords = glm::uvec2(40, 30);
         let rect = glm::ivec4(-2, 16, 10, 8);
-        let rects: Vec<_> = wrap_rects(rect, max_coords).iter().filter_map(|&x| x).collect();
+        let rects: Vec<_> = wrap_rects(rect, max_coords)
+            .iter()
+            .filter_map(|&x| x)
+            .collect();
         assert_eq!(rects.len(), 2);
         assert_eq!(rect, rects[1]);
         assert_eq!(glm::ivec4(38, 16, 10, 8), rects[0]);
@@ -67,7 +73,10 @@ mod test {
     fn wrapping_right() {
         let max_coords = glm::uvec2(40, 30);
         let rect = glm::ivec4(34, 16, 10, 13);
-        let rects: Vec<_> = wrap_rects(rect, max_coords).iter().filter_map(|&x| x).collect();
+        let rects: Vec<_> = wrap_rects(rect, max_coords)
+            .iter()
+            .filter_map(|&x| x)
+            .collect();
         assert_eq!(rects.len(), 2);
         assert_eq!(rect, rects[0]);
         assert_eq!(glm::ivec4(-6, 16, 10, 13), rects[1]);
@@ -77,7 +86,10 @@ mod test {
     fn wrapping_bottom() {
         let max_coords = glm::uvec2(40, 30);
         let rect = glm::ivec4(27, 21, 6, 10);
-        let rects: Vec<_> = wrap_rects(rect, max_coords).iter().filter_map(|&x| x).collect();
+        let rects: Vec<_> = wrap_rects(rect, max_coords)
+            .iter()
+            .filter_map(|&x| x)
+            .collect();
         assert_eq!(rects.len(), 2);
         assert_eq!(rect, rects[0]);
         assert_eq!(glm::ivec4(27, -9, 6, 10), rects[1]);
@@ -87,7 +99,10 @@ mod test {
     fn wrapping_top() {
         let max_coords = glm::uvec2(40, 30);
         let rect = glm::ivec4(27, -3, 6, 10);
-        let rects: Vec<_> = wrap_rects(rect, max_coords).iter().filter_map(|&x| x).collect();
+        let rects: Vec<_> = wrap_rects(rect, max_coords)
+            .iter()
+            .filter_map(|&x| x)
+            .collect();
         assert_eq!(rects.len(), 2);
         assert_eq!(rect, rects[1]);
         assert_eq!(glm::ivec4(27, 27, 6, 10), rects[0]);
@@ -97,7 +112,10 @@ mod test {
     fn wrapping_corner() {
         let max_coords = glm::uvec2(40, 30);
         let rect = glm::ivec4(-2, -3, 10, 10);
-        let rects: Vec<_> = wrap_rects(rect, max_coords).iter().filter_map(|&x| x).collect();
+        let rects: Vec<_> = wrap_rects(rect, max_coords)
+            .iter()
+            .filter_map(|&x| x)
+            .collect();
         assert_eq!(rects.len(), 4);
         assert_eq!(rect, rects[3]);
         assert_eq!(glm::ivec4(38, -3, 10, 10), rects[2]);

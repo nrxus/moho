@@ -11,7 +11,9 @@ use sdl2::render::Texture as SdlTexture;
 
 impl<'a> font::Font for SdlFont<'a, 'static> {
     fn measure(&self, text: &str) -> Result<glm::UVec2> {
-        self.size_of(text).map(|(x, y)| glm::uvec2(x, y)).chain_err(|| "error measuring font")
+        self.size_of(text)
+            .map(|(x, y)| glm::uvec2(x, y))
+            .chain_err(|| "error measuring font")
     }
 }
 
