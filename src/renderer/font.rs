@@ -22,9 +22,13 @@ impl<'a> From<&'a FontDetails> for FontDetails {
     }
 }
 
-pub trait FontLoader<'a, T: Font>: Loader<'a, T, LoadData = FontDetails> {}
+pub trait FontLoader<'a>
+    : Loader<'a, <Self as FontLoader<'a>>::Font, FontDetails> {
+    type Font: Font;
+}
 
-pub trait FontTexturizer<'a, F: Font> {
+pub trait FontTexturizer<'a> {
     type Texture: Texture;
-    fn texturize(&self, font: &F, text: &str, color: ColorRGBA) -> Result<Self::Texture>;
+    type Font: Font;
+    fn texturize(&self, font: &Self::Font, text: &str, color: ColorRGBA) -> Result<Self::Texture>;
 }

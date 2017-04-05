@@ -18,10 +18,11 @@ impl renderer::Texture for SdlTexture {
     }
 }
 
-impl<'a> renderer::ResourceLoader<'a, SdlTexture> for SdlRenderer<'static> {}
+impl renderer::ResourceLoader for SdlRenderer<'static> {
+    type Texture = SdlTexture;
+}
 
-impl<'a> renderer::Loader<'a, SdlTexture> for SdlRenderer<'static> {
-    type LoadData = str;
+impl<'a> renderer::Loader<'a, SdlTexture, str> for SdlRenderer<'static> {
     fn load(&'a self, path: &str) -> Result<SdlTexture> {
         self.load_texture(path).map_err(Into::into)
     }

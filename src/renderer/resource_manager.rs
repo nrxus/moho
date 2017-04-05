@@ -15,10 +15,10 @@ impl<R: Resource, C: Hash + Eq> ResourceManager<R, C> {
         ResourceManager { cache: HashMap::new() }
     }
 
-    pub fn load<'a, L>(&mut self, details: &L::LoadData, loader: &'a L) -> Result<Rc<R>>
-        where L: Loader<'a, R>,
-              L::LoadData: Eq + Hash,
-              C: Borrow<L::LoadData> + for<'b> From<&'b L::LoadData>
+    pub fn load<'a, L, D>(&mut self, details: &D, loader: &'a L) -> Result<Rc<R>>
+        where L: Loader<'a, R, D>,
+              D: Eq + Hash + ?Sized,
+              C: Borrow<D> + for<'b> From<&'b D>
     {
         self.cache
             .get(details)
@@ -95,8 +95,7 @@ mod tests {
     }
 
     impl Resource for MockResource {}
-    impl<'a> Loader<'a, MockResource> for MockLoader {
-        type LoadData = str;
+    impl<'a> Loader<'a, MockResource, str> for MockLoader {
         fn load(&self, data: &str) -> Result<MockResource> {
             let mut counter = self.tracker.get();
             counter.increase();

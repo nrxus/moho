@@ -21,12 +21,14 @@ pub trait Texture: Resource {
     fn dims(&self) -> glm::UVec2;
 }
 
-pub trait Loader<'a, T: Resource> {
-    type LoadData: ?Sized;
-    fn load(&'a self, data: &Self::LoadData) -> Result<T>;
+pub trait Loader<'a, T: Resource, D: ?Sized> {
+    fn load(&'a self, data: &D) -> Result<T>;
 }
 
-pub trait ResourceLoader<'a, T: Texture>: Loader<'a, T, LoadData = str> {}
+pub trait ResourceLoader
+    : for<'a> Loader<'a, <Self as ResourceLoader>::Texture, str> {
+    type Texture: Texture;
+}
 
 pub trait Window {
     fn output_size(&self) -> Result<glm::UVec2>;

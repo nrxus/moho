@@ -17,17 +17,19 @@ impl<'a> font::Font for SdlFont<'a, 'static> {
 
 impl<'a> renderer::Resource for SdlFont<'a, 'static> {}
 
-impl<'a> renderer::FontLoader<'a, SdlFont<'a, 'static>> for Sdl2TtfContext {}
+impl<'a> renderer::FontLoader<'a> for Sdl2TtfContext {
+    type Font = SdlFont<'a, 'static>;
+}
 
-impl<'a> renderer::Loader<'a, SdlFont<'a, 'static>> for Sdl2TtfContext {
-    type LoadData = renderer::FontDetails;
+impl<'a> renderer::Loader<'a, SdlFont<'a, 'static>, renderer::FontDetails> for Sdl2TtfContext {
     fn load(&'a self, data: &renderer::FontDetails) -> Result<SdlFont<'a, 'static>> {
         self.load_font(data.path, data.size).map_err(Into::into)
     }
 }
 
-impl<'a> renderer::FontTexturizer<'a, SdlFont<'a, 'static>> for SdlRenderer<'static> {
+impl<'a> renderer::FontTexturizer<'a> for SdlRenderer<'static> {
     type Texture = SdlTexture;
+    type Font = SdlFont<'a, 'static>;
     fn texturize(&self,
                  font: &SdlFont<'a, 'static>,
                  text: &str,

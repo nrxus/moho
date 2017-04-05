@@ -7,13 +7,13 @@ use glm;
 use std::rc::Rc;
 
 #[derive(Clone)]
-pub struct TileSheet<T: Texture> {
+pub struct TileSheet<T> {
     texture: Rc<T>,
     tiles: glm::UVec2,
     pub dimensions: glm::UVec2,
 }
 
-pub struct Tile<T: Texture> {
+pub struct Tile<T> {
     pub texture: Rc<T>,
     pub src: glm::UVec4,
 }
@@ -27,7 +27,9 @@ impl<T: Texture> TileSheet<T> {
             tiles: tiles,
         }
     }
+}
 
+impl<T> TileSheet<T> {
     pub fn tile(&self, index: u32) -> Tile<T> {
         let tile_pos = glm::uvec2(index % self.tiles.x, index / self.tiles.x);
         let position = tile_pos * self.dimensions;
