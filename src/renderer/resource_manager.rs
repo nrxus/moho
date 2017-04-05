@@ -6,25 +6,57 @@ use std::hash::Hash;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub struct ResourceManager<R, C: Hash + Eq> {
-    cache: HashMap<C, Rc<R>>,
+pub struct ResourceManager<K, R>
+    where K: Hash + Eq
+{
+    pub cache: HashMap<K, Rc<R>>,
 }
 
-impl<R, C: Hash + Eq> ResourceManager<R, C> {
+impl<K, R> ResourceManager<K, R>
+    where K: Hash + Eq
+{
     pub fn new() -> Self {
         ResourceManager { cache: HashMap::new() }
     }
 
-    pub fn load<'a, L, D>(&mut self, details: &D, loader: &'a L) -> Result<Rc<R>>
-        where L: Loader<'a, R, D>,
+    pub fn loader<'a, 'l, L>(&'a mut self, loader: &'l L) -> LoadedManager<'a, 'l, K, R, L> {
+        LoadedManager {
+            loader: loader,
+            cache: &mut self.cache,
+        }
+    }
+
+    pub fn load<'l, L, D>(&mut self, details: &D, loader: &'l L) -> Result<Rc<R>>
+        where K: Borrow<D> + for<'b> From<&'b D>,
+              L: Loader<'l, R, D>,
+              D: Eq + Hash + ?Sized
+    {
+        self.loader(loader).load(details)
+    }
+}
+
+pub struct LoadedManager<'c, 'l, K, R, L>
+    where K: 'c + Hash + Eq,
+          R: 'c,
+          L: 'l
+{
+    loader: &'l L,
+    cache: &'c mut HashMap<K, Rc<R>>,
+}
+
+impl<'c, 'l, K, R, L> LoadedManager<'c, 'l, K, R, L>
+    where K: Hash + Eq
+{
+    pub fn load<D>(&mut self, details: &D) -> Result<Rc<R>>
+        where L: Loader<'l, R, D>,
               D: Eq + Hash + ?Sized,
-              C: Borrow<D> + for<'b> From<&'b D>
+              K: Borrow<D> + for<'a> From<&'a D>
     {
         self.cache
             .get(details)
             .cloned()
             .map_or_else(|| {
-                             let resource = Rc::new(loader.load(details)?);
+                             let resource = Rc::new(self.loader.load(details)?);
                              self.cache.insert(details.into(), resource.clone());
                              Ok(resource)
                          },
@@ -107,7 +139,7 @@ mod tests {
     }
 
     fn init(error: Option<String>)
-            -> (ResourceManager<MockResource, String>, MockLoader, LoadTracker) {
+            -> (ResourceManager<String, MockResource>, MockLoader, LoadTracker) {
         let tracker = Rc::new(Cell::new(Counter(0)));
         let loader = MockLoader {
             error: error,

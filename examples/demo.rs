@@ -10,8 +10,8 @@ use moho::timer::*;
 
 pub struct MainGame<'ttf, E: EventPump, T, R, FL: 'ttf, F> {
     input_manager: InputManager<E>,
-    texture_manager: ResourceManager<T, String>,
-    font_manager: ResourceManager<F, FontDetails>,
+    texture_manager: ResourceManager<String, T>,
+    font_manager: ResourceManager<FontDetails, F>,
     renderer: R,
     font_loader: &'ttf FL,
 }
