@@ -50,18 +50,9 @@ impl renderer::Renderer for render::Renderer<'static> {
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()> {
         self.fill_rects(rects).map_err(Into::into)
     }
-
-    fn show<S: renderer::Scene<Self>>(&mut self, scene: &S) -> Result<()> {
-        scene.show(self)
-    }
-
-    fn render<D: renderer::Drawable<Self>>(&mut self,
-                                           drawable: &D,
-                                           dst_rect: glm::IVec4)
-                                           -> Result<()> {
-        drawable.draw(dst_rect, self)
-    }
 }
+
+impl renderer::Show for render::Renderer<'static> {}
 
 impl renderer::Window for render::Renderer<'static> {
     fn output_size(&self) -> Result<glm::UVec2> {

@@ -52,6 +52,14 @@ pub trait Renderer {
             dst: Option<glm::IVec4>,
             src: Option<glm::UVec4>)
             -> Result<()>;
-    fn show<S: Scene<Self>>(&mut self, scene: &S) -> Result<()>;
-    fn render<D: Drawable<Self>>(&mut self, drawable: &D, dst_rect: glm::IVec4) -> Result<()>;
+}
+
+pub trait Show {
+    fn show<S: Scene<Self>>(&mut self, scene: &S) -> Result<()> {
+        scene.show(self)
+    }
+
+    fn show_at<D: Drawable<Self>>(&mut self, drawable: &D, dst_rect: glm::IVec4) -> Result<()> {
+        drawable.draw(dst_rect, self)
+    }
 }
