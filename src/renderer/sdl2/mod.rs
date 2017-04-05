@@ -6,29 +6,31 @@ use renderer;
 use glm;
 use sdl2::image::LoadTexture;
 use sdl2::rect;
-use sdl2::render::Renderer as SdlRenderer;
-use sdl2::render::Texture as SdlTexture;
+use sdl2::render;
 
-impl renderer::Resource for SdlTexture {}
+impl renderer::Resource for render::Texture {}
 
-impl renderer::Texture for SdlTexture {
+impl renderer::Texture for render::Texture {
     fn dims(&self) -> glm::UVec2 {
         let query = self.query();
         glm::uvec2(query.width, query.height)
     }
 }
 
-impl renderer::ResourceLoader for SdlRenderer<'static> {
-    type Texture = SdlTexture;
+impl renderer::ResourceLoader for render::Renderer<'static> {
+    type Texture = render::Texture;
 }
 
-impl<'a> renderer::Loader<'a, SdlTexture, str> for SdlRenderer<'static> {
-    fn load(&'a self, path: &str) -> Result<SdlTexture> {
+impl<'a> renderer::Loader<'a, render::Texture, str> for render::Renderer<'static> {
+    fn load(&'a self, path: &str) -> Result<render::Texture> {
         self.load_texture(path).map_err(Into::into)
     }
 }
 
-impl renderer::Renderer<SdlTexture> for SdlRenderer<'static> {
+use sdl2::render::Texture as SdlTexture;
+
+impl renderer::Renderer for render::Renderer<'static> {
+    type Texture = SdlTexture;
     fn copy(&mut self,
             texture: &SdlTexture,
             dst: Option<glm::IVec4>,
@@ -63,7 +65,7 @@ impl renderer::Renderer<SdlTexture> for SdlRenderer<'static> {
     }
 }
 
-impl renderer::Window for SdlRenderer<'static> {
+impl renderer::Window for render::Renderer<'static> {
     fn output_size(&self) -> Result<glm::UVec2> {
         let (width, height) = self.output_size()?;
         Ok(glm::uvec2(width, height))

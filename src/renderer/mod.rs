@@ -42,12 +42,13 @@ pub trait Scene<R: ?Sized> {
     fn show(&self, renderer: &mut R) -> Result<()>;
 }
 
-pub trait Renderer<T: Texture> {
+pub trait Renderer {
+    type Texture;
     fn clear(&mut self);
     fn present(&mut self);
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
     fn copy(&mut self,
-            texture: &T,
+            texture: &Self::Texture,
             dst: Option<glm::IVec4>,
             src: Option<glm::UVec4>)
             -> Result<()>;

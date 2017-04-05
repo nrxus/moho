@@ -30,7 +30,7 @@ impl<'ttf, E: EventPump, T: Texture, R, FL, F: Font> MainGame<'ttf, E, T, R, FL,
     }
 
     pub fn run(&mut self) -> Result<()>
-        where R: ResourceLoader<Texture = T> + Renderer<T>,
+        where R: ResourceLoader<Texture = T> + Renderer<Texture = T>,
               R: FontTexturizer<'ttf, Font = F, Texture = T>,
               FL: FontLoader<'ttf, Font = F>
     {
