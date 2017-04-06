@@ -7,11 +7,11 @@ use sdl2::mouse::MouseButton;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
-struct EventGenerator<E: EventPump> {
+struct EventGenerator<E> {
     event_pump: E,
 }
 
-impl<E: EventPump> EventGenerator<E> {
+impl<E> EventGenerator<E> {
     fn new(event_pump: E) -> Self {
         EventGenerator { event_pump: event_pump }
     }
@@ -21,7 +21,7 @@ impl<E: EventPump> EventGenerator<E> {
     }
 }
 
-struct EventIterator<'a, E: EventPump + 'a> {
+struct EventIterator<'a, E: 'a> {
     event_pump: &'a mut E,
 }
 
