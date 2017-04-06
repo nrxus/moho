@@ -7,6 +7,17 @@ pub trait Font {
     fn measure(&self, text: &str) -> Result<glm::UVec2>;
 }
 
+pub trait FontLoader<'a>
+    : Loader<'a, <Self as FontLoader<'a>>::Font, FontDetails> {
+    type Font: Font;
+}
+
+pub trait FontTexturizer<'a> {
+    type Texture: Texture;
+    type Font: Font;
+    fn texturize(&self, font: &Self::Font, text: &str, color: ColorRGBA) -> Result<Self::Texture>;
+}
+
 #[derive(PartialEq, Eq, Hash)]
 pub struct FontDetails {
     pub path: &'static str,
@@ -20,15 +31,4 @@ impl<'a> From<&'a FontDetails> for FontDetails {
             size: details.size,
         }
     }
-}
-
-pub trait FontLoader<'a>
-    : Loader<'a, <Self as FontLoader<'a>>::Font, FontDetails> {
-    type Font: Font;
-}
-
-pub trait FontTexturizer<'a> {
-    type Texture: Texture;
-    type Font: Font;
-    fn texturize(&self, font: &Self::Font, text: &str, color: ColorRGBA) -> Result<Self::Texture>;
 }
