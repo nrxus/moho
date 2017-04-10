@@ -8,9 +8,7 @@ use sdl2::render::Renderer as SdlRenderer;
 use sdl2::EventPump as SdlEventPump;
 use sdl2::image::{INIT_PNG, INIT_JPG};
 
-use input_manager::*;
-
-pub mod input_manager;
+pub mod input;
 pub mod shape;
 pub mod renderer;
 pub mod timer;
@@ -32,7 +30,7 @@ error_chain!{
 pub fn init(name: &'static str,
             width: u32,
             height: u32)
-            -> Result<(SdlRenderer, InputManager<SdlEventPump>)> {
+            -> Result<(SdlRenderer, input::Manager<SdlEventPump>)> {
     let sdl_ctx = sdl2::init()?;
     let video_ctx = sdl_ctx.video()?;
     let _image_ctx = sdl2::image::init(INIT_PNG | INIT_JPG)?;
@@ -48,6 +46,6 @@ pub fn init(name: &'static str,
     renderer.present();
 
     let event_pump = sdl_ctx.event_pump()?;
-    let input_manager = InputManager::new(event_pump);
+    let input_manager = input::Manager::new(event_pump);
     Ok((renderer, input_manager))
 }

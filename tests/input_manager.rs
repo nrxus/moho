@@ -2,7 +2,7 @@ extern crate moho;
 extern crate glm;
 extern crate sdl2;
 
-use moho::input_manager::*;
+use moho::input::*;
 use sdl2::keyboard::{Keycode, NOMOD};
 use sdl2::event::Event;
 use sdl2::mouse::{MouseState, MouseButton};
@@ -53,7 +53,7 @@ fn press_keys() {
                        Some(key_event!(KeyDown, Keycode::Up)),
                        Some(key_event!(KeyDown, Keycode::Down))];
 
-    let mut subject = InputManager::new(MockEventPump { streams: streams });
+    let mut subject = Manager::new(MockEventPump { streams: streams });
 
     // Nothing is set before
     assert_eq!(subject.is_key_down(Keycode::Down), false);
@@ -74,7 +74,7 @@ fn release_keys() {
                        Some(key_event!(KeyDown, Keycode::Down)),
                        Some(key_event!(KeyDown, Keycode::Up))];
 
-    let mut subject = InputManager::new(MockEventPump { streams: streams });
+    let mut subject = Manager::new(MockEventPump { streams: streams });
     subject.update();
 
     // Both keys set after
@@ -95,7 +95,7 @@ fn did_press_key() {
                        None,
                        Some(key_event!(KeyDown, Keycode::Down))];
 
-    let mut subject = InputManager::new(MockEventPump { streams: streams });
+    let mut subject = Manager::new(MockEventPump { streams: streams });
 
     // Nothing has been pressed
     assert_eq!(subject.did_press_key(Keycode::Down), false);
@@ -126,7 +126,7 @@ fn mouse_coords() {
                                 yrel: 0,
                             })];
 
-    let mut subject = InputManager::new(MockEventPump { streams: streams });
+    let mut subject = Manager::new(MockEventPump { streams: streams });
     subject.update();
     assert_eq!(subject.mouse_coords(), glm::ivec2(50, 30));
 }
@@ -138,7 +138,7 @@ fn mouse_clicks() {
                        None,
                        Some(mouse_event!(MouseButtonDown, MouseButton::Left))];
 
-    let mut subject = InputManager::new(MockEventPump { streams: streams });
+    let mut subject = Manager::new(MockEventPump { streams: streams });
 
     // Nothing has been clicked
     assert_eq!(subject.did_click_mouse(MouseButton::Right), false);
@@ -164,7 +164,7 @@ fn mouse_releases() {
                        None,
                        Some(mouse_event!(MouseButtonDown, MouseButton::Left))];
 
-    let mut subject = InputManager::new(MockEventPump { streams: streams });
+    let mut subject = Manager::new(MockEventPump { streams: streams });
 
     // Nothing has been clicked
     assert_eq!(subject.did_release_mouse(MouseButton::Right), false);

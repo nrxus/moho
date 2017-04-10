@@ -43,7 +43,7 @@ impl EventPump for SdlEventPump {
     }
 }
 
-pub struct InputManager<P: EventPump> {
+pub struct Manager<P: EventPump> {
     pressed_keys: HashSet<Keycode>,
     pressed_buttons: HashSet<MouseButton>,
     prev_pressed_keys: HashSet<Keycode>,
@@ -53,9 +53,9 @@ pub struct InputManager<P: EventPump> {
     game_quit: bool,
 }
 
-impl<P: EventPump> InputManager<P> {
-    pub fn new(event_pump: P) -> InputManager<P> {
-        InputManager {
+impl<P: EventPump> Manager<P> {
+    pub fn new(event_pump: P) -> Manager<P> {
+        Manager {
             pressed_keys: HashSet::new(),
             pressed_buttons: HashSet::new(),
             prev_pressed_keys: HashSet::new(),

@@ -3,21 +3,21 @@ extern crate moho;
 extern crate sdl2;
 
 use moho::errors::*;
-use moho::input_manager::*;
+use moho::input;
 use moho::renderer::*;
 use moho::shape::*;
 use moho::timer::*;
 
-pub struct MainGame<'ttf, E: EventPump, T, R, FL: 'ttf, F> {
-    input_manager: InputManager<E>,
+pub struct MainGame<'ttf, E: input::EventPump, T, R, FL: 'ttf, F> {
+    input_manager: input::Manager<E>,
     texture_manager: ResourceManager<String, T>,
     font_manager: ResourceManager<FontDetails, F>,
     renderer: R,
     font_loader: &'ttf FL,
 }
 
-impl<'ttf, E: EventPump, T: Texture, R, FL, F: Font> MainGame<'ttf, E, T, R, FL, F> {
-    pub fn new(renderer: R, input_manager: InputManager<E>, font_loader: &'ttf FL) -> Self {
+impl<'ttf, E: input::EventPump, T: Texture, R, FL, F: Font> MainGame<'ttf, E, T, R, FL, F> {
+    pub fn new(renderer: R, input_manager: input::Manager<E>, font_loader: &'ttf FL) -> Self {
         let texture_manager = ResourceManager::new();
         let font_manager = ResourceManager::new();
         MainGame {
