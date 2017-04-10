@@ -52,8 +52,8 @@ impl<'ttf, E: input::EventPump, T: Texture, R, FL, F: Font> MainGame<'ttf, E, T,
         let mut timer = Timer::new();
         while !self.game_quit() {
             let game_time = timer.update();
-            self.input_manager.update();
-            let cursor_position = self.input_manager.mouse_coords();
+            let state = self.input_manager.update();
+            let cursor_position = state.mouse_coords();
             let color = if rect.contains(&glm::to_dvec2(cursor_position)) {
                 ColorRGBA(255, 0, 0, 255)
             } else {
@@ -79,7 +79,7 @@ impl<'ttf, E: input::EventPump, T: Texture, R, FL, F: Font> MainGame<'ttf, E, T,
     }
 
     fn game_quit(&self) -> bool {
-        self.input_manager.game_quit()
+        self.input_manager.current.game_quit()
     }
 }
 

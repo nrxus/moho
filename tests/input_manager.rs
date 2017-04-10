@@ -56,14 +56,14 @@ fn press_keys() {
     let mut subject = Manager::new(MockEventPump { streams: streams });
 
     // Nothing is set before
-    assert_eq!(subject.is_key_down(Keycode::Down), false);
-    assert_eq!(subject.is_key_down(Keycode::Up), false);
+    assert_eq!(subject.current.is_key_down(Keycode::Down), false);
+    assert_eq!(subject.current.is_key_down(Keycode::Up), false);
 
-    subject.update();
+    let state = subject.update();
 
     // Both keys are set after
-    assert_eq!(subject.is_key_down(Keycode::Down), true);
-    assert_eq!(subject.is_key_down(Keycode::Up), true);
+    assert_eq!(state.is_key_down(Keycode::Down), true);
+    assert_eq!(state.is_key_down(Keycode::Up), true);
 }
 
 #[test]
@@ -75,16 +75,18 @@ fn release_keys() {
                        Some(key_event!(KeyDown, Keycode::Up))];
 
     let mut subject = Manager::new(MockEventPump { streams: streams });
-    subject.update();
+    {
+        let state = subject.update();
+        // Both keys set after
+        assert_eq!(state.is_key_down(Keycode::Down), true);
+        assert_eq!(state.is_key_down(Keycode::Up), true);
+    }
 
-    // Both keys set after
-    assert_eq!(subject.is_key_down(Keycode::Down), true);
-    assert_eq!(subject.is_key_down(Keycode::Up), true);
-    subject.update();
+    let state = subject.update();
 
     // Only the one released unset after
-    assert_eq!(subject.is_key_down(Keycode::Down), false);
-    assert_eq!(subject.is_key_down(Keycode::Up), true);
+    assert_eq!(state.is_key_down(Keycode::Down), false);
+    assert_eq!(state.is_key_down(Keycode::Up), true);
 }
 
 #[test]
@@ -98,18 +100,21 @@ fn did_press_key() {
     let mut subject = Manager::new(MockEventPump { streams: streams });
 
     // Nothing has been pressed
-    assert_eq!(subject.did_press_key(Keycode::Down), false);
-    assert_eq!(subject.did_press_key(Keycode::Up), false);
+    assert_eq!(subject.current.did_press_key(Keycode::Down), false);
+    assert_eq!(subject.current.did_press_key(Keycode::Up), false);
 
     // Down key is pressed
-    subject.update();
-    assert_eq!(subject.did_press_key(Keycode::Down), true);
-    assert_eq!(subject.did_press_key(Keycode::Up), false);
+    {
+        let state = subject.update();
+        assert_eq!(state.did_press_key(Keycode::Down), true);
+        assert_eq!(state.did_press_key(Keycode::Up), false);
+
+    }
 
     // Up key is pressed - Down key has not been released yet
-    subject.update();
-    assert_eq!(subject.did_press_key(Keycode::Down), false);
-    assert_eq!(subject.did_press_key(Keycode::Up), true);
+    let state = subject.update();
+    assert_eq!(state.did_press_key(Keycode::Down), false);
+    assert_eq!(state.did_press_key(Keycode::Up), true);
 }
 
 #[test]
@@ -127,8 +132,8 @@ fn mouse_coords() {
                             })];
 
     let mut subject = Manager::new(MockEventPump { streams: streams });
-    subject.update();
-    assert_eq!(subject.mouse_coords(), glm::ivec2(50, 30));
+    let state = subject.update();
+    assert_eq!(state.mouse_coords(), glm::ivec2(50, 30));
 }
 
 #[test]
@@ -141,18 +146,20 @@ fn mouse_clicks() {
     let mut subject = Manager::new(MockEventPump { streams: streams });
 
     // Nothing has been clicked
-    assert_eq!(subject.did_click_mouse(MouseButton::Right), false);
-    assert_eq!(subject.did_click_mouse(MouseButton::Left), false);
+    assert_eq!(subject.current.did_click_mouse(MouseButton::Right), false);
+    assert_eq!(subject.current.did_click_mouse(MouseButton::Left), false);
 
     // Left button is click
-    subject.update();
-    assert_eq!(subject.did_click_mouse(MouseButton::Right), false);
-    assert_eq!(subject.did_click_mouse(MouseButton::Left), true);
+    {
+        let state = subject.update();
+        assert_eq!(state.did_click_mouse(MouseButton::Right), false);
+        assert_eq!(state.did_click_mouse(MouseButton::Left), true);
+    }
 
     // Right button is clicked - left button is still pressed but not a recent click
-    subject.update();
-    assert_eq!(subject.did_click_mouse(MouseButton::Right), true);
-    assert_eq!(subject.did_click_mouse(MouseButton::Left), false);
+    let state = subject.update();
+    assert_eq!(state.did_click_mouse(MouseButton::Right), true);
+    assert_eq!(state.did_click_mouse(MouseButton::Left), false);
 }
 
 #[test]
@@ -167,21 +174,28 @@ fn mouse_releases() {
     let mut subject = Manager::new(MockEventPump { streams: streams });
 
     // Nothing has been clicked
-    assert_eq!(subject.did_release_mouse(MouseButton::Right), false);
-    assert_eq!(subject.did_release_mouse(MouseButton::Left), false);
+    assert_eq!(subject.current.did_release_mouse(MouseButton::Right), false);
+    assert_eq!(subject.current.did_release_mouse(MouseButton::Left), false);
 
-    // Left button is click
-    subject.update();
-    assert_eq!(subject.did_release_mouse(MouseButton::Right), false);
-    assert_eq!(subject.did_release_mouse(MouseButton::Left), false);
+    {
+        // Left button is click
+        let state = subject.update();
+        assert_eq!(state.did_release_mouse(MouseButton::Right), false);
+        assert_eq!(state.did_release_mouse(MouseButton::Left), false);
+    }
 
-    // Left button is released
-    subject.update();
-    assert_eq!(subject.did_release_mouse(MouseButton::Right), false);
-    assert_eq!(subject.did_release_mouse(MouseButton::Left), true);
+    {
+        // Left button is released
+        let state = subject.update();
+        assert_eq!(state.did_release_mouse(MouseButton::Right), false);
+        assert_eq!(state.did_release_mouse(MouseButton::Left), true);
+    }
 
-    // Right button is clicked; left button is not clicked and not released recently
-    subject.update();
-    assert_eq!(subject.did_release_mouse(MouseButton::Right), false);
-    assert_eq!(subject.did_release_mouse(MouseButton::Right), false);
+
+    {
+        // Right button is clicked; left button is not clicked and not released recently
+        let state = subject.update();
+        assert_eq!(state.did_release_mouse(MouseButton::Right), false);
+        assert_eq!(state.did_release_mouse(MouseButton::Right), false);
+    }
 }
