@@ -2,7 +2,6 @@ mod state;
 
 pub use self::state::State;
 
-use glm;
 use sdl2::EventPump as SdlEventPump;
 use sdl2::event::Event;
 
@@ -56,33 +55,7 @@ impl<P: EventPump> Manager<P> {
     }
 
     pub fn update(&mut self) -> &State {
-        self.current.prev_pressed_keys = self.current.pressed_keys.clone();
-        self.current.prev_pressed_buttons = self.current.pressed_buttons.clone();
-
-        for event in self.event_generator.iter() {
-            match event {
-                Event::Quit { .. } => {
-                    self.current.game_quit = true;
-                }
-                Event::KeyDown { keycode: Some(keycode), .. } => {
-                    self.current.pressed_keys.insert(keycode);
-                }
-                Event::KeyUp { keycode: Some(keycode), .. } => {
-                    self.current.pressed_keys.remove(&keycode);
-                }
-                Event::MouseMotion { x, y, .. } => {
-                    self.current.mouse_coords = glm::ivec2(x, y);
-                }
-                Event::MouseButtonDown { mouse_btn, .. } => {
-                    self.current.pressed_buttons.insert(mouse_btn);
-                }
-                Event::MouseButtonUp { mouse_btn, .. } => {
-                    self.current.pressed_buttons.remove(&mouse_btn);
-                }
-                _ => {}
-            }
-        }
-
+        self.current.update(&mut self.event_generator);
         &self.current
     }
 }
