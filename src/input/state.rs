@@ -5,6 +5,7 @@ use sdl2::keyboard::Keycode;
 
 use std::collections::HashSet;
 
+#[derive(Clone)]
 pub struct State {
     pub(super) pressed_keys: HashSet<Keycode>,
     pub(super) pressed_buttons: HashSet<MouseButton>,
