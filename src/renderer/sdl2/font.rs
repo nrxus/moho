@@ -33,9 +33,9 @@ impl<'a> renderer::FontTexturizer<'a> for SdlRenderer<'static> {
     fn texturize(&self,
                  font: &SdlFont<'a, 'static>,
                  text: &str,
-                 color: renderer::ColorRGBA)
+                 color: &renderer::ColorRGBA)
                  -> Result<SdlTexture> {
-        let renderer::ColorRGBA(red, green, blue, alpha) = color;
+        let &renderer::ColorRGBA(red, green, blue, alpha) = color;
         let color = Color::RGBA(red, green, blue, alpha);
         let surface = font.render(text)
             .blended(color)

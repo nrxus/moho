@@ -15,7 +15,7 @@ pub trait FontLoader<'a>
 pub trait FontTexturizer<'a> {
     type Texture: Texture;
     type Font: Font;
-    fn texturize(&self, font: &Self::Font, text: &str, color: ColorRGBA) -> Result<Self::Texture>;
+    fn texturize(&self, font: &Self::Font, text: &str, color: &ColorRGBA) -> Result<Self::Texture>;
 }
 
 #[derive(PartialEq, Eq, Hash)]

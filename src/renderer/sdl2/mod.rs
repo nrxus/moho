@@ -31,8 +31,8 @@ impl renderer::Renderer for render::Renderer<'static> {
     type Texture = SdlTexture;
     fn copy(&mut self,
             texture: &SdlTexture,
-            dst: Option<glm::IVec4>,
-            src: Option<glm::UVec4>)
+            dst: Option<&glm::IVec4>,
+            src: Option<&glm::UVec4>)
             -> Result<()> {
         let src = src.map(|r| rect::Rect::new(r.x as i32, r.y as i32, r.z, r.w));
         let dst = dst.map(|r| rect::Rect::new(r.x, r.y, r.z as u32, r.w as u32));

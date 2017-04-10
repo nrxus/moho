@@ -44,13 +44,13 @@ impl<T> TileSheet<T> {
 
 impl<T, R: Renderer<Texture = T>> Scene<R> for Tile<T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
-        renderer.copy(&*self.texture, None, Some(self.src))
+        renderer.copy(&*self.texture, None, Some(&self.src))
     }
 }
 
 impl<T, R: Renderer<Texture = T>> Drawable<R> for Tile<T> {
-    fn draw(&self, dst_rect: glm::IVec4, renderer: &mut R) -> Result<()> {
-        renderer.copy(&*self.texture, Some(dst_rect), Some(self.src))
+    fn draw(&self, dst_rect: &glm::IVec4, renderer: &mut R) -> Result<()> {
+        renderer.copy(&*self.texture, Some(dst_rect), Some(&self.src))
     }
 }
 

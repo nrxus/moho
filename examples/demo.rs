@@ -59,19 +59,20 @@ impl<'ttf, E: EventPump, T: Texture, R, FL, F: Font> MainGame<'ttf, E, T, R, FL,
             } else {
                 ColorRGBA(255, 255, 0, 255)
             };
-            let button_texture = self.renderer.texturize(&font, button_text, color)?;
+            let button_texture = self.renderer.texturize(&font, button_text, &color)?;
             let fps = format!("{}", game_time.fps() as u32);
             let font_texture = self.renderer
-                .texturize(&font, &fps, ColorRGBA(255, 255, 0, 255))?;
+                .texturize(&font, &fps, &ColorRGBA(255, 255, 0, 255))?;
             let font_dst = glm::ivec4(0,
                                       0,
                                       font_texture.dims().x as i32,
                                       font_texture.dims().y as i32);
             self.renderer.clear();
             self.renderer.copy(&image, None, None)?;
-            self.renderer.copy(&font_texture, Some(font_dst), None)?;
             self.renderer
-                .copy(&button_texture, Some(button_dst), None)?;
+                .copy(&font_texture, Some(&font_dst), None)?;
+            self.renderer
+                .copy(&button_texture, Some(&button_dst), None)?;
             self.renderer.present();
         }
         Ok(())

@@ -14,6 +14,7 @@ use errors::*;
 use glm;
 use sdl2::rect;
 
+#[derive(Clone, Copy, Debug)]
 pub struct ColorRGBA(pub u8, pub u8, pub u8, pub u8);
 
 pub trait Texture {
@@ -34,7 +35,7 @@ pub trait Window {
 }
 
 pub trait Drawable<R: ?Sized> {
-    fn draw(&self, dst_rect: glm::IVec4, renderer: &mut R) -> Result<()>;
+    fn draw(&self, dst_rect: &glm::IVec4, renderer: &mut R) -> Result<()>;
 }
 
 pub trait Scene<R: ?Sized> {
@@ -49,8 +50,8 @@ pub trait Renderer {
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
     fn copy(&mut self,
             texture: &Self::Texture,
-            dst: Option<glm::IVec4>,
-            src: Option<glm::UVec4>)
+            dst: Option<&glm::IVec4>,
+            src: Option<&glm::UVec4>)
             -> Result<()>;
 }
 
@@ -59,7 +60,7 @@ pub trait Show {
         scene.show(self)
     }
 
-    fn show_at<D: Drawable<Self>>(&mut self, drawable: &D, dst_rect: glm::IVec4) -> Result<()> {
+    fn show_at<D: Drawable<Self>>(&mut self, drawable: &D, dst_rect: &glm::IVec4) -> Result<()> {
         drawable.draw(dst_rect, self)
     }
 }
