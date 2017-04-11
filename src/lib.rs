@@ -35,7 +35,8 @@ pub fn init(name: &'static str,
     let video_ctx = sdl_ctx.video()?;
     let _image_ctx = sdl2::image::init(INIT_PNG | INIT_JPG)?;
 
-    let window = video_ctx.window(name, width, height)
+    let window = video_ctx
+        .window(name, width, height)
         .position_centered()
         .opengl()
         .build()?;
