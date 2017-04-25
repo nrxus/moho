@@ -8,6 +8,7 @@ use sdl2::render::Renderer as SdlRenderer;
 use sdl2::EventPump as SdlEventPump;
 use sdl2::image::{INIT_PNG, INIT_JPG};
 
+pub mod animation;
 pub mod input;
 pub mod shape;
 pub mod renderer;

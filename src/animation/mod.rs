@@ -1,9 +1,15 @@
 use errors::*;
-use super::{Animator, AnimatorData, Drawable, Renderer, Scene, Show, Tile, TileSheet};
+use renderer::{Drawable, Renderer, Scene, Show};
 
 use glm;
 
 use std::time::Duration;
+
+mod animator;
+mod tile_sheet;
+
+pub use self::animator::{Animator, AnimatorData};
+pub use self::tile_sheet::{Tile, TileSheet};
 
 #[derive(Clone, Debug)]
 pub struct AnimationData<T> {

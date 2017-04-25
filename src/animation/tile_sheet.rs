@@ -1,5 +1,4 @@
-use super::Renderer;
-use super::{Texture, Drawable, Scene};
+use renderer::{Drawable, Scene, Renderer, Texture};
 use errors::*;
 
 use glm;
