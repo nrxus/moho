@@ -45,13 +45,14 @@ impl Animator {
         self.max
     }
 
-    pub fn animate(&mut self, delta: Duration) {
+    pub fn animate(&mut self, delta: Duration) -> u32 {
         self.elapsed = self.elapsed + delta;
         while self.elapsed >= self.duration {
             self.frame += 1;
             self.elapsed -= self.duration;
         }
         self.frame = self.frame % self.max;
+        self.frame
     }
 }
 
@@ -70,33 +71,37 @@ mod test {
     fn animate() {
         let mut animator = Animator::new(6, Duration::from_secs(5));
 
-        animator.animate(Duration::from_secs(5));
-        assert_eq!(animator.frame(), 1);
+        let frame = animator.animate(Duration::from_secs(5));
+        assert_eq!(frame, 1);
 
-        animator.animate(Duration::from_secs(3));
-        assert_eq!(animator.frame(), 1);
+        let frame = animator.animate(Duration::from_secs(3));
+        assert_eq!(frame, 1);
 
-        animator.animate(Duration::from_secs(4));
-        assert_eq!(animator.frame(), 2);
+        let frame = animator.animate(Duration::from_secs(4));
+        assert_eq!(frame, 2);
 
-        animator.animate(Duration::from_secs(4));
-        assert_eq!(animator.frame(), 3);
+        let frame = animator.animate(Duration::from_secs(4));
+        assert_eq!(frame, 3);
 
-        animator.animate(Duration::from_secs(10));
-        assert_eq!(animator.frame(), 5);
+        let frame = animator.animate(Duration::from_secs(10));
+        assert_eq!(frame, 5);
+
+        assert_eq!(frame, animator.frame());
     }
 
     #[test]
     fn repeat() {
         let mut animator = Animator::new(2, Duration::from_secs(2));
 
-        animator.animate(Duration::from_secs(2));
-        assert_eq!(animator.frame(), 1);
+        let frame = animator.animate(Duration::from_secs(2));
+        assert_eq!(frame, 1);
 
-        animator.animate(Duration::from_secs(3));
-        assert_eq!(animator.frame(), 0);
+        let frame = animator.animate(Duration::from_secs(3));
+        assert_eq!(frame, 0);
 
-        animator.animate(Duration::from_secs(1));
-        assert_eq!(animator.frame(), 1);
+        let frame = animator.animate(Duration::from_secs(1));
+        assert_eq!(frame, 1);
+
+        assert_eq!(frame, animator.frame());
     }
 }
