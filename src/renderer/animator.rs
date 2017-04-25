@@ -14,21 +14,21 @@ impl AnimatorData {
         }
     }
 
-    pub fn start(self) -> FrameAnimator {
-        FrameAnimator::new(self.max, self.duration)
+    pub fn start(self) -> Animator {
+        Animator::new(self.max, self.duration)
     }
 }
 
-pub struct FrameAnimator {
+pub struct Animator {
     max: u32,
     duration: Duration,
     frame: u32,
     elapsed: Duration,
 }
 
-impl FrameAnimator {
-    pub fn new(max: u32, duration: Duration) -> FrameAnimator {
-        FrameAnimator {
+impl Animator {
+    pub fn new(max: u32, duration: Duration) -> Animator {
+        Animator {
             max: max,
             duration: duration,
             frame: 0,
@@ -67,7 +67,7 @@ mod test {
 
     #[test]
     fn animate() {
-        let mut animator = FrameAnimator::new(6, Duration::from_secs(5));
+        let mut animator = Animator::new(6, Duration::from_secs(5));
 
         animator.animate(Duration::from_secs(5));
         assert_eq!(animator.frame(), 1);
@@ -87,7 +87,7 @@ mod test {
 
     #[test]
     fn repeat() {
-        let mut animator = FrameAnimator::new(2, Duration::from_secs(2));
+        let mut animator = Animator::new(2, Duration::from_secs(2));
 
         animator.animate(Duration::from_secs(2));
         assert_eq!(animator.frame(), 1);
