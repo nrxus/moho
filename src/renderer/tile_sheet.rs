@@ -6,13 +6,14 @@ use glm;
 
 use std::rc::Rc;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TileSheet<T> {
     texture: Rc<T>,
     tiles: glm::UVec2,
     pub dimensions: glm::UVec2,
 }
 
+#[derive(Clone, Debug)]
 pub struct Tile<T> {
     pub texture: Rc<T>,
     pub src: glm::UVec4,

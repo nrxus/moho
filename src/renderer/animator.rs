@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-#[derive(Default, Clone, Copy)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct AnimatorData {
     max: u32,
     duration: Duration,
@@ -19,6 +19,7 @@ impl AnimatorData {
     }
 }
 
+#[derive(Debug)]
 pub struct Animator {
     max: u32,
     duration: Duration,
