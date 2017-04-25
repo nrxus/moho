@@ -44,8 +44,9 @@ impl<T> Animation<T> {
         }
     }
 
-    pub fn animate(&mut self, delta: Duration) {
-        self.animator.animate(delta);
+    pub fn animate(&mut self, delta: Duration) -> Tile<T> {
+        let frame = self.animator.animate(delta);
+        self.sheet.tile(frame)
     }
 
     pub fn tile(&self) -> Tile<T> {
@@ -82,8 +83,8 @@ mod tests {
 
         let mut animation = data.start();
         assert_eq!(animation.tile().src, glm::uvec4(0, 0, 1, 10));
-        animation.animate(Duration::from_secs(6));
-        assert_eq!(animation.tile().src, glm::uvec4(1, 0, 1, 10));
+        let tile = animation.animate(Duration::from_secs(6));
+        assert_eq!(tile.src, glm::uvec4(1, 0, 1, 10));
     }
 
     #[test]
