@@ -15,7 +15,7 @@ impl AnimatorData {
     }
 
     pub fn start(self) -> Animator {
-        Animator::new(self.max, self.duration)
+        Animator::new(self)
     }
 }
 
@@ -27,16 +27,14 @@ struct Frame {
 
 #[derive(Debug)]
 pub struct Animator {
-    max: u32,
-    duration: Duration,
+    data: AnimatorData,
     frame: Frame,
 }
 
 impl Animator {
-    pub fn new(max: u32, duration: Duration) -> Animator {
+    pub fn new(data: AnimatorData) -> Animator {
         Animator {
-            max: max,
-            duration: duration,
+            data: data,
             frame: Frame::default(),
         }
     }
@@ -46,16 +44,16 @@ impl Animator {
     }
 
     pub fn num_frames(&self) -> u32 {
-        self.max
+        self.data.max
     }
 
     pub fn animate(&mut self, delta: Duration) -> u32 {
         self.frame.elapsed += delta;
-        while self.frame.elapsed >= self.duration {
+        while self.frame.elapsed >= self.data.duration {
             self.frame.index += 1;
-            self.frame.elapsed -= self.duration;
+            self.frame.elapsed -= self.data.duration;
         }
-        self.frame.index = self.frame.index % self.max;
+        self.frame.index = self.frame.index % self.data.max;
         self.frame.index
     }
 }
@@ -66,14 +64,13 @@ mod test {
 
     #[test]
     fn start() {
-        let data = AnimatorData::new(3, Duration::from_secs(5));
-        let animator = data.start();
+        let animator = AnimatorData::new(3, Duration::from_secs(5)).start();
         assert_eq!(animator.frame(), 0);
     }
 
     #[test]
     fn animate() {
-        let mut animator = Animator::new(6, Duration::from_secs(5));
+        let mut animator = AnimatorData::new(6, Duration::from_secs(5)).start();
 
         let frame = animator.animate(Duration::from_secs(5));
         assert_eq!(frame, 1);
@@ -95,7 +92,7 @@ mod test {
 
     #[test]
     fn repeat() {
-        let mut animator = Animator::new(2, Duration::from_secs(2));
+        let mut animator = AnimatorData::new(2, Duration::from_secs(2)).start();
 
         let frame = animator.animate(Duration::from_secs(2));
         assert_eq!(frame, 1);
