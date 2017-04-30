@@ -19,12 +19,17 @@ impl AnimatorData {
     }
 }
 
+#[derive(Default, Debug)]
+struct Frame {
+    index: u32,
+    elapsed: Duration,
+}
+
 #[derive(Debug)]
 pub struct Animator {
     max: u32,
     duration: Duration,
-    frame: u32,
-    elapsed: Duration,
+    frame: Frame,
 }
 
 impl Animator {
@@ -32,13 +37,12 @@ impl Animator {
         Animator {
             max: max,
             duration: duration,
-            frame: 0,
-            elapsed: Duration::default(),
+            frame: Frame::default(),
         }
     }
 
     pub fn frame(&self) -> u32 {
-        self.frame
+        self.frame.index
     }
 
     pub fn num_frames(&self) -> u32 {
@@ -46,13 +50,13 @@ impl Animator {
     }
 
     pub fn animate(&mut self, delta: Duration) -> u32 {
-        self.elapsed = self.elapsed + delta;
-        while self.elapsed >= self.duration {
-            self.frame += 1;
-            self.elapsed -= self.duration;
+        self.frame.elapsed += delta;
+        while self.frame.elapsed >= self.duration {
+            self.frame.index += 1;
+            self.frame.elapsed -= self.duration;
         }
-        self.frame = self.frame % self.max;
-        self.frame
+        self.frame.index = self.frame.index % self.max;
+        self.frame.index
     }
 }
 
