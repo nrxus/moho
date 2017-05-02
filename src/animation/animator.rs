@@ -17,6 +17,10 @@ impl AnimatorData {
     pub fn start(self) -> Animator {
         Animator::new(self)
     }
+
+    pub fn limit_run_start(self, loops: u32) -> LimitRunAnimator {
+        LimitRunAnimator::new(self, loops)
+    }
 }
 
 #[derive(Default, Debug)]
@@ -55,6 +59,35 @@ impl Animator {
         }
         self.frame.index = self.frame.index % self.data.max;
         self.frame.index
+    }
+}
+
+#[derive(Debug)]
+pub struct LimitRunAnimator {
+    data: AnimatorData,
+    frame: Frame,
+    remaining_loops: u32,
+}
+
+impl LimitRunAnimator {
+    pub fn new(data: AnimatorData, loops: u32) -> LimitRunAnimator {
+        LimitRunAnimator {
+            data: data,
+            remaining_loops: loops,
+            frame: Frame::default(),
+        }
+    }
+
+    pub fn frame(&self) -> u32 {
+        self.frame.index
+    }
+
+    pub fn num_frames(&self) -> u32 {
+        self.data.max
+    }
+
+    pub fn active(&self) -> bool {
+        self.remaining_loops > 0
     }
 }
 
@@ -104,5 +137,18 @@ mod test {
         assert_eq!(frame, 1);
 
         assert_eq!(frame, animator.frame());
+    }
+
+    #[test]
+    fn limit_run_start() {
+        let mut animator = AnimatorData::new(2, Duration::from_secs(2)).limit_run_start(2);
+        assert_eq!(animator.frame(), 0);
+        assert!(animator.active());
+    }
+
+    #[test]
+    fn start_no_loops() {
+        let mut animator = AnimatorData::new(2, Duration::from_secs(2)).limit_run_start(0);
+        assert!(!animator.active());
     }
 }
