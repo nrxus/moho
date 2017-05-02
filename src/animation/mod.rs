@@ -8,7 +8,7 @@ use std::time::Duration;
 mod animator;
 mod tile_sheet;
 
-pub use self::animator::{Animator, AnimatorData};
+pub use self::animator::{Animator, AnimatorData, LimitRunAnimator};
 pub use self::tile_sheet::{Tile, TileSheet};
 
 #[derive(Clone, Debug)]
@@ -26,7 +26,7 @@ impl<T> AnimationData<T> {
     }
 
     pub fn start(self) -> Animation<T> {
-        Animation::new(self.data.start(), self.sheet)
+        Animation::from_data(self)
     }
 }
 
@@ -37,7 +37,11 @@ pub struct Animation<T> {
 }
 
 impl<T> Animation<T> {
-    pub fn new(animator: Animator, sheet: TileSheet<T>) -> Animation<T> {
+    pub fn from_data(data: AnimationData<T>) -> Self {
+        Self::new(data.data.start(), data.sheet)
+    }
+
+    pub fn new(animator: Animator, sheet: TileSheet<T>) -> Self {
         Animation {
             animator: animator,
             sheet: sheet,
