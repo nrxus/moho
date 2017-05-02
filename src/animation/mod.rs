@@ -103,6 +103,24 @@ impl<T> LimitRunAnimation<T> {
     }
 }
 
+impl<T, R: Renderer<Texture = T> + Show> Scene<R> for LimitRunAnimation<T> {
+    fn show(&self, renderer: &mut R) -> Result<()> {
+        match self.tile() {
+            Some(ref t) => renderer.show(t),
+            None => Ok(()),
+        }
+    }
+}
+
+impl<T, R: Renderer<Texture = T> + Show> Drawable<R> for LimitRunAnimation<T> {
+    fn draw(&self, dst_rect: &glm::IVec4, renderer: &mut R) -> Result<()> {
+        match self.tile() {
+            Some(ref t) => renderer.show_at(t, dst_rect),
+            None => Ok(()),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -170,6 +188,43 @@ mod tests {
 
         let no_tile = animation.animate(Duration::from_secs(10));
         assert!(no_tile.is_none());
+    }
+
+    #[test]
+    fn limit_run_show() {
+        let mut renderer = MockRenderer::default();
+        let texture = Rc::new(MockTexture { dims: glm::uvec2(10, 10) });
+        let animator = AnimatorData::new(3, Duration::from_secs(5));
+        let sheet = TileSheet::new(glm::uvec2(10, 1), texture.clone());
+        let data = AnimationData::new(animator, sheet);
+
+        let mut animation = data.limit_run_start(2);
+        animation.animate(Duration::from_secs(12));
+        renderer.show(&animation).unwrap();
+        assert_eq!(renderer.calls.len(), 1);
+        {
+            let ref call = renderer.calls[0];
+            assert_eq!(call.dst, None);
+            assert_eq!(call.src, Some(glm::uvec4(2, 0, 1, 10)));
+            assert_eq!(call.texture, texture.as_ref() as *const MockTexture);
+        }
+
+        animation.animate(Duration::from_secs(3));
+        let dst = glm::ivec4(3, 5, 6, 8);
+        renderer.show_at(&animation, &dst).unwrap();
+        assert_eq!(renderer.calls.len(), 2);
+        {
+            let ref call = renderer.calls[1];
+            assert_eq!(call.dst, Some(dst));
+            assert_eq!(call.src, Some(glm::uvec4(0, 0, 1, 10)));
+            assert_eq!(call.texture, texture.as_ref() as *const MockTexture);
+        }
+
+        animation.animate(Duration::from_secs(15));
+        renderer.show(&animation).unwrap();
+        assert_eq!(renderer.calls.len(), 2);
+        renderer.show_at(&animation, &dst).unwrap();
+        assert_eq!(renderer.calls.len(), 2);
     }
 
     #[derive(Debug)]
