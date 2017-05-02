@@ -128,19 +128,29 @@ mod tests {
         let mut renderer = MockRenderer::default();
         let texture = Rc::new(MockTexture { dims: glm::uvec2(10, 10) });
         let animator = AnimatorData::new(3, Duration::from_secs(5));
-        let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
+        let sheet = TileSheet::new(glm::uvec2(10, 1), texture.clone());
         let data = AnimationData::new(animator, sheet);
 
         let mut animation = data.start();
         animation.animate(Duration::from_secs(12));
         renderer.show(&animation).unwrap();
-        assert_eq!(renderer.last_dst, None);
-        assert_eq!(renderer.last_src, Some(glm::uvec4(2, 0, 1, 10)));
+        assert_eq!(renderer.calls.len(), 1);
+        {
+            let ref call = renderer.calls[0];
+            assert_eq!(call.dst, None);
+            assert_eq!(call.src, Some(glm::uvec4(2, 0, 1, 10)));
+            assert_eq!(call.texture, texture.as_ref() as *const MockTexture);
+        }
         animation.animate(Duration::from_secs(3));
         let dst = glm::ivec4(3, 5, 6, 8);
         renderer.show_at(&animation, &dst).unwrap();
-        assert_eq!(renderer.last_dst, Some(dst));
-        assert_eq!(renderer.last_src, Some(glm::uvec4(0, 0, 1, 10)));
+        assert_eq!(renderer.calls.len(), 2);
+        {
+            let ref call = renderer.calls[1];
+            assert_eq!(call.dst, Some(dst));
+            assert_eq!(call.src, Some(glm::uvec4(0, 0, 1, 10)));
+            assert_eq!(call.texture, texture.as_ref() as *const MockTexture);
+        }
     }
 
     #[test]
@@ -162,6 +172,7 @@ mod tests {
         assert!(no_tile.is_none());
     }
 
+    #[derive(Debug)]
     struct MockTexture {
         dims: glm::UVec2,
     }
@@ -172,10 +183,16 @@ mod tests {
         }
     }
 
+    #[derive(Debug)]
+    struct RenderingCall {
+        dst: Option<glm::IVec4>,
+        src: Option<glm::UVec4>,
+        texture: *const MockTexture,
+    }
+
     #[derive(Default)]
     struct MockRenderer {
-        last_dst: Option<glm::IVec4>,
-        last_src: Option<glm::UVec4>,
+        calls: Vec<RenderingCall>,
     }
 
     impl Renderer for MockRenderer {
@@ -198,8 +215,12 @@ mod tests {
                 dst: Option<&glm::IVec4>,
                 src: Option<&glm::UVec4>)
                 -> Result<()> {
-            self.last_dst = dst.cloned();
-            self.last_src = src.cloned();
+            let call = RenderingCall {
+                dst: dst.cloned(),
+                src: src.cloned(),
+                texture: texture as *const Self::Texture,
+            };
+            self.calls.push(call);
             Ok(())
         }
     }
