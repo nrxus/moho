@@ -109,6 +109,11 @@ impl LimitRunAnimator {
         }
         self.frame.index
     }
+
+    pub fn restart(&mut self, loops: u32) {
+        self.remaining_loops = loops;
+        self.frame = Frame::default();
+    }
 }
 
 #[cfg(test)]
@@ -192,5 +197,25 @@ mod test {
         assert!(!animator.active());
         let after_stopped_frame = animator.animate(Duration::from_secs(2));
         assert_eq!(stopped_frame, after_stopped_frame);
+    }
+
+    #[test]
+    fn restart() {
+        let mut animator = AnimatorData::new(2, Duration::from_secs(2)).limit_run_start(1);
+
+        animator.animate(Duration::from_secs(5));
+        assert!(!animator.active());
+
+        animator.restart(2);
+        assert!(animator.active());
+
+        let frame = animator.animate(Duration::from_secs(1));
+        assert_eq!(frame, 0);
+
+        let frame = animator.animate(Duration::from_secs(6));
+        assert_eq!(frame, 1);
+
+        let frame = animator.animate(Duration::from_secs(1));
+        assert!(!animator.active());
     }
 }
