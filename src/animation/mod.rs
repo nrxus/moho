@@ -28,6 +28,10 @@ impl<T> AnimationData<T> {
     pub fn start(self) -> Animation<T> {
         Animation::from_data(self)
     }
+
+    pub fn limit_run_start(self, loops: u32) -> LimitRunAnimation<T> {
+        LimitRunAnimation::from_data(self, loops)
+    }
 }
 
 #[derive(Debug)]
@@ -71,6 +75,34 @@ impl<T, R: Renderer<Texture = T> + Show> Drawable<R> for Animation<T> {
     }
 }
 
+#[derive(Debug)]
+pub struct LimitRunAnimation<T> {
+    animator: LimitRunAnimator,
+    sheet: TileSheet<T>,
+}
+
+impl<T> LimitRunAnimation<T> {
+    pub fn from_data(data: AnimationData<T>, loops: u32) -> Self {
+        Self::new(data.data.limit_run_start(loops), data.sheet)
+    }
+
+    pub fn new(animator: LimitRunAnimator, sheet: TileSheet<T>) -> Self {
+        LimitRunAnimation {
+            animator: animator,
+            sheet: sheet,
+        }
+    }
+
+    pub fn animate(&mut self, delta: Duration) -> Option<Tile<T>> {
+        let frame = self.animator.animate(delta);
+        frame.map(|i| self.sheet.tile(i))
+    }
+
+    pub fn tile(&self) -> Option<Tile<T>> {
+        self.animator.frame().map(|i| self.sheet.tile(i))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -109,6 +141,25 @@ mod tests {
         renderer.show_at(&animation, &dst).unwrap();
         assert_eq!(renderer.last_dst, Some(dst));
         assert_eq!(renderer.last_src, Some(glm::uvec4(0, 0, 1, 10)));
+    }
+
+    #[test]
+    fn limit_run_tile() {
+        let texture = Rc::new(MockTexture { dims: glm::uvec2(10, 10) });
+        let animator = AnimatorData::new(3, Duration::from_secs(5));
+        let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
+        let data = AnimationData::new(animator, sheet);
+
+        let mut animation = data.limit_run_start(1);
+        assert!(animation.tile().is_some());
+        assert_eq!(animation.tile().unwrap().src, glm::uvec4(0, 0, 1, 10));
+
+        let tile = animation.animate(Duration::from_secs(6));
+        assert!(tile.is_some());
+        assert_eq!(tile.unwrap().src, glm::uvec4(1, 0, 1, 10));
+
+        let no_tile = animation.animate(Duration::from_secs(10));
+        assert!(no_tile.is_none());
     }
 
     struct MockTexture {
