@@ -29,6 +29,16 @@ struct Frame {
     elapsed: Duration,
 }
 
+impl Frame {
+    fn advance(&mut self, delta: Duration, duration: Duration) {
+        self.elapsed += delta;
+        while self.elapsed >= duration {
+            self.index += 1;
+            self.elapsed -= duration;
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Animator {
     data: AnimatorData,
@@ -52,11 +62,7 @@ impl Animator {
     }
 
     pub fn animate(&mut self, delta: Duration) -> u32 {
-        self.frame.elapsed += delta;
-        while self.frame.elapsed >= self.data.duration {
-            self.frame.index += 1;
-            self.frame.elapsed -= self.data.duration;
-        }
+        self.frame.advance(delta, self.data.duration);
         self.frame.index = self.frame.index % self.data.max;
         self.frame.index
     }
@@ -88,6 +94,20 @@ impl LimitRunAnimator {
 
     pub fn active(&self) -> bool {
         self.remaining_loops > 0
+    }
+
+    pub fn animate(&mut self, delta: Duration) -> u32 {
+        if self.active() {
+            self.frame.advance(delta, self.data.duration);
+            let elapsed_loops = self.frame.index / self.data.max;
+            if elapsed_loops >= self.remaining_loops {
+                self.remaining_loops = 0;
+            } else {
+                self.frame.index %= self.data.max;
+                self.remaining_loops -= elapsed_loops;
+            }
+        }
+        self.frame.index
     }
 }
 
@@ -141,14 +161,36 @@ mod test {
 
     #[test]
     fn limit_run_start() {
-        let mut animator = AnimatorData::new(2, Duration::from_secs(2)).limit_run_start(2);
+        let animator = AnimatorData::new(2, Duration::from_secs(2)).limit_run_start(2);
         assert_eq!(animator.frame(), 0);
         assert!(animator.active());
     }
 
     #[test]
     fn start_no_loops() {
-        let mut animator = AnimatorData::new(2, Duration::from_secs(2)).limit_run_start(0);
+        let animator = AnimatorData::new(2, Duration::from_secs(2)).limit_run_start(0);
         assert!(!animator.active());
+    }
+
+    #[test]
+    fn limit_stops() {
+        let mut animator = AnimatorData::new(2, Duration::from_secs(2)).limit_run_start(2);
+
+        let frame = animator.animate(Duration::from_secs(2));
+        assert_eq!(frame, 1);
+        assert!(animator.active());
+
+        let frame = animator.animate(Duration::from_secs(3));
+        assert_eq!(frame, 0);
+        assert!(animator.active());
+
+        let frame = animator.animate(Duration::from_secs(1));
+        assert_eq!(frame, 1);
+        assert!(animator.active());
+
+        let stopped_frame = animator.animate(Duration::from_secs(2));
+        assert!(!animator.active());
+        let after_stopped_frame = animator.animate(Duration::from_secs(2));
+        assert_eq!(stopped_frame, after_stopped_frame);
     }
 }
