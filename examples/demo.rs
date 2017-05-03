@@ -12,8 +12,8 @@ pub struct MainGame<'f, 't, E, T, R, FL, TL, F>
     where E: input::EventPump,
           T: Texture,
           F: Font,
-          FL: 'f + Loader<'f, F> + FontLoader<'f, Font = F>,
-          TL: 't + Loader<'t, T> + TextureLoader<'t, Texture = T>
+          FL: 'f + FontLoader<'f, Font = F>,
+          TL: 't + TextureLoader<'t, Texture = T>
 {
     input_manager: input::Manager<E>,
     texture_manager: TextureManager<'t, T, TL>,
@@ -27,9 +27,8 @@ impl<'f, 't, E, T, R, FL, TL, F> MainGame<'f, 't, E, T, R, FL, TL, F>
           T: Texture,
           R: Renderer<'t, Texture = T>,
           F: Font,
-          TL: Loader<'t, T> + TextureLoader<'t, Texture = T>,
-          TL: FontTexturizer<'f, 't, Texture = T, Font = F>,
-          FL: Loader<'f, F> + FontLoader<'f, Font = F>
+          TL: TextureLoader<'t, Texture = T> + FontTexturizer<'f, 't, Texture = T, Font = F>,
+          FL: FontLoader<'f, Font = F>
 {
     pub fn new(renderer: R,
                input_manager: input::Manager<E>,
