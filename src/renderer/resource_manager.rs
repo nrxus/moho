@@ -11,15 +11,14 @@ pub type FontManager<'l, R, L> = ResourceManager<'l, FontDetails, R, L>;
 
 pub struct ResourceManager<'l, K, R, L>
     where K: Hash + Eq,
-          L: 'l + Loader<'l, R>
+          L: 'l
 {
     loader: &'l L,
     pub cache: HashMap<K, Rc<R>>,
 }
 
 impl<'l, K, R, L> ResourceManager<'l, K, R, L>
-    where K: Hash + Eq,
-          L: Loader<'l, R>
+    where K: Hash + Eq
 {
     pub fn new(loader: &'l L) -> Self {
         ResourceManager {

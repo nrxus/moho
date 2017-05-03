@@ -8,13 +8,7 @@ use moho::renderer::*;
 use moho::shape::*;
 use moho::timer::*;
 
-pub struct MainGame<'f, 't, E, T, R, FL, TL, F>
-    where E: input::EventPump,
-          T: Texture,
-          F: Font,
-          FL: 'f + FontLoader<'f, Font = F>,
-          TL: 't + TextureLoader<'t, Texture = T>
-{
+pub struct MainGame<'f, 't, TL: 't, FL: 'f, R, T, F, E> {
     input_manager: input::Manager<E>,
     texture_manager: TextureManager<'t, T, TL>,
     font_manager: FontManager<'f, F, FL>,
@@ -22,14 +16,7 @@ pub struct MainGame<'f, 't, E, T, R, FL, TL, F>
     texture_loader: &'t TL,
 }
 
-impl<'f, 't, E, T, R, FL, TL, F> MainGame<'f, 't, E, T, R, FL, TL, F>
-    where E: input::EventPump,
-          T: Texture,
-          R: Renderer<'t, Texture = T>,
-          F: Font,
-          TL: TextureLoader<'t, Texture = T> + FontTexturizer<'f, 't, Texture = T, Font = F>,
-          FL: FontLoader<'f, Font = F>
-{
+impl<'f, 't, TL, FL, R, T, F, E> MainGame<'f, 't, TL, FL, R, T, F, E> {
     pub fn new(renderer: R,
                input_manager: input::Manager<E>,
                font_loader: &'f FL,
@@ -46,7 +33,14 @@ impl<'f, 't, E, T, R, FL, TL, F> MainGame<'f, 't, E, T, R, FL, TL, F>
         }
     }
 
-    pub fn run(&mut self) -> Result<()> {
+    pub fn run(&mut self) -> Result<()>
+        where TL: TextureLoader<'t, Texture = T> + FontTexturizer<'f, 't, Texture = T, Font = F>,
+              FL: FontLoader<'f, Font = F>,
+              R: Renderer<'t, Texture = T>,
+              E: input::EventPump,
+              T: Texture,
+              F: Font
+    {
         let image = self.texture_manager.load("examples/background.png")?;
         let font_details = FontDetails {
             path: "examples/fonts/kenpixel_mini.ttf",

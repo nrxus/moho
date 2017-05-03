@@ -41,7 +41,7 @@ impl EventPump for SdlEventPump {
     }
 }
 
-pub struct Manager<P: EventPump> {
+pub struct Manager<P> {
     pub current: State,
     event_generator: EventGenerator<P>,
 }
