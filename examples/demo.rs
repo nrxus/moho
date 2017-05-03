@@ -8,40 +8,53 @@ use moho::renderer::*;
 use moho::shape::*;
 use moho::timer::*;
 
-pub struct MainGame<'ttf, E: input::EventPump, T, R, FL: 'ttf, F> {
+pub struct MainGame<'f, 't, E, T, R, FL, TL, F>
+    where E: input::EventPump,
+          T: Texture,
+          F: Font,
+          FL: 'f + Loader<'f, F> + FontLoader<'f, Font = F>,
+          TL: 't + Loader<'t, T> + ResourceLoader<'t, Texture = T>
+{
     input_manager: input::Manager<E>,
-    texture_manager: ResourceManager<String, T>,
-    font_manager: ResourceManager<FontDetails, F>,
+    texture_manager: TextureManager<'t, T, TL>,
+    font_manager: FontManager<'f, F, FL>,
     renderer: R,
-    font_loader: &'ttf FL,
+    texture_loader: &'t TL,
 }
 
-impl<'ttf, E: input::EventPump, T: Texture, R, FL, F: Font> MainGame<'ttf, E, T, R, FL, F> {
-    pub fn new(renderer: R, input_manager: input::Manager<E>, font_loader: &'ttf FL) -> Self {
-        let texture_manager = ResourceManager::new();
-        let font_manager = ResourceManager::new();
+impl<'f, 't, E, T, R, FL, TL, F> MainGame<'f, 't, E, T, R, FL, TL, F>
+    where E: input::EventPump,
+          T: Texture,
+          R: Renderer<'t, Texture = T>,
+          F: Font,
+          TL: Loader<'t, T> + ResourceLoader<'t, Texture = T>,
+          TL: FontTexturizer<'f, 't, Texture = T, Font = F>,
+          FL: Loader<'f, F> + FontLoader<'f, Font = F>
+{
+    pub fn new(renderer: R,
+               input_manager: input::Manager<E>,
+               font_loader: &'f FL,
+               texture_loader: &'t TL)
+               -> Self {
+        let texture_manager = TextureManager::new(texture_loader);
+        let font_manager = FontManager::new(font_loader);
         MainGame {
             input_manager: input_manager,
             texture_manager: texture_manager,
             font_manager: font_manager,
             renderer: renderer,
-            font_loader: font_loader,
+            texture_loader: texture_loader,
         }
     }
 
-    pub fn run(&mut self) -> Result<()>
-        where R: ResourceLoader<Texture = T> + Renderer<Texture = T>,
-              R: FontTexturizer<'ttf, Font = F, Texture = T>,
-              FL: FontLoader<'ttf, Font = F>
-    {
-        let image = self.texture_manager
-            .load("examples/background.png", &self.renderer)?;
+    pub fn run(&mut self) -> Result<()> {
+        let image = self.texture_manager.load("examples/background.png")?;
         let font_details = FontDetails {
             path: "examples/fonts/kenpixel_mini.ttf",
             size: 48,
         };
         let button_text = "HOVER ON ME";
-        let font = self.font_manager.load(&font_details, self.font_loader)?;
+        let font = self.font_manager.load(&font_details)?;
         let button_dims = font.measure(button_text)?;
 
         let rect = Rectangle {
@@ -59,9 +72,10 @@ impl<'ttf, E: input::EventPump, T: Texture, R, FL, F: Font> MainGame<'ttf, E, T,
             } else {
                 ColorRGBA(255, 255, 0, 255)
             };
-            let button_texture = self.renderer.texturize(&font, button_text, &color)?;
+            let button_texture = self.texture_loader
+                .texturize(&font, button_text, &color)?;
             let fps = format!("{}", game_time.fps() as u32);
-            let font_texture = self.renderer
+            let font_texture = self.texture_loader
                 .texturize(&font, &fps, &ColorRGBA(255, 255, 0, 255))?;
             let font_dst = glm::ivec4(0,
                                       0,
@@ -87,10 +101,11 @@ impl<'ttf, E: input::EventPump, T: Texture, R, FL, F: Font> MainGame<'ttf, E, T,
 fn main() {
     const WINDOW_WIDTH: u32 = 1280;
     const WINDOW_HEIGHT: u32 = 720;
-    let (renderer, input_manager) = moho::init("MohoGame", WINDOW_WIDTH, WINDOW_HEIGHT).unwrap();
-    let loader = sdl2::ttf::init()
+    let (renderer, creator, input_manager) = moho::init("MohoGame", WINDOW_WIDTH, WINDOW_HEIGHT)
+        .unwrap();
+    let font_loader = sdl2::ttf::init()
         .chain_err(|| "cannot init loader")
         .unwrap();
-    let mut game = MainGame::new(renderer, input_manager, &loader);
+    let mut game = MainGame::new(renderer, input_manager, &font_loader, &creator);
     game.run().unwrap();
 }

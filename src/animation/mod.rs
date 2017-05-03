@@ -63,13 +63,13 @@ impl<T> Animation<T> {
     }
 }
 
-impl<T, R: Renderer<Texture = T> + Show> Scene<R> for Animation<T> {
+impl<'t, T, R: Renderer<'t, Texture = T> + Show> Scene<R> for Animation<T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
         renderer.show(&self.tile())
     }
 }
 
-impl<T, R: Renderer<Texture = T> + Show> Drawable<R> for Animation<T> {
+impl<'t, T, R: Renderer<'t, Texture = T> + Show> Drawable<R> for Animation<T> {
     fn draw(&self, dst_rect: &glm::IVec4, renderer: &mut R) -> Result<()> {
         renderer.show_at(&self.tile(), dst_rect)
     }
@@ -103,7 +103,7 @@ impl<T> LimitRunAnimation<T> {
     }
 }
 
-impl<T, R: Renderer<Texture = T> + Show> Scene<R> for LimitRunAnimation<T> {
+impl<'t, T, R: Renderer<'t, Texture = T> + Show> Scene<R> for LimitRunAnimation<T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
         match self.tile() {
             Some(ref t) => renderer.show(t),
@@ -112,7 +112,7 @@ impl<T, R: Renderer<Texture = T> + Show> Scene<R> for LimitRunAnimation<T> {
     }
 }
 
-impl<T, R: Renderer<Texture = T> + Show> Drawable<R> for LimitRunAnimation<T> {
+impl<'t, T, R: Renderer<'t, Texture = T> + Show> Drawable<R> for LimitRunAnimation<T> {
     fn draw(&self, dst_rect: &glm::IVec4, renderer: &mut R) -> Result<()> {
         match self.tile() {
             Some(ref t) => renderer.show_at(t, dst_rect),
@@ -250,7 +250,7 @@ mod tests {
         calls: Vec<RenderingCall>,
     }
 
-    impl Renderer for MockRenderer {
+    impl<'l> Renderer<'l> for MockRenderer {
         type Texture = MockTexture;
 
         fn clear(&mut self) {

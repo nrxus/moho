@@ -1,4 +1,4 @@
-use renderer::Loader;
+use renderer::{FontDetails, Loader};
 use errors::*;
 
 use std::borrow::Borrow;
@@ -6,51 +6,32 @@ use std::hash::Hash;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub struct ResourceManager<K, R>
-    where K: Hash + Eq
+pub type TextureManager<'l, R, L> = ResourceManager<'l, String, R, L>;
+pub type FontManager<'l, R, L> = ResourceManager<'l, FontDetails, R, L>;
+
+pub struct ResourceManager<'l, K, R, L>
+    where K: Hash + Eq,
+          L: 'l + Loader<'l, R>
 {
+    loader: &'l L,
     pub cache: HashMap<K, Rc<R>>,
 }
 
-impl<K, R> ResourceManager<K, R>
-    where K: Hash + Eq
+impl<'l, K, R, L> ResourceManager<'l, K, R, L>
+    where K: Hash + Eq,
+          L: Loader<'l, R>
 {
-    pub fn new() -> Self {
-        ResourceManager { cache: HashMap::new() }
-    }
-
-    pub fn loader<'a, 'l, L>(&'a mut self, loader: &'l L) -> LoadedManager<'a, 'l, K, R, L> {
-        LoadedManager {
+    pub fn new(loader: &'l L) -> Self {
+        ResourceManager {
+            cache: HashMap::new(),
             loader: loader,
-            cache: &mut self.cache,
         }
     }
 
-    pub fn load<'l, L, D>(&mut self, details: &D, loader: &'l L) -> Result<Rc<R>>
-        where K: Borrow<D> + for<'b> From<&'b D>,
-              L: Loader<'l, R, D>,
-              D: Eq + Hash + ?Sized
-    {
-        self.loader(loader).load(details)
-    }
-}
-
-pub struct LoadedManager<'c, 'l, K, R, L>
-    where K: 'c + Hash + Eq,
-          R: 'c,
-          L: 'l
-{
-    loader: &'l L,
-    cache: &'c mut HashMap<K, Rc<R>>,
-}
-
-impl<'c, 'l, K, R, L> LoadedManager<'c, 'l, K, R, L>
-    where K: Hash + Eq
-{
     pub fn load<D>(&mut self, details: &D) -> Result<Rc<R>>
-        where L: Loader<'l, R, D>,
-              D: Eq + Hash + ?Sized,
-              K: Borrow<D> + for<'a> From<&'a D>
+        where K: Borrow<D> + for<'b> From<&'b D>,
+              L: Loader<'l, R, Args = D>,
+              D: Eq + Hash + ?Sized
     {
         self.cache
             .get(details)
@@ -71,36 +52,39 @@ mod tests {
 
     #[test]
     fn loads_resource() {
-        let (mut subject, mut loader, tracker) = init(None);
-        let texture = subject.load("mypath/", &mut loader).unwrap();
+        let (loader, tracker) = loader(None);
+        let mut subject: ResourceManager<String, _, _> = ResourceManager::new(&loader);
+        let texture = subject.load("mypath/").unwrap();
         assert_eq!(texture.path, "mypath/");
         assert_eq!(tracker.get(), Counter(1));
     }
 
     #[test]
     fn returns_error() {
-        let (mut subject, mut loader, tracker) = init(Some("FAIL".into()));
-        let result = subject.load("mypath/", &mut loader);
+        let (loader, tracker) = loader(Some("FAIL".into()));
+        let mut subject: ResourceManager<String, _, _> = ResourceManager::new(&loader);
+        let result = subject.load("mypath/");
         assert_eq!(result.is_err(), true);
         assert_eq!(tracker.get(), Counter(1));
     }
 
     #[test]
     fn caches_resources() {
-        let (mut subject, mut loader, tracker) = init(None);
+        let (loader, tracker) = loader(None);
+        let mut subject: ResourceManager<String, _, _> = ResourceManager::new(&loader);
 
         //get new resource - number of calls 1
-        let texture = subject.load("mypath/1", &mut loader).unwrap();
+        let texture = subject.load("mypath/1").unwrap();
         assert_eq!(texture.path, "mypath/1");
         assert_eq!(tracker.get(), Counter(1));
 
         //get new resource - number of calls 1
-        let texture = subject.load("mypath/1", &mut loader).unwrap();
+        let texture = subject.load("mypath/1").unwrap();
         assert_eq!(texture.path, "mypath/1");
         assert_eq!(tracker.get(), Counter(1));
 
         //get new resource - number of calls 1
-        let texture = subject.load("mypath/2", &mut loader).unwrap();
+        let texture = subject.load("mypath/2").unwrap();
         assert_eq!(texture.path, "mypath/2");
         assert_eq!(tracker.get(), Counter(2));
     }
@@ -126,7 +110,8 @@ mod tests {
         }
     }
 
-    impl<'a> Loader<'a, MockResource, str> for MockLoader {
+    impl<'a> Loader<'a, MockResource> for MockLoader {
+        type Args = str;
         fn load(&self, data: &str) -> Result<MockResource> {
             let mut counter = self.tracker.get();
             counter.increase();
@@ -138,15 +123,12 @@ mod tests {
         }
     }
 
-    fn init(error: Option<String>)
-            -> (ResourceManager<String, MockResource>, MockLoader, LoadTracker) {
+    fn loader(error: Option<String>) -> (MockLoader, LoadTracker) {
         let tracker = Rc::new(Cell::new(Counter(0)));
         let loader = MockLoader {
             error: error,
             tracker: tracker.clone(),
         };
-
-        let subject = ResourceManager::new();
-        (subject, loader, tracker)
+        (loader, tracker)
     }
 }

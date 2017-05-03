@@ -8,14 +8,18 @@ pub trait Font {
 }
 
 pub trait FontLoader<'a>
-    : Loader<'a, <Self as FontLoader<'a>>::Font, FontDetails> {
+    : Loader<'a, <Self as FontLoader<'a>>::Font, Args = FontDetails> {
     type Font: Font;
 }
 
-pub trait FontTexturizer<'a> {
+pub trait FontTexturizer<'f, 't> {
     type Texture: Texture;
     type Font: Font;
-    fn texturize(&self, font: &Self::Font, text: &str, color: &ColorRGBA) -> Result<Self::Texture>;
+    fn texturize(&'t self,
+                 font: &Self::Font,
+                 text: &str,
+                 color: &ColorRGBA)
+                 -> Result<Self::Texture>;
 }
 
 #[derive(PartialEq, Eq, Hash)]

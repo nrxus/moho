@@ -6,31 +6,32 @@ use renderer;
 use glm;
 use sdl2::image::LoadTexture;
 use sdl2::rect;
-use sdl2::render;
+use sdl2::render::{self, RenderTarget};
 
-impl renderer::Texture for render::Texture {
+impl<'c> renderer::Texture for render::Texture<'c> {
     fn dims(&self) -> glm::UVec2 {
         let query = self.query();
         glm::uvec2(query.width, query.height)
     }
 }
 
-impl renderer::ResourceLoader for render::Renderer<'static> {
-    type Texture = render::Texture;
+impl<'c, T> renderer::ResourceLoader<'c> for render::TextureCreator<T> {
+    type Texture = render::Texture<'c>;
 }
 
-impl<'a> renderer::Loader<'a, render::Texture, str> for render::Renderer<'static> {
-    fn load(&'a self, path: &str) -> Result<render::Texture> {
+impl<'c, T> renderer::Loader<'c, render::Texture<'c>> for render::TextureCreator<T> {
+    type Args = str;
+    fn load(&'c self, path: &str) -> Result<render::Texture<'c>> {
         self.load_texture(path).map_err(Into::into)
     }
 }
 
 use sdl2::render::Texture as SdlTexture;
 
-impl renderer::Renderer for render::Renderer<'static> {
-    type Texture = SdlTexture;
+impl<'t, T: RenderTarget> renderer::Renderer<'t> for render::Canvas<T> {
+    type Texture = SdlTexture<'t>;
     fn copy(&mut self,
-            texture: &SdlTexture,
+            texture: &Self::Texture,
             dst: Option<&glm::IVec4>,
             src: Option<&glm::UVec4>)
             -> Result<()> {
@@ -52,9 +53,9 @@ impl renderer::Renderer for render::Renderer<'static> {
     }
 }
 
-impl renderer::Show for render::Renderer<'static> {}
+impl<T: RenderTarget> renderer::Show for render::Canvas<T> {}
 
-impl renderer::Window for render::Renderer<'static> {
+impl<T: RenderTarget> renderer::Window for render::Canvas<T> {
     fn output_size(&self) -> Result<glm::UVec2> {
         let (width, height) = self.output_size()?;
         Ok(glm::uvec2(width, height))

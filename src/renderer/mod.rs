@@ -3,7 +3,7 @@ mod resource_manager;
 mod sdl2;
 
 pub use self::font::*;
-pub use self::resource_manager::ResourceManager;
+pub use self::resource_manager::{FontManager, ResourceManager, TextureManager};
 
 use errors::*;
 
@@ -17,12 +17,13 @@ pub trait Texture {
     fn dims(&self) -> glm::UVec2;
 }
 
-pub trait Loader<'a, T, D: ?Sized> {
-    fn load(&'a self, data: &D) -> Result<T>;
+pub trait Loader<'a, T> {
+    type Args: ?Sized;
+    fn load(&'a self, data: &Self::Args) -> Result<T>;
 }
 
-pub trait ResourceLoader
-    : for<'a> Loader<'a, <Self as ResourceLoader>::Texture, str> {
+pub trait ResourceLoader<'a>
+    : Loader<'a, <Self as ResourceLoader<'a>>::Texture, Args = str> {
     type Texture: Texture;
 }
 
@@ -38,7 +39,7 @@ pub trait Scene<R: ?Sized> {
     fn show(&self, renderer: &mut R) -> Result<()>;
 }
 
-pub trait Renderer {
+pub trait Renderer<'t> {
     type Texture;
 
     fn clear(&mut self);
