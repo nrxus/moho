@@ -49,7 +49,7 @@ pub struct Manager<P: EventPump> {
 impl<P: EventPump> Manager<P> {
     pub fn new(event_pump: P) -> Manager<P> {
         Manager {
-            current: State::new(),
+            current: State::default(),
             event_generator: EventGenerator::new(event_pump),
         }
     }

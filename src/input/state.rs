@@ -9,27 +9,25 @@ use sdl2::event::Event;
 use std::collections::HashSet;
 
 #[derive(Clone)]
+struct MouseCoords(glm::IVec2);
+
+impl Default for MouseCoords {
+    fn default() -> MouseCoords {
+        MouseCoords(glm::IVec2::zero())
+    }
+}
+
+#[derive(Clone, Default)]
 pub struct State {
     pressed_keys: HashSet<Keycode>,
     pressed_buttons: HashSet<MouseButton>,
     prev_pressed_keys: HashSet<Keycode>,
     prev_pressed_buttons: HashSet<MouseButton>,
-    mouse_coords: glm::IVec2,
+    mouse_coords: MouseCoords,
     game_quit: bool,
 }
 
 impl State {
-    pub fn new() -> State {
-        State {
-            pressed_keys: HashSet::new(),
-            pressed_buttons: HashSet::new(),
-            prev_pressed_keys: HashSet::new(),
-            prev_pressed_buttons: HashSet::new(),
-            mouse_coords: glm::IVec2::zero(),
-            game_quit: false,
-        }
-    }
-
     pub fn is_key_down(&self, keycode: Keycode) -> bool {
         self.pressed_keys.contains(&keycode)
     }
@@ -53,7 +51,7 @@ impl State {
     }
 
     pub fn mouse_coords(&self) -> glm::IVec2 {
-        self.mouse_coords
+        self.mouse_coords.0
     }
 
     pub fn game_quit(&self) -> bool {
@@ -76,7 +74,7 @@ impl State {
                     self.pressed_keys.remove(&keycode);
                 }
                 Event::MouseMotion { x, y, .. } => {
-                    self.mouse_coords = glm::ivec2(x, y);
+                    self.mouse_coords = MouseCoords(glm::ivec2(x, y));
                 }
                 Event::MouseButtonDown { mouse_btn, .. } => {
                     self.pressed_buttons.insert(mouse_btn);

@@ -63,7 +63,7 @@ impl Animator {
 
     pub fn animate(&mut self, delta: Duration) -> u32 {
         self.frame.advance(delta, self.data.duration);
-        self.frame.index = self.frame.index % self.data.max;
+        self.frame.index %= self.data.max;
         self.frame.index
     }
 }
