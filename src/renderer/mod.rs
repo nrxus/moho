@@ -22,8 +22,8 @@ pub trait Loader<'a, T> {
     fn load(&'a self, data: &Self::Args) -> Result<T>;
 }
 
-pub trait ResourceLoader<'a>
-    : Loader<'a, <Self as ResourceLoader<'a>>::Texture, Args = str> {
+pub trait TextureLoader<'a>
+    : Loader<'a, <Self as TextureLoader<'a>>::Texture, Args = str> {
     type Texture: Texture;
 }
 

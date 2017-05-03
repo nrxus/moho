@@ -15,7 +15,7 @@ impl<'c> renderer::Texture for render::Texture<'c> {
     }
 }
 
-impl<'c, T> renderer::ResourceLoader<'c> for render::TextureCreator<T> {
+impl<'c, T> renderer::TextureLoader<'c> for render::TextureCreator<T> {
     type Texture = render::Texture<'c>;
 }
 
