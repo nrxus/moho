@@ -8,15 +8,21 @@ use moho::renderer::*;
 use moho::shape::*;
 use moho::timer::*;
 
-pub struct MainGame<'f, 't, TL: 't, FL: 'f, R, T, F, E> {
+pub struct MainGame<'f, 't, TL: 't, FL: 'f, R, E>
+    where TL: TextureLoader<'t>,
+          FL: FontLoader<'f>
+{
     input_manager: input::Manager<E>,
-    texture_manager: TextureManager<'t, T, TL>,
-    font_manager: FontManager<'f, F, FL>,
+    texture_manager: TextureManager<'t, TL>,
+    font_manager: FontManager<'f, FL>,
     renderer: R,
     texture_loader: &'t TL,
 }
 
-impl<'f, 't, TL, FL, R, T, F, E> MainGame<'f, 't, TL, FL, R, T, F, E> {
+impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
+    where TL: TextureLoader<'t>,
+          FL: FontLoader<'f>
+{
     pub fn new(renderer: R,
                input_manager: input::Manager<E>,
                font_loader: &'f FL,
@@ -34,12 +40,12 @@ impl<'f, 't, TL, FL, R, T, F, E> MainGame<'f, 't, TL, FL, R, T, F, E> {
     }
 
     pub fn run(&mut self) -> Result<()>
-        where TL: TextureLoader<'t, Texture = T> + FontTexturizer<'f, 't, Texture = T, Font = F>,
-              FL: FontLoader<'f, Font = F>,
-              R: Renderer<'t, Texture = T>,
-              E: input::EventPump,
-              T: Texture,
-              F: Font
+        where TL: FontTexturizer<'f,
+                                 't,
+                                 Texture = <TL as TextureLoader<'t>>::Texture,
+                                 Font = FL::Font>,
+              R: Renderer<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
+              E: input::EventPump
     {
         let image = self.texture_manager.load("examples/background.png")?;
         let font_details = FontDetails {
