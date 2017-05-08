@@ -11,6 +11,6 @@ num-traits = ">=0.1.36"
 error-chain = ">=0.9"
 
 [dependencies.sdl2]
-git = "https://github.com/AngryLawyer/rust-sdl2"
+version = ">=0.30.0-beta"
 default-features = false
 features = ["image", "ttf"]
