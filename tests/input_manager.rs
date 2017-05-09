@@ -76,10 +76,18 @@ fn release_keys() {
 
     let mut subject = Manager::new(MockEventPump { streams: streams });
     {
+        let state = &subject.current;
+        assert!(!state.did_release_key(Keycode::Down));
+        assert!(!state.did_release_key(Keycode::Up));
+    }
+    {
         let state = subject.update();
         // Both keys set after
-        assert_eq!(state.is_key_down(Keycode::Down), true);
-        assert_eq!(state.is_key_down(Keycode::Up), true);
+        assert!(state.is_key_down(Keycode::Down));
+        assert!(state.is_key_down(Keycode::Up));
+        // None of the keys are recently released
+        assert!(!state.did_release_key(Keycode::Down));
+        assert!(!state.did_release_key(Keycode::Up));
     }
 
     let state = subject.update();
@@ -87,6 +95,8 @@ fn release_keys() {
     // Only the one released unset after
     assert_eq!(state.is_key_down(Keycode::Down), false);
     assert_eq!(state.is_key_down(Keycode::Up), true);
+    assert!(state.did_release_key(Keycode::Down));
+    assert!(!state.did_release_key(Keycode::Up));
 }
 
 #[test]

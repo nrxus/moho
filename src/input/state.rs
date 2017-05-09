@@ -36,6 +36,10 @@ impl State {
         self.pressed_keys.contains(&keycode) && !self.prev_pressed_keys.contains(&keycode)
     }
 
+    pub fn did_release_key(&self, keycode: Keycode) -> bool {
+        !self.pressed_keys.contains(&keycode) && self.prev_pressed_keys.contains(&keycode)
+    }
+
     pub fn did_click_mouse(&self, mouse_button: MouseButton) -> bool {
         self.pressed_buttons.contains(&mouse_button) &&
         !self.prev_pressed_buttons.contains(&mouse_button)
