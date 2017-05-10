@@ -24,8 +24,8 @@ impl<T> AnimationData<T> {
         Animation::from_data(self)
     }
 
-    pub fn limit_run_start(self, loops: u32) -> LimitRunAnimation<T> {
-        LimitRunAnimation::from_data(self, loops)
+    pub fn limit_run_start(self, loops: u32) -> LimitRun<T> {
+        LimitRun::from_data(self, loops)
     }
 }
 
@@ -59,18 +59,18 @@ impl<T> Animation<T> {
 }
 
 #[derive(Debug)]
-pub struct LimitRunAnimation<T> {
+pub struct LimitRun<T> {
     animator: animator::LimitRun,
     sheet: TileSheet<T>,
 }
 
-impl<T> LimitRunAnimation<T> {
+impl<T> LimitRun<T> {
     pub fn from_data(data: AnimationData<T>, loops: u32) -> Self {
         Self::new(data.data.limit_run_start(loops), data.sheet)
     }
 
     pub fn new(animator: animator::LimitRun, sheet: TileSheet<T>) -> Self {
-        LimitRunAnimation {
+        LimitRun {
             animator: animator,
             sheet: sheet,
         }
