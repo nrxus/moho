@@ -1,9 +1,11 @@
 use std::time::Duration;
 
 mod animator;
+mod limit_run_animator;
 mod tile_sheet;
 
-pub use self::animator::{Animator, AnimatorData, LimitRunAnimator};
+pub use self::limit_run_animator::LimitRunAnimator;
+pub use self::animator::{Animator, AnimatorData};
 pub use self::tile_sheet::{Tile, TileSheet};
 
 #[derive(Clone, Debug)]
