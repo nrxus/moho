@@ -1,17 +1,17 @@
-use super::animator::{AnimatorData, Frame};
+use super::{AnimatorData, Frame};
 
 use std::time::Duration;
 
 #[derive(Debug)]
-pub struct LimitRunAnimator {
+pub struct LimitRun {
     data: AnimatorData,
     frame: Frame,
     remaining_loops: u32,
 }
 
-impl LimitRunAnimator {
-    pub fn new(data: AnimatorData, loops: u32) -> LimitRunAnimator {
-        LimitRunAnimator {
+impl LimitRun {
+    pub fn new(data: AnimatorData, loops: u32) -> LimitRun {
+        LimitRun {
             data: data,
             remaining_loops: loops,
             frame: Frame::default(),

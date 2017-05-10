@@ -1,21 +1,19 @@
 use std::time::Duration;
 
 mod animator;
-mod limit_run_animator;
 mod tile_sheet;
 
-pub use self::limit_run_animator::LimitRunAnimator;
-pub use self::animator::{Animator, AnimatorData};
+pub use self::animator::Animator;
 pub use self::tile_sheet::{Tile, TileSheet};
 
 #[derive(Clone, Debug)]
 pub struct AnimationData<T> {
-    data: AnimatorData,
+    data: animator::AnimatorData,
     sheet: TileSheet<T>,
 }
 
 impl<T> AnimationData<T> {
-    pub fn new(data: AnimatorData, sheet: TileSheet<T>) -> AnimationData<T> {
+    pub fn new(data: animator::AnimatorData, sheet: TileSheet<T>) -> AnimationData<T> {
         AnimationData {
             data: data,
             sheet: sheet,
@@ -62,7 +60,7 @@ impl<T> Animation<T> {
 
 #[derive(Debug)]
 pub struct LimitRunAnimation<T> {
-    animator: LimitRunAnimator,
+    animator: animator::LimitRun,
     sheet: TileSheet<T>,
 }
 
@@ -71,7 +69,7 @@ impl<T> LimitRunAnimation<T> {
         Self::new(data.data.limit_run_start(loops), data.sheet)
     }
 
-    pub fn new(animator: LimitRunAnimator, sheet: TileSheet<T>) -> Self {
+    pub fn new(animator: animator::LimitRun, sheet: TileSheet<T>) -> Self {
         LimitRunAnimation {
             animator: animator,
             sheet: sheet,
@@ -98,7 +96,7 @@ mod tests {
     #[test]
     fn tile() {
         let texture = Rc::new(MockTexture { dims: glm::uvec2(10, 10) });
-        let animator = AnimatorData::new(3, Duration::from_secs(5));
+        let animator = animator::AnimatorData::new(3, Duration::from_secs(5));
         let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
         let data = AnimationData::new(animator, sheet);
 
@@ -111,7 +109,7 @@ mod tests {
     #[test]
     fn limit_run_tile() {
         let texture = Rc::new(MockTexture { dims: glm::uvec2(10, 10) });
-        let animator = AnimatorData::new(3, Duration::from_secs(5));
+        let animator = animator::AnimatorData::new(3, Duration::from_secs(5));
         let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
         let data = AnimationData::new(animator, sheet);
 
