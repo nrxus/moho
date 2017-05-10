@@ -1,16 +1,16 @@
-use super::{AnimatorData, Frame};
+use super::data::{Data, Frame};
 
 use std::time::Duration;
 
 #[derive(Debug)]
 pub struct LimitRun {
-    data: AnimatorData,
+    data: Data,
     frame: Frame,
     remaining_loops: u32,
 }
 
 impl LimitRun {
-    pub fn new(data: AnimatorData, loops: u32) -> LimitRun {
+    pub fn new(data: Data, loops: u32) -> LimitRun {
         LimitRun {
             data: data,
             remaining_loops: loops,
@@ -59,19 +59,19 @@ mod test {
 
     #[test]
     fn limit_run_start() {
-        let animator = AnimatorData::new(2, Duration::from_secs(2)).limit_run_start(2);
+        let animator = Data::new(2, Duration::from_secs(2)).limit_run_start(2);
         assert_eq!(animator.frame(), Some(0));
     }
 
     #[test]
     fn start_no_loops() {
-        let animator = AnimatorData::new(2, Duration::from_secs(2)).limit_run_start(0);
+        let animator = Data::new(2, Duration::from_secs(2)).limit_run_start(0);
         assert_eq!(animator.frame(), None);
     }
 
     #[test]
     fn limit_stops() {
-        let mut animator = AnimatorData::new(2, Duration::from_secs(2)).limit_run_start(2);
+        let mut animator = Data::new(2, Duration::from_secs(2)).limit_run_start(2);
 
         let frame = animator.animate(Duration::from_secs(2));
         assert_eq!(frame, Some(1));
@@ -91,7 +91,7 @@ mod test {
 
     #[test]
     fn restart() {
-        let mut animator = AnimatorData::new(2, Duration::from_secs(2)).limit_run_start(1);
+        let mut animator = Data::new(2, Duration::from_secs(2)).limit_run_start(1);
 
         let frame = animator.animate(Duration::from_secs(5));
         assert_eq!(frame, None);

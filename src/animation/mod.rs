@@ -8,12 +8,12 @@ pub use self::tile_sheet::{Tile, TileSheet};
 
 #[derive(Clone, Debug)]
 pub struct AnimationData<T> {
-    data: animator::AnimatorData,
+    data: animator::Data,
     sheet: TileSheet<T>,
 }
 
 impl<T> AnimationData<T> {
-    pub fn new(data: animator::AnimatorData, sheet: TileSheet<T>) -> AnimationData<T> {
+    pub fn new(data: animator::Data, sheet: TileSheet<T>) -> AnimationData<T> {
         AnimationData {
             data: data,
             sheet: sheet,
@@ -96,7 +96,7 @@ mod tests {
     #[test]
     fn tile() {
         let texture = Rc::new(MockTexture { dims: glm::uvec2(10, 10) });
-        let animator = animator::AnimatorData::new(3, Duration::from_secs(5));
+        let animator = animator::Data::new(3, Duration::from_secs(5));
         let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
         let data = AnimationData::new(animator, sheet);
 
@@ -109,7 +109,7 @@ mod tests {
     #[test]
     fn limit_run_tile() {
         let texture = Rc::new(MockTexture { dims: glm::uvec2(10, 10) });
-        let animator = animator::AnimatorData::new(3, Duration::from_secs(5));
+        let animator = animator::Data::new(3, Duration::from_secs(5));
         let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
         let data = AnimationData::new(animator, sheet);
 
