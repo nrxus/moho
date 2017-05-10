@@ -1,17 +1,17 @@
 use std::time::Duration;
 
-mod animator;
 mod data;
 mod tile_sheet;
 
+pub mod animator;
 pub use self::data::Data;
 pub use self::animator::Animator;
 pub use self::tile_sheet::{Tile, TileSheet};
 
 #[derive(Debug)]
 pub struct Animation<T> {
-    animator: Animator,
-    sheet: TileSheet<T>,
+    pub animator: Animator,
+    pub sheet: TileSheet<T>,
 }
 
 impl<T> Animation<T> {
@@ -39,8 +39,8 @@ impl<T> Animation<T> {
 
 #[derive(Debug)]
 pub struct LimitRun<T> {
-    animator: animator::LimitRun,
-    sheet: TileSheet<T>,
+    pub animator: animator::LimitRun,
+    pub sheet: TileSheet<T>,
 }
 
 impl<T> LimitRun<T> {
