@@ -10,6 +10,17 @@ use errors::*;
 use glm;
 use sdl2::rect;
 
+pub struct Rotation {
+    pub angle: f64,
+    pub center: glm::IVec2,
+}
+
+pub enum TextureFlip {
+    Horizontal,
+    Vertical,
+    Both,
+}
+
 pub struct DrawBuilder<'a, 't: 'a, R>
     where R: 'a + Renderer<'t> + ?Sized,
           R::Texture: 'a
@@ -18,6 +29,8 @@ pub struct DrawBuilder<'a, 't: 'a, R>
     texture: &'a R::Texture,
     dst_rect: Option<&'a glm::IVec4>,
     src_rect: Option<&'a glm::UVec4>,
+    rotation: Option<&'a Rotation>,
+    flip: Option<TextureFlip>,
 }
 
 impl<'a, 't: 'a, R> DrawBuilder<'a, 't, R>
@@ -29,6 +42,8 @@ impl<'a, 't: 'a, R> DrawBuilder<'a, 't, R>
             texture: texture,
             dst_rect: None,
             src_rect: None,
+            rotation: None,
+            flip: None,
         }
     }
 
@@ -42,9 +57,23 @@ impl<'a, 't: 'a, R> DrawBuilder<'a, 't, R>
         self
     }
 
+    pub fn flip(mut self, flip: TextureFlip) -> Self {
+        self.flip = Some(flip);
+        self
+    }
+
+    pub fn rotate(mut self, rotation: &'a Rotation) -> Self {
+        self.rotation = Some(rotation);
+        self
+    }
+
     pub fn copy(self) -> Result<()> {
         self.renderer
-            .copy(self.texture, self.dst_rect, self.src_rect)
+            .copy(self.texture,
+                  self.dst_rect,
+                  self.src_rect,
+                  self.rotation,
+                  self.flip)
     }
 }
 
@@ -86,7 +115,9 @@ pub trait Renderer<'t> {
     fn copy(&mut self,
             texture: &Self::Texture,
             dst: Option<&glm::IVec4>,
-            src: Option<&glm::UVec4>)
+            src: Option<&glm::UVec4>,
+            rotation: Option<&Rotation>,
+            flip: Option<TextureFlip>)
             -> Result<()>;
 
     fn with<'a>(&'a mut self, texture: &'a Self::Texture) -> DrawBuilder<'a, 't, Self> {

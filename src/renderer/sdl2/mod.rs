@@ -33,11 +33,29 @@ impl<'t, T: RenderTarget> renderer::Renderer<'t> for render::Canvas<T> {
     fn copy(&mut self,
             texture: &Self::Texture,
             dst: Option<&glm::IVec4>,
-            src: Option<&glm::UVec4>)
+            src: Option<&glm::UVec4>,
+            rotation: Option<&renderer::Rotation>,
+            flip: Option<renderer::TextureFlip>)
             -> Result<()> {
         let src = src.map(|r| rect::Rect::new(r.x as i32, r.y as i32, r.z, r.w));
         let dst = dst.map(|r| rect::Rect::new(r.x, r.y, r.z as u32, r.w as u32));
-        self.copy(texture, src, dst).map_err(Into::into)
+        match (rotation, flip) {
+            (None, None) => self.copy(texture, src, dst).map_err(Into::into),
+            (r, f) => {
+                let (angle, center) = match r {
+                    None => (0., None),
+                    Some(r) => (r.angle, Some(rect::Point::new(r.center.x, r.center.y))),
+                };
+                let (hflip, vflip) = match f {
+                    None => (false, false),
+                    Some(renderer::TextureFlip::Horizontal) => (true, false),
+                    Some(renderer::TextureFlip::Vertical) => (false, true),
+                    Some(renderer::TextureFlip::Both) => (true, true),
+                };
+                self.copy_ex(texture, src, dst, angle, center, hflip, vflip)
+                    .map_err(Into::into)
+            }
+        }
     }
 
     fn clear(&mut self) {
