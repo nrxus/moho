@@ -1,4 +1,4 @@
-use renderer::{DrawBuilder, Drawable, Renderer, Texture};
+use renderer::{Asset, DrawBuilder, Renderer, Texture};
 
 use glm;
 
@@ -41,7 +41,7 @@ impl<T> TileSheet<T> {
     }
 }
 
-impl<'t, R: Renderer<'t>> Drawable<'t, R> for Tile<R::Texture> {
+impl<'t, R: Renderer<'t>> Asset<'t, R> for Tile<R::Texture> {
     fn draw<'a>(&'a self, renderer: &'a mut R) -> DrawBuilder<'a, 't, R> {
         renderer.with(&*self.texture).from(&self.src)
     }

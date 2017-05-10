@@ -69,7 +69,7 @@ pub trait Window {
     fn output_size(&self) -> Result<glm::UVec2>;
 }
 
-pub trait Drawable<'t, R: Renderer<'t> + ?Sized> {
+pub trait Asset<'t, R: Renderer<'t> + ?Sized> {
     fn draw<'a>(&'a self, renderer: &'a mut R) -> DrawBuilder<'a, 't, R>;
 }
 
@@ -93,8 +93,8 @@ pub trait Renderer<'t> {
         DrawBuilder::new(self, texture)
     }
 
-    fn show_at<'a, D>(&'a mut self, drawable: &'a D) -> DrawBuilder<'a, 't, Self>
-        where D: Drawable<'t, Self>
+    fn with_asset<'a, A>(&'a mut self, drawable: &'a A) -> DrawBuilder<'a, 't, Self>
+        where A: Asset<'t, Self>
     {
         drawable.draw(self)
     }
