@@ -69,8 +69,8 @@ pub trait Window {
     fn output_size(&self) -> Result<glm::UVec2>;
 }
 
-pub trait Drawable<R: ?Sized> {
-    fn draw(&self, dst_rect: &glm::IVec4, renderer: &mut R) -> Result<()>;
+pub trait Drawable<'t, R: Renderer<'t> + ?Sized> {
+    fn draw<'a>(&'a self, renderer: &'a mut R) -> DrawBuilder<'a, 't, R>;
 }
 
 pub trait Scene<R: ?Sized> {
@@ -88,17 +88,20 @@ pub trait Renderer<'t> {
             dst: Option<&glm::IVec4>,
             src: Option<&glm::UVec4>)
             -> Result<()>;
+
     fn with<'a>(&'a mut self, texture: &'a Self::Texture) -> DrawBuilder<'a, 't, Self> {
         DrawBuilder::new(self, texture)
+    }
+
+    fn show_at<'a, D>(&'a mut self, drawable: &'a D) -> DrawBuilder<'a, 't, Self>
+        where D: Drawable<'t, Self>
+    {
+        drawable.draw(self)
     }
 }
 
 pub trait Show {
     fn show<S: Scene<Self>>(&mut self, scene: &S) -> Result<()> {
         scene.show(self)
-    }
-
-    fn show_at<D: Drawable<Self>>(&mut self, drawable: &D, dst_rect: &glm::IVec4) -> Result<()> {
-        drawable.draw(dst_rect, self)
     }
 }

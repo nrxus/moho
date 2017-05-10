@@ -1,8 +1,3 @@
-use errors::*;
-use renderer::{Drawable, Renderer, Scene, Show};
-
-use glm;
-
 use std::time::Duration;
 
 mod animator;
@@ -63,18 +58,6 @@ impl<T> Animation<T> {
     }
 }
 
-impl<'t, T, R: Renderer<'t, Texture = T> + Show> Scene<R> for Animation<T> {
-    fn show(&self, renderer: &mut R) -> Result<()> {
-        renderer.show(&self.tile())
-    }
-}
-
-impl<'t, T, R: Renderer<'t, Texture = T> + Show> Drawable<R> for Animation<T> {
-    fn draw(&self, dst_rect: &glm::IVec4, renderer: &mut R) -> Result<()> {
-        renderer.show_at(&self.tile(), dst_rect)
-    }
-}
-
 #[derive(Debug)]
 pub struct LimitRunAnimation<T> {
     animator: LimitRunAnimator,
@@ -103,30 +86,12 @@ impl<T> LimitRunAnimation<T> {
     }
 }
 
-impl<'t, T, R: Renderer<'t, Texture = T> + Show> Scene<R> for LimitRunAnimation<T> {
-    fn show(&self, renderer: &mut R) -> Result<()> {
-        match self.tile() {
-            Some(ref t) => renderer.show(t),
-            None => Ok(()),
-        }
-    }
-}
-
-impl<'t, T, R: Renderer<'t, Texture = T> + Show> Drawable<R> for LimitRunAnimation<T> {
-    fn draw(&self, dst_rect: &glm::IVec4, renderer: &mut R) -> Result<()> {
-        match self.tile() {
-            Some(ref t) => renderer.show_at(t, dst_rect),
-            None => Ok(()),
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::rc::Rc;
     use renderer::Texture;
-    use sdl2::rect;
+    use glm;
 
     #[test]
     fn tile() {
@@ -139,36 +104,6 @@ mod tests {
         assert_eq!(animation.tile().src, glm::uvec4(0, 0, 1, 10));
         let tile = animation.animate(Duration::from_secs(6));
         assert_eq!(tile.src, glm::uvec4(1, 0, 1, 10));
-    }
-
-    #[test]
-    fn show() {
-        let mut renderer = MockRenderer::default();
-        let texture = Rc::new(MockTexture { dims: glm::uvec2(10, 10) });
-        let animator = AnimatorData::new(3, Duration::from_secs(5));
-        let sheet = TileSheet::new(glm::uvec2(10, 1), texture.clone());
-        let data = AnimationData::new(animator, sheet);
-
-        let mut animation = data.start();
-        animation.animate(Duration::from_secs(12));
-        renderer.show(&animation).unwrap();
-        assert_eq!(renderer.calls.len(), 1);
-        {
-            let ref call = renderer.calls[0];
-            assert_eq!(call.dst, None);
-            assert_eq!(call.src, Some(glm::uvec4(2, 0, 1, 10)));
-            assert_eq!(call.texture, texture.as_ref() as *const MockTexture);
-        }
-        animation.animate(Duration::from_secs(3));
-        let dst = glm::ivec4(3, 5, 6, 8);
-        renderer.show_at(&animation, &dst).unwrap();
-        assert_eq!(renderer.calls.len(), 2);
-        {
-            let ref call = renderer.calls[1];
-            assert_eq!(call.dst, Some(dst));
-            assert_eq!(call.src, Some(glm::uvec4(0, 0, 1, 10)));
-            assert_eq!(call.texture, texture.as_ref() as *const MockTexture);
-        }
     }
 
     #[test]
@@ -190,43 +125,6 @@ mod tests {
         assert!(no_tile.is_none());
     }
 
-    #[test]
-    fn limit_run_show() {
-        let mut renderer = MockRenderer::default();
-        let texture = Rc::new(MockTexture { dims: glm::uvec2(10, 10) });
-        let animator = AnimatorData::new(3, Duration::from_secs(5));
-        let sheet = TileSheet::new(glm::uvec2(10, 1), texture.clone());
-        let data = AnimationData::new(animator, sheet);
-
-        let mut animation = data.limit_run_start(2);
-        animation.animate(Duration::from_secs(12));
-        renderer.show(&animation).unwrap();
-        assert_eq!(renderer.calls.len(), 1);
-        {
-            let ref call = renderer.calls[0];
-            assert_eq!(call.dst, None);
-            assert_eq!(call.src, Some(glm::uvec4(2, 0, 1, 10)));
-            assert_eq!(call.texture, texture.as_ref() as *const MockTexture);
-        }
-
-        animation.animate(Duration::from_secs(3));
-        let dst = glm::ivec4(3, 5, 6, 8);
-        renderer.show_at(&animation, &dst).unwrap();
-        assert_eq!(renderer.calls.len(), 2);
-        {
-            let ref call = renderer.calls[1];
-            assert_eq!(call.dst, Some(dst));
-            assert_eq!(call.src, Some(glm::uvec4(0, 0, 1, 10)));
-            assert_eq!(call.texture, texture.as_ref() as *const MockTexture);
-        }
-
-        animation.animate(Duration::from_secs(15));
-        renderer.show(&animation).unwrap();
-        assert_eq!(renderer.calls.len(), 2);
-        renderer.show_at(&animation, &dst).unwrap();
-        assert_eq!(renderer.calls.len(), 2);
-    }
-
     #[derive(Debug)]
     struct MockTexture {
         dims: glm::UVec2,
@@ -237,48 +135,4 @@ mod tests {
             self.dims
         }
     }
-
-    #[derive(Debug)]
-    struct RenderingCall {
-        dst: Option<glm::IVec4>,
-        src: Option<glm::UVec4>,
-        texture: *const MockTexture,
-    }
-
-    #[derive(Default)]
-    struct MockRenderer {
-        calls: Vec<RenderingCall>,
-    }
-
-    impl<'l> Renderer<'l> for MockRenderer {
-        type Texture = MockTexture;
-
-        fn clear(&mut self) {
-            unimplemented!();
-        }
-
-        fn present(&mut self) {
-            unimplemented!();
-        }
-
-        fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()> {
-            unimplemented!();
-        }
-
-        fn copy(&mut self,
-                texture: &Self::Texture,
-                dst: Option<&glm::IVec4>,
-                src: Option<&glm::UVec4>)
-                -> Result<()> {
-            let call = RenderingCall {
-                dst: dst.cloned(),
-                src: src.cloned(),
-                texture: texture as *const Self::Texture,
-            };
-            self.calls.push(call);
-            Ok(())
-        }
-    }
-
-    impl Show for MockRenderer {}
 }

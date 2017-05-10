@@ -1,5 +1,4 @@
-use renderer::{Drawable, Scene, Renderer, Texture};
-use errors::*;
+use renderer::{DrawBuilder, Drawable, Renderer, Texture};
 
 use glm;
 
@@ -42,19 +41,9 @@ impl<T> TileSheet<T> {
     }
 }
 
-impl<'t, T, R: Renderer<'t, Texture = T>> Scene<R> for Tile<T> {
-    fn show(&self, renderer: &mut R) -> Result<()> {
-        renderer.with(&*self.texture).from(&self.src).copy()
-    }
-}
-
-impl<'t, T, R: Renderer<'t, Texture = T>> Drawable<R> for Tile<T> {
-    fn draw(&self, dst_rect: &glm::IVec4, renderer: &mut R) -> Result<()> {
-        renderer
-            .with(&*self.texture)
-            .at(dst_rect)
-            .from(&self.src)
-            .copy()
+impl<'t, R: Renderer<'t>> Drawable<'t, R> for Tile<R::Texture> {
+    fn draw<'a>(&'a self, renderer: &'a mut R) -> DrawBuilder<'a, 't, R> {
+        renderer.with(&*self.texture).from(&self.src)
     }
 }
 
