@@ -10,6 +10,44 @@ use errors::*;
 use glm;
 use sdl2::rect;
 
+pub struct DrawBuilder<'a, 't: 'a, R>
+    where R: 'a + Renderer<'t> + ?Sized,
+          R::Texture: 'a
+{
+    renderer: &'a mut R,
+    texture: &'a R::Texture,
+    dst_rect: Option<&'a glm::IVec4>,
+    src_rect: Option<&'a glm::UVec4>,
+}
+
+impl<'a, 't: 'a, R> DrawBuilder<'a, 't, R>
+    where R: Renderer<'t> + ?Sized
+{
+    fn new(renderer: &'a mut R, texture: &'a R::Texture) -> Self {
+        DrawBuilder {
+            renderer: renderer,
+            texture: texture,
+            dst_rect: None,
+            src_rect: None,
+        }
+    }
+
+    pub fn at(mut self, dst_rect: &'a glm::IVec4) -> Self {
+        self.dst_rect = Some(dst_rect);
+        self
+    }
+
+    pub fn from(mut self, src_rect: &'a glm::UVec4) -> Self {
+        self.src_rect = Some(src_rect);
+        self
+    }
+
+    pub fn copy(self) -> Result<()> {
+        self.renderer
+            .copy(self.texture, self.dst_rect, self.src_rect)
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub struct ColorRGBA(pub u8, pub u8, pub u8, pub u8);
 
@@ -50,6 +88,9 @@ pub trait Renderer<'t> {
             dst: Option<&glm::IVec4>,
             src: Option<&glm::UVec4>)
             -> Result<()>;
+    fn with<'a>(&'a mut self, texture: &'a Self::Texture) -> DrawBuilder<'a, 't, Self> {
+        DrawBuilder::new(self, texture)
+    }
 }
 
 pub trait Show {

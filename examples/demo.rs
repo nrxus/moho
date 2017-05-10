@@ -81,11 +81,15 @@ impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
                                       font_texture.dims().x as i32,
                                       font_texture.dims().y as i32);
             self.renderer.clear();
-            self.renderer.copy(&image, None, None)?;
+            self.renderer.with(&image).copy()?;
             self.renderer
-                .copy(&font_texture, Some(&font_dst), None)?;
+                .with(&font_texture)
+                .at(&font_dst)
+                .copy()?;
             self.renderer
-                .copy(&button_texture, Some(&button_dst), None)?;
+                .with(&button_texture)
+                .at(&button_dst)
+                .copy()?;
             self.renderer.present();
         }
         Ok(())
