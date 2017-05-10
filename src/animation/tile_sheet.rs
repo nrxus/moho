@@ -4,17 +4,43 @@ use glm;
 
 use std::rc::Rc;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct TileSheet<T> {
     texture: Rc<T>,
     tiles: glm::UVec2,
     pub dimensions: glm::UVec2,
 }
 
-#[derive(Clone, Debug)]
+
+// https://github.com/rust-lang/rust/issues/40754
+// Generics whose type params do not implement Clone, cannot derive Clone
+// Manual implementation of it
+impl<T> Clone for TileSheet<T> {
+    fn clone(&self) -> TileSheet<T> {
+        TileSheet {
+            texture: self.texture.clone(),
+            tiles: self.tiles,
+            dimensions: self.dimensions,
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct Tile<T> {
     pub texture: Rc<T>,
     pub src: glm::UVec4,
+}
+
+// https://github.com/rust-lang/rust/issues/40754
+// Generics whose type params do not implement Clone, cannot derive Clone
+// Manual implementation of it
+impl<T> Clone for Tile<T> {
+    fn clone(&self) -> Tile<T> {
+        Tile {
+            texture: self.texture.clone(),
+            src: self.src,
+        }
+    }
 }
 
 impl<T: Texture> TileSheet<T> {

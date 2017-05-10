@@ -1,10 +1,22 @@
 use super::animator;
 use super::{Animation, LimitRun, TileSheet};
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Data<T> {
     pub animator: animator::Data,
     pub sheet: TileSheet<T>,
+}
+
+// https://github.com/rust-lang/rust/issues/40754
+// Generics whose type params do not implement Clone, cannot derive Clone
+// Manual implementation of it
+impl<T> Clone for Data<T> {
+    fn clone(&self) -> Data<T> {
+        Data {
+            animator: self.animator,
+            sheet: self.sheet.clone(),
+        }
+    }
 }
 
 impl<T> Data<T> {
