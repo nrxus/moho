@@ -7,14 +7,14 @@ pub use self::animator::Animator;
 pub use self::tile_sheet::{Tile, TileSheet};
 
 #[derive(Clone, Debug)]
-pub struct AnimationData<T> {
+pub struct Data<T> {
     data: animator::Data,
     sheet: TileSheet<T>,
 }
 
-impl<T> AnimationData<T> {
-    pub fn new(data: animator::Data, sheet: TileSheet<T>) -> AnimationData<T> {
-        AnimationData {
+impl<T> Data<T> {
+    pub fn new(data: animator::Data, sheet: TileSheet<T>) -> Data<T> {
+        Data {
             data: data,
             sheet: sheet,
         }
@@ -36,7 +36,7 @@ pub struct Animation<T> {
 }
 
 impl<T> Animation<T> {
-    pub fn from_data(data: AnimationData<T>) -> Self {
+    pub fn from_data(data: Data<T>) -> Self {
         Self::new(data.data.start(), data.sheet)
     }
 
@@ -65,7 +65,7 @@ pub struct LimitRun<T> {
 }
 
 impl<T> LimitRun<T> {
-    pub fn from_data(data: AnimationData<T>, loops: u32) -> Self {
+    pub fn from_data(data: Data<T>, loops: u32) -> Self {
         Self::new(data.data.limit_run_start(loops), data.sheet)
     }
 
@@ -98,7 +98,7 @@ mod tests {
         let texture = Rc::new(MockTexture { dims: glm::uvec2(10, 10) });
         let animator = animator::Data::new(3, Duration::from_secs(5));
         let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
-        let data = AnimationData::new(animator, sheet);
+        let data = Data::new(animator, sheet);
 
         let mut animation = data.start();
         assert_eq!(animation.tile().src, glm::uvec4(0, 0, 1, 10));
@@ -111,7 +111,7 @@ mod tests {
         let texture = Rc::new(MockTexture { dims: glm::uvec2(10, 10) });
         let animator = animator::Data::new(3, Duration::from_secs(5));
         let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
-        let data = AnimationData::new(animator, sheet);
+        let data = Data::new(animator, sheet);
 
         let mut animation = data.limit_run_start(1);
         assert!(animation.tile().is_some());
