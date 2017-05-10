@@ -71,8 +71,7 @@ impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
             } else {
                 ColorRGBA(255, 255, 0, 255)
             };
-            let button_texture = self.texture_loader
-                .texturize(&font, button_text, &color)?;
+            let button_texture = self.texture_loader.texturize(&font, button_text, &color)?;
             let fps = format!("{}", game_time.fps() as u32);
             let font_texture = self.texture_loader
                 .texturize(&font, &fps, &ColorRGBA(255, 255, 0, 255))?;
@@ -82,10 +81,7 @@ impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
                                       font_texture.dims().y as i32);
             self.renderer.clear();
             self.renderer.with(&image).flip(TextureFlip::Both).copy()?;
-            self.renderer
-                .with(&font_texture)
-                .at(&font_dst)
-                .copy()?;
+            self.renderer.with(&font_texture).at(&font_dst).copy()?;
             self.renderer
                 .with(&button_texture)
                 .at(&button_dst)

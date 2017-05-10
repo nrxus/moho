@@ -34,6 +34,10 @@ impl Animator {
         self.frame.index %= self.data.max;
         self.frame.index
     }
+
+    pub fn restart(&mut self) {
+        self.frame = Frame::default();
+    }
 }
 
 #[cfg(test)]
@@ -82,5 +86,20 @@ mod test {
         assert_eq!(frame, 1);
 
         assert_eq!(frame, animator.frame());
+    }
+
+    #[test]
+    fn restart() {
+        let mut animator = Data::new(2, Duration::from_secs(2)).start();
+
+        let frame = animator.animate(Duration::from_secs(3));
+        assert_eq!(frame, 1);
+
+        animator.restart();
+        assert_eq!(animator.frame(), 0);
+        let frame = animator.animate(Duration::from_secs(1));
+        assert_eq!(frame, 0);
+        let frame = animator.animate(Duration::from_secs(1));
+        assert_eq!(frame, 1);
     }
 }
