@@ -81,13 +81,12 @@ impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
                                       font_texture.dims().y as i32);
             self.renderer.clear();
             self.renderer
-                .copy(&image, Options::new().flip(TextureFlip::Both))?;
-            self.renderer.copy(&image, Options::new())?;
-            self.renderer
-                .copy(&font_texture, Options::new().at(&font_dst))?;
+                .copy(&image, options::flip(TextureFlip::Both))?;
+            self.renderer.copy(&image, options::none())?;
+            self.renderer.copy(&font_texture, options::at(&font_dst))?;
             self.renderer
                 .copy(&button_texture,
-                      Options::new().at(&button_dst).flip(TextureFlip::Horizontal))?;
+                      options::at(&button_dst).flip(TextureFlip::Horizontal))?;
             self.renderer.present();
         }
         Ok(())

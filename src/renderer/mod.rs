@@ -21,6 +21,33 @@ pub enum TextureFlip {
     Both,
 }
 
+pub mod options {
+    use glm;
+    use super::Options;
+    use super::TextureFlip;
+    use super::Rotation;
+
+    pub fn none<'a>() -> Options<'a> {
+        Options::default()
+    }
+
+    pub fn at<'a>(dst: &'a glm::IVec4) -> Options<'a> {
+        Options::default().at(dst)
+    }
+
+    pub fn from<'a>(src: &'a glm::UVec4) -> Options<'a> {
+        Options::default().from(src)
+    }
+
+    pub fn flip<'a>(flip: TextureFlip) -> Options<'a> {
+        Options::default().flip(flip)
+    }
+
+    pub fn rotate<'a>(rotation: &'a Rotation) -> Options<'a> {
+        Options::default().rotate(rotation)
+    }
+}
+
 #[derive(Default)]
 pub struct Options<'a> {
     dst: Option<&'a glm::IVec4>,
@@ -30,10 +57,6 @@ pub struct Options<'a> {
 }
 
 impl<'a> Options<'a> {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     pub fn at(mut self, dst: &'a glm::IVec4) -> Self {
         self.dst = Some(dst);
         self
