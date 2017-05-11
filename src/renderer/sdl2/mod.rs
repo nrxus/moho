@@ -7,6 +7,7 @@ use glm;
 use sdl2::image::LoadTexture;
 use sdl2::rect;
 use sdl2::render::{self, RenderTarget};
+use sdl2::pixels;
 
 impl<'c> renderer::Texture for render::Texture<'c> {
     fn dims(&self) -> glm::UVec2 {
@@ -66,6 +67,12 @@ impl<'t, T: RenderTarget> renderer::Renderer<'t> for render::Canvas<T> {
 
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()> {
         self.fill_rects(rects).map_err(Into::into)
+    }
+
+    fn set_draw_color(&mut self, color: renderer::ColorRGBA) {
+        let renderer::ColorRGBA(r, g, b, a) = color;
+        let color = pixels::Color::RGBA(r, g, b, a);
+        self.set_draw_color(color)
     }
 }
 

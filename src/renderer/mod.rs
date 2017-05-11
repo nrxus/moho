@@ -112,8 +112,10 @@ pub trait Renderer<'t> {
 
     fn clear(&mut self);
     fn present(&mut self);
+    fn set_draw_color(&mut self, color: ColorRGBA);
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
     fn copy(&mut self, texture: &Self::Texture, options: Options) -> Result<()>;
+
     fn copy_asset<'a, A>(&'a mut self, drawable: &'a A, options: Options) -> Result<()>
         where A: Asset<Self>
     {
