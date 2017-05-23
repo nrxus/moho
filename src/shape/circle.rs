@@ -24,12 +24,28 @@ impl Intersect<Rectangle> for Circle {
         self.contains(&other.top_left) || other.contains(&self.center) ||
         other.get_lines().iter().any(|l| self.intersects(l))
     }
+
+    fn mtv(&self, fixed: &Rectangle) -> Option<glm::DVec2> {
+        // TODO
+        None
+    }
 }
 
 impl Intersect<Circle> for Circle {
     fn intersects(&self, other: &Circle) -> bool {
         let distance = self.distance(other);
         distance < (self.radius + other.radius)
+    }
+
+    fn mtv(&self, fixed: &Circle) -> Option<glm::DVec2> {
+        let distance = self.center - fixed.center;
+        let len = glm::length(distance);
+        let min_gap = self.radius + fixed.radius;
+        if len < min_gap {
+            Some(glm::ext::normalize_to(distance, min_gap - len))
+        } else {
+            None
+        }
     }
 }
 
@@ -52,6 +68,11 @@ impl Intersect<Line> for Circle {
         let t2 = (-b + discriminant) / (2_f64 * len_sq);
 
         t1 >= 0_f64 && t1 <= 1_f64 || t2 >= 0_f64 && t2 <= 1_f64
+    }
+
+    fn mtv(&self, fixed: &Line) -> Option<glm::DVec2> {
+        // TODO
+        None
     }
 }
 
@@ -92,14 +113,16 @@ mod test {
         };
 
         assert!(!circle_a.intersects(&circle_b));
+        assert_eq!(circle_a.mtv(&circle_b), None);
         assert!(!circle_b.intersects(&circle_a));
+        assert_eq!(circle_b.mtv(&circle_a), None);
     }
 
     #[test]
     fn circle_circle_intersect() {
         let circle_a = Circle {
             radius: 3_f64,
-            center: glm::dvec2(2_f64, 3_f64),
+            center: glm::dvec2(1_f64, 3_f64),
         };
 
         let circle_b = Circle {
@@ -108,7 +131,9 @@ mod test {
         };
 
         assert!(circle_a.intersects(&circle_b));
+        assert_eq!(circle_a.mtv(&circle_b), Some(glm::dvec2(0., -2.)));
         assert!(circle_b.intersects(&circle_a));
+        assert_eq!(circle_b.mtv(&circle_a), Some(glm::dvec2(0., 2.)));
     }
 
     #[test]

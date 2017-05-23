@@ -58,26 +58,6 @@ impl Rectangle {
          self.top_left + self.dims,
          self.top_left + glm::dvec2(0., self.dims.y)]
     }
-
-    pub fn mtv(&self, fixed: &Rectangle) -> Option<glm::DVec2> {
-        fn pick_min(projections: &[glm::DVec2]) -> glm::DVec2 {
-            projections
-                .iter()
-                .min_by(|&&x, &&y| glm::length(x).partial_cmp(&glm::length(y)).unwrap())
-                .cloned()
-                .unwrap()
-        }
-
-        let axes = [Axis(glm::dvec2(0., 1.)), Axis(glm::dvec2(1., 0.))];
-        axes.iter()
-            .map(|a| a.mtv(&self.verts(), &fixed.verts()))
-            .collect::<Option<Vec<_>>>()
-            .map(|p| pick_min(&p))
-            .map(|v| {
-                     let p = glm::dot(self.center() - fixed.center(), v);
-                     if p < 0. { v * -1. } else { v }
-                 })
-    }
 }
 
 impl Shape for Rectangle {
@@ -98,11 +78,35 @@ impl Intersect<Rectangle> for Rectangle {
         !(self.top_left.y > other.top_left.y + other.dims.y) &&
         !(self.top_left.y + self.dims.y < other.top_left.y)
     }
+
+    fn mtv(&self, fixed: &Rectangle) -> Option<glm::DVec2> {
+        fn pick_min(projections: &[glm::DVec2]) -> glm::DVec2 {
+            projections
+                .iter()
+                .min_by(|&&x, &&y| glm::length(x).partial_cmp(&glm::length(y)).unwrap())
+                .cloned()
+                .unwrap()
+        }
+
+        let axes = [Axis(glm::dvec2(0., 1.)), Axis(glm::dvec2(1., 0.))];
+        axes.iter()
+            .map(|a| a.mtv(&self.verts(), &fixed.verts()))
+            .collect::<Option<Vec<_>>>()
+            .map(|p| pick_min(&p))
+            .map(|v| {
+                     let p = glm::dot(self.center() - fixed.center(), v);
+                     if p < 0. { v * -1. } else { v }
+                 })
+    }
 }
 
 impl Intersect<Circle> for Rectangle {
     fn intersects(&self, other: &Circle) -> bool {
         other.intersects(self)
+    }
+
+    fn mtv(&self, fixed: &Circle) -> Option<glm::DVec2> {
+        fixed.mtv(self).map(|v| v * -1.)
     }
 }
 

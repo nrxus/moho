@@ -10,6 +10,7 @@ pub type Line = (glm::DVec2, glm::DVec2);
 
 pub trait Intersect<S> {
     fn intersects(&self, other: &S) -> bool;
+    fn mtv(&self, other: &S) -> Option<glm::DVec2>;
 }
 
 pub trait Shape {
