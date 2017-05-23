@@ -51,6 +51,10 @@ impl Intersect<Circle> for Circle {
 
 impl Intersect<Line> for Circle {
     fn intersects(&self, other: &Line) -> bool {
+        let line_center = (other.1 + other.0) / 2.;
+        if self.contains(&line_center) {
+            return true;
+        }
         let length = other.1 - other.0;
         let dist_center = other.0 - self.center;
         let len_sq = glm::dot(length, length);
@@ -71,8 +75,20 @@ impl Intersect<Line> for Circle {
     }
 
     fn mtv(&self, fixed: &Line) -> Option<glm::DVec2> {
-        // TODO
-        None
+        //TODO: Check for endpoints. Will have to run mtv around those as well
+        //Current implementation assumes infinite line
+        let len = fixed.1 - fixed.0;
+        let normal = glm::normalize(len);
+        let normal = glm::dvec2(-normal.y, normal.x);
+        let distance = (len.y * self.center.x - len.x * self.center.y + fixed.1.x * fixed.0.y -
+                        fixed.1.y * fixed.0.x) /
+                       glm::length(len);
+        if distance.abs() < self.radius {
+            let normal = if distance < 0. { normal * -1. } else { normal };
+            Some(glm::ext::normalize_to(normal, distance.abs() - self.radius))
+        } else {
+            None
+        }
     }
 }
 
@@ -194,5 +210,19 @@ mod test {
         };
 
         assert!(circle.intersects(&rectangle));
+    }
+
+    #[test]
+    fn circle_intersects_line() {
+        let line = (glm::dvec2(2., 2.), glm::dvec2(5., 2.));
+        let circle = Circle {
+            radius: 3.,
+            center: glm::dvec2(3., 1.),
+        };
+        assert!(circle.intersects(&line));
+        assert_eq!(circle.mtv(&line), Some(glm::dvec2(0., -2.)));
+        let line = (glm::dvec2(2., -1.), glm::dvec2(5., -1.));
+        assert!(circle.intersects(&line));
+        assert_eq!(circle.mtv(&line), Some(glm::dvec2(0., 1.)));
     }
 }
