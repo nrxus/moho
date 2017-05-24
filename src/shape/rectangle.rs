@@ -1,4 +1,4 @@
-use super::{Axis, Circle, Intersect, Line, Shape};
+use super::{Axis, Circle, FindMtv, Intersect, Line, Shape};
 
 use glm;
 
@@ -55,12 +55,7 @@ impl Intersect<Rectangle> for Rectangle {
         self.axes()
             .iter()
             .map(|a| a.mtv(&my_verts, &fixed_verts))
-            .collect::<Option<Vec<_>>>()
-            .map(|p| super::pick_min(&p))
-            .map(|v| {
-                     let p = glm::dot(self.center() - fixed.center(), v);
-                     if p < 0. { v * -1. } else { v }
-                 })
+            .find_mtv(self, fixed)
     }
 }
 
