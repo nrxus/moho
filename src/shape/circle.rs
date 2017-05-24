@@ -1,4 +1,4 @@
-use super::{Intersect, Line, Shape, Rectangle};
+use super::{Axis, Intersect, Line, Shape, Rectangle};
 
 use glm;
 
@@ -26,8 +26,25 @@ impl Intersect<Rectangle> for Circle {
     }
 
     fn mtv(&self, fixed: &Rectangle) -> Option<glm::DVec2> {
-        // TODO
-        None
+        let verts = fixed.verts();
+        let closest = verts
+            .iter()
+            .map(|&v| v - self.center)
+            .min_by(|&x, &y| glm::dot(x, x).partial_cmp(&glm::dot(y, y)).unwrap())
+            .unwrap()
+            .clone();
+        let circle_axis = Axis(glm::normalize(closest));
+        fixed
+            .axes()
+            .iter()
+            .chain([circle_axis].iter())
+            .map(|a| a.mtv_circle(&verts, self))
+            .collect::<Option<Vec<_>>>()
+            .map(|p| super::pick_min(&p))
+            .map(|v| {
+                     let p = glm::dot(self.center() - fixed.center(), v);
+                     if p < 0. { v * -1. } else { v }
+                 })
     }
 }
 
@@ -71,7 +88,7 @@ impl Intersect<Line> for Circle {
         let t1 = (-b - discriminant) / (2_f64 * len_sq);
         let t2 = (-b + discriminant) / (2_f64 * len_sq);
 
-        t1 >= 0_f64 && t1 <= 1_f64 || t2 >= 0_f64 && t2 <= 1_f64
+        t1 > 0_f64 && t1 < 1_f64 || t2 > 0_f64 && t2 < 1_f64
     }
 
     fn mtv(&self, fixed: &Line) -> Option<glm::DVec2> {
@@ -164,7 +181,9 @@ mod test {
             center: glm::dvec2(1_f64, 3_f64),
         };
 
+        assert!(!circle.contains(&glm::dvec2(3.5, 1.0)));
         assert!(!circle.intersects(&rectangle));
+        assert_eq!(circle.mtv(&rectangle), None);
     }
 
     #[test]
@@ -176,10 +195,11 @@ mod test {
 
         let circle = Circle {
             radius: 5_f64,
-            center: glm::dvec2(2_f64, 3_f64),
+            center: glm::dvec2(2.5, 3_f64),
         };
 
         assert!(circle.intersects(&rectangle));
+        assert_eq!(circle.mtv(&rectangle), Some(glm::dvec2(0., -4.)));
     }
 
     #[test]
@@ -195,21 +215,42 @@ mod test {
         };
 
         assert!(circle.intersects(&rectangle));
+        assert_eq!(circle.mtv(&rectangle), Some(glm::dvec2(2.5, 0.)));
     }
 
     #[test]
     fn rectangle_circle_intersect() {
         let rectangle = Rectangle {
-            dims: glm::dvec2(2_f64, 2_f64),
-            top_left: glm::dvec2(4_f64, 2_f64),
+            dims: glm::dvec2(2., 2.),
+            top_left: glm::dvec2(4., 2.),
         };
 
         let circle = Circle {
-            radius: 2_f64,
-            center: glm::dvec2(2_f64, 3_f64),
+            radius: 2.1,
+            center: glm::dvec2(2., 3.),
         };
 
         assert!(circle.intersects(&rectangle));
+        let mtv = circle.mtv(&rectangle);
+        assert!(mtv.is_some());
+        let mtv = mtv.unwrap();
+        assert!(glm::length(mtv - glm::dvec2(-0.1, 0.)) < 0.00001);
+    }
+
+    #[test]
+    fn rectangle_circle_touch_no_intersect() {
+        let rectangle = Rectangle {
+            dims: glm::dvec2(2., 2.),
+            top_left: glm::dvec2(4., 2.),
+        };
+
+        let circle = Circle {
+            radius: 2.,
+            center: glm::dvec2(2., 3.),
+        };
+
+        assert!(!circle.intersects(&rectangle));
+        assert_eq!(circle.mtv(&rectangle), None);
     }
 
     #[test]

@@ -20,3 +20,57 @@ pub trait Shape {
         glm::distance(self.center(), other.center())
     }
 }
+
+pub struct Axis(glm::DVec2);
+
+impl Axis {
+    fn mtv(&self, a: &[glm::DVec2], b: &[glm::DVec2]) -> Option<glm::DVec2> {
+        let a = self.project(a);
+        let b = self.project(b);
+        self.mtv_range(a, b)
+    }
+
+    fn mtv_circle(&self, a: &[glm::DVec2], circle: &Circle) -> Option<glm::DVec2> {
+        let &Axis(axis) = self;
+        let a = self.project(a);
+        let center = glm::dot(axis, circle.center);
+        let b = (center - circle.radius, center + circle.radius);
+        self.mtv_range(a, b)
+    }
+
+    fn mtv_range(&self, a: (f64, f64), b: (f64, f64)) -> Option<glm::DVec2> {
+        let double_mag = (a.1 - a.0) + (b.1 - b.0) - ((a.1 + a.0) - (b.1 + b.0)).abs();
+        if double_mag <= 0. {
+            None
+        } else {
+            let &Axis(axis) = self;
+            let mag = double_mag / 2.;
+            Some(axis * mag)
+        }
+    }
+
+    fn project(&self, verts: &[glm::DVec2]) -> (f64, f64) {
+        let &Axis(axis) = self;
+        let min = verts
+            .iter()
+            .map(|v| glm::dot(axis, *v))
+            .min_by(|x, y| x.partial_cmp(y).unwrap())
+            .unwrap();
+
+        let max = verts
+            .iter()
+            .map(|v| glm::dot(axis, *v))
+            .max_by(|x, y| x.partial_cmp(y).unwrap())
+            .unwrap();
+
+        (min, max)
+    }
+}
+
+fn pick_min(projections: &[glm::DVec2]) -> glm::DVec2 {
+    projections
+        .iter()
+        .min_by(|&&x, &&y| glm::length(x).partial_cmp(&glm::length(y)).unwrap())
+        .cloned()
+        .unwrap()
+}
