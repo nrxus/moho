@@ -38,6 +38,18 @@ impl Shape for Rectangle {
         !(self.top_left.x > point.x) && !(self.top_left.x + self.dims.x < point.x) &&
         !(self.top_left.y > point.y) && !(self.top_left.y + self.dims.y < point.y)
     }
+
+    fn nudge(&self, nudge: glm::DVec2) -> Rectangle {
+        let &Rectangle { top_left, dims } = self;
+        let top_left = top_left + nudge;
+        Rectangle { top_left, dims }
+    }
+
+    fn center_at(&self, center: glm::DVec2) -> Rectangle {
+        let &Rectangle { dims, .. } = self;
+        let top_left = center - dims / 2.;
+        Rectangle { top_left, dims }
+    }
 }
 
 impl Intersect<Rectangle> for Rectangle {
@@ -192,5 +204,27 @@ mod test {
         assert!(mtv.is_some());
         let mtv = mtv.unwrap();
         assert!(glm::length(mtv - glm::dvec2(0.1, 0.)) < 0.00001);
+    }
+
+    #[test]
+    fn nudge() {
+        let rectangle = Rectangle {
+            dims: glm::dvec2(2., 2.),
+            top_left: glm::dvec2(4., 2.),
+        };
+        let nudged = rectangle.nudge(glm::dvec2(-1.5, 0.7));
+        assert_eq!(nudged.dims, glm::dvec2(2., 2.));
+        assert_eq!(nudged.top_left, glm::dvec2(2.5, 2.7));
+    }
+
+    #[test]
+    fn center_at() {
+        let rectangle = Rectangle {
+            dims: glm::dvec2(2., 2.),
+            top_left: glm::dvec2(4., 2.),
+        };
+        let nudged = rectangle.center_at(glm::dvec2(-1.5, 0.7));
+        assert_eq!(nudged.dims, glm::dvec2(2., 2.));
+        assert_eq!(nudged.center(), glm::dvec2(-1.5, 0.7));
     }
 }

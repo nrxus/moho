@@ -17,6 +17,17 @@ impl Shape for Circle {
         let distance = glm::distance(self.center, *point);
         distance < self.radius
     }
+
+    fn nudge(&self, nudge: glm::DVec2) -> Circle {
+        let &Circle { center, radius } = self;
+        let center = center + nudge;
+        Circle { center, radius }
+    }
+
+    fn center_at(&self, center: glm::DVec2) -> Circle {
+        let &Circle { radius, .. } = self;
+        Circle { center, radius }
+    }
 }
 
 impl Intersect<Rectangle> for Circle {
@@ -260,5 +271,27 @@ mod test {
         let line = (glm::dvec2(2., -1.), glm::dvec2(5., -1.));
         assert!(circle.intersects(&line));
         assert_eq!(circle.mtv(&line), Some(glm::dvec2(0., 1.)));
+    }
+
+    #[test]
+    fn nudge() {
+        let circle = Circle {
+            radius: 3.,
+            center: glm::dvec2(2., 3.),
+        };
+        let nudged = circle.nudge(glm::dvec2(-1.5, 0.7));
+        assert_eq!(nudged.radius, 3.);
+        assert_eq!(nudged.center, glm::dvec2(0.5, 3.7));
+    }
+
+    #[test]
+    fn center_at() {
+        let circle = Circle {
+            radius: 3.,
+            center: glm::dvec2(2., 3.),
+        };
+        let nudged = circle.center_at(glm::dvec2(-1.5, 0.7));
+        assert_eq!(nudged.radius, 3.);
+        assert_eq!(nudged.center, glm::dvec2(-1.5, 0.7));
     }
 }

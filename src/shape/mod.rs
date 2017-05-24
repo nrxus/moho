@@ -16,6 +16,9 @@ pub trait Intersect<S> {
 pub trait Shape {
     fn center(&self) -> glm::DVec2;
     fn contains(&self, point: &glm::DVec2) -> bool;
+    fn nudge(&self, nudge: glm::DVec2) -> Self;
+    fn center_at(&self, center: glm::DVec2) -> Self;
+
     fn distance<S: Shape>(&self, other: &S) -> f64 {
         glm::distance(self.center(), other.center())
     }
