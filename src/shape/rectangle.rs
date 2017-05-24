@@ -145,6 +145,7 @@ mod test {
         };
 
         assert!(!rectangle.intersects(&circle));
+        assert_eq!(rectangle.mtv(&circle), None);
     }
 
     #[test]
@@ -156,10 +157,11 @@ mod test {
 
         let circle = Circle {
             radius: 5_f64,
-            center: glm::dvec2(2_f64, 3_f64),
+            center: glm::dvec2(2.5, 3_f64),
         };
 
         assert!(rectangle.intersects(&circle));
+        assert_eq!(rectangle.mtv(&circle), Some(glm::dvec2(0., 4.)));
     }
 
     #[test]
@@ -175,6 +177,7 @@ mod test {
         };
 
         assert!(rectangle.intersects(&circle));
+        assert_eq!(rectangle.mtv(&circle), Some(glm::dvec2(-2.5, 0.)));
     }
 
     #[test]
@@ -190,5 +193,9 @@ mod test {
         };
 
         assert!(rectangle.intersects(&circle));
+        let mtv = rectangle.mtv(&circle);
+        assert!(mtv.is_some());
+        let mtv = mtv.unwrap();
+        assert!(glm::length(mtv - glm::dvec2(0.1, 0.)) < 0.00001);
     }
 }
