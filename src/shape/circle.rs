@@ -2,7 +2,7 @@ use super::{Axis, FindMtv, Intersect, Line, Shape, Rectangle};
 
 use glm;
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct Circle {
     pub radius: f64,
     pub center: glm::DVec2,
