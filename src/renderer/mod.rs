@@ -117,7 +117,7 @@ pub trait Renderer<'t> {
     fn copy(&mut self, texture: &Self::Texture, options: Options) -> Result<()>;
 
     /// Default implemenations for drawing assets
-    fn copy_asset<'a, A>(&'a mut self, drawable: &'a A, options: Options) -> Result<()>
+    fn copy_asset<A>(&mut self, drawable: &A, options: Options) -> Result<()>
         where A: Asset<Self>
     {
         drawable.draw(options, self)
