@@ -50,10 +50,10 @@ pub mod options {
 
 #[derive(Default)]
 pub struct Options<'a> {
-    dst: Option<&'a glm::IVec4>,
-    src: Option<&'a glm::UVec4>,
-    rotation: Option<&'a Rotation>,
-    flip: Option<TextureFlip>,
+    pub dst: Option<&'a glm::IVec4>,
+    pub src: Option<&'a glm::UVec4>,
+    pub rotation: Option<&'a Rotation>,
+    pub flip: Option<TextureFlip>,
 }
 
 impl<'a> Options<'a> {
