@@ -116,15 +116,17 @@ pub trait Renderer<'t> {
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
     fn copy(&mut self, texture: &Self::Texture, options: Options) -> Result<()>;
 
+    /// Default implemenations for drawing assets
     fn copy_asset<'a, A>(&'a mut self, drawable: &'a A, options: Options) -> Result<()>
         where A: Asset<Self>
     {
         drawable.draw(options, self)
     }
-}
 
-pub trait Show {
-    fn show<S: Scene<Self>>(&mut self, scene: &S) -> Result<()> {
+    /// Default implementation for drawing scenes
+    fn show<S>(&mut self, scene: &S) -> Result<()>
+        where S: Scene<Self>
+    {
         scene.show(self)
     }
 }

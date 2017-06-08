@@ -76,8 +76,6 @@ impl<'t, T: RenderTarget> renderer::Renderer<'t> for render::Canvas<T> {
     }
 }
 
-impl<T: RenderTarget> renderer::Show for render::Canvas<T> {}
-
 impl<T: RenderTarget> renderer::Window for render::Canvas<T> {
     fn output_size(&self) -> Result<glm::UVec2> {
         let (width, height) = self.output_size()?;
