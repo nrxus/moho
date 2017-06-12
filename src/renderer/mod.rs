@@ -107,12 +107,15 @@ pub trait Scene<R: ?Sized> {
     fn show(&self, renderer: &mut R) -> Result<()>;
 }
 
-pub trait Renderer<'t> {
-    type Texture;
-
+pub trait Canvas<'t>: Renderer<'t> {
     fn clear(&mut self);
     fn present(&mut self);
     fn set_draw_color(&mut self, color: ColorRGBA);
+}
+
+pub trait Renderer<'t> {
+    type Texture;
+
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
     fn copy(&mut self, texture: &Self::Texture, options: Options) -> Result<()>;
 

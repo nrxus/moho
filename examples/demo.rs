@@ -44,7 +44,7 @@ impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
                                  't,
                                  Texture = <TL as TextureLoader<'t>>::Texture,
                                  Font = FL::Font>,
-              R: Renderer<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
+              R: Canvas<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
               E: input::EventPump
     {
         let image = self.texture_manager.load("examples/background.png")?;

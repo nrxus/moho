@@ -29,8 +29,29 @@ impl<'c, T> renderer::Loader<'c, render::Texture<'c>> for render::TextureCreator
 
 use sdl2::render::Texture as SdlTexture;
 
+impl<'t, T: RenderTarget> renderer::Canvas<'t> for render::Canvas<T> {
+    fn clear(&mut self) {
+        self.clear();
+    }
+
+    fn present(&mut self) {
+        self.present();
+    }
+
+    fn set_draw_color(&mut self, color: renderer::ColorRGBA) {
+        let renderer::ColorRGBA(r, g, b, a) = color;
+        let color = pixels::Color::RGBA(r, g, b, a);
+        self.set_draw_color(color)
+    }
+}
+
 impl<'t, T: RenderTarget> renderer::Renderer<'t> for render::Canvas<T> {
     type Texture = SdlTexture<'t>;
+
+    fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()> {
+        self.fill_rects(rects).map_err(Into::into)
+    }
+
     fn copy(&mut self, texture: &Self::Texture, options: renderer::Options) -> Result<()> {
         let src = options
             .src
@@ -55,24 +76,6 @@ impl<'t, T: RenderTarget> renderer::Renderer<'t> for render::Canvas<T> {
                     .map_err(Into::into)
             }
         }
-    }
-
-    fn clear(&mut self) {
-        self.clear();
-    }
-
-    fn present(&mut self) {
-        self.present();
-    }
-
-    fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()> {
-        self.fill_rects(rects).map_err(Into::into)
-    }
-
-    fn set_draw_color(&mut self, color: renderer::ColorRGBA) {
-        let renderer::ColorRGBA(r, g, b, a) = color;
-        let color = pixels::Color::RGBA(r, g, b, a);
-        self.set_draw_color(color)
     }
 }
 
