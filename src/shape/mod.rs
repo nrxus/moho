@@ -72,30 +72,35 @@ impl Axis {
 
 trait FindMtv {
     fn find_mtv<S1, S2>(self, object: &S1, fixed: &S2) -> Option<glm::DVec2>
-        where S1: Shape,
-              S2: Shape;
+    where
+        S1: Shape,
+        S2: Shape;
 }
 
 impl<I> FindMtv for I
-    where I: Iterator<Item = Option<glm::DVec2>>
+where
+    I: Iterator<Item = Option<glm::DVec2>>,
 {
     fn find_mtv<S1, S2>(self, object: &S1, fixed: &S2) -> Option<glm::DVec2>
-        where S1: Shape,
-              S2: Shape
+    where
+        S1: Shape,
+        S2: Shape,
     {
         fn pick_min(projections: &[glm::DVec2]) -> glm::DVec2 {
             projections
                 .iter()
-                .min_by(|&&x, &&y| glm::length(x).partial_cmp(&glm::length(y)).unwrap())
+                .min_by(|&&x, &&y| {
+                    glm::length(x).partial_cmp(&glm::length(y)).unwrap()
+                })
                 .cloned()
                 .unwrap()
         }
 
-        self.collect::<Option<Vec<_>>>()
-            .map(|p| pick_min(&p))
-            .map(|v| {
-                     let p = glm::dot(object.center() - fixed.center(), v);
-                     if p < 0. { v * -1. } else { v }
-                 })
+        self.collect::<Option<Vec<_>>>().map(|p| pick_min(&p)).map(
+            |v| {
+                let p = glm::dot(object.center() - fixed.center(), v);
+                if p < 0. { v * -1. } else { v }
+            },
+        )
     }
 }

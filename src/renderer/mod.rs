@@ -121,14 +121,16 @@ pub trait Renderer<'t> {
 
     /// Default implemenations for drawing assets
     fn copy_asset<A>(&mut self, drawable: &A, options: Options) -> Result<()>
-        where A: Asset<Self>
+    where
+        A: Asset<Self>,
     {
         drawable.draw(options, self)
     }
 
     /// Default implementation for drawing scenes
     fn show<S>(&mut self, scene: &S) -> Result<()>
-        where S: Scene<Self>
+    where
+        S: Scene<Self>,
     {
         scene.show(self)
     }

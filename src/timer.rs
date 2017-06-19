@@ -1,6 +1,6 @@
 use std::time::{Duration, Instant};
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct GameTime {
     pub total: Duration,
     pub since_update: Duration,
@@ -10,7 +10,7 @@ impl GameTime {
     pub fn fps(&self) -> f64 {
         const NANO_IN_SEC: f64 = 1000000000.;
         let duration = self.since_update.as_secs() as f64 +
-                       self.since_update.subsec_nanos() as f64 / NANO_IN_SEC;
+            self.since_update.subsec_nanos() as f64 / NANO_IN_SEC;
         1. / duration
     }
 }

@@ -10,15 +10,17 @@ pub type TextureManager<'l, L: TextureLoader<'l>> = ResourceManager<'l, String, 
 pub type FontManager<'l, L: FontLoader<'l>> = ResourceManager<'l, FontDetails, L::Font, L>;
 
 pub struct ResourceManager<'l, K, R, L>
-    where K: Hash + Eq,
-          L: 'l
+where
+    K: Hash + Eq,
+    L: 'l,
 {
     loader: &'l L,
     pub cache: HashMap<K, Rc<R>>,
 }
 
 impl<'l, K, R, L> ResourceManager<'l, K, R, L>
-    where K: Hash + Eq
+where
+    K: Hash + Eq,
 {
     pub fn new(loader: &'l L) -> Self {
         ResourceManager {
@@ -28,19 +30,19 @@ impl<'l, K, R, L> ResourceManager<'l, K, R, L>
     }
 
     pub fn load<D>(&mut self, details: &D) -> Result<Rc<R>>
-        where K: Borrow<D> + for<'b> From<&'b D>,
-              L: Loader<'l, R, Args = D>,
-              D: Eq + Hash + ?Sized
+    where
+        K: Borrow<D> + for<'b> From<&'b D>,
+        L: Loader<'l, R, Args = D>,
+        D: Eq + Hash + ?Sized,
     {
-        self.cache
-            .get(details)
-            .cloned()
-            .map_or_else(|| {
-                             let resource = Rc::new(self.loader.load(details)?);
-                             self.cache.insert(details.into(), resource.clone());
-                             Ok(resource)
-                         },
-                         Ok)
+        self.cache.get(details).cloned().map_or_else(
+            || {
+                let resource = Rc::new(self.loader.load(details)?);
+                self.cache.insert(details.into(), resource.clone());
+                Ok(resource)
+            },
+            Ok,
+        )
     }
 }
 

@@ -30,11 +30,12 @@ impl<'a> renderer::Loader<'a, SdlFont<'a, 'static>> for Sdl2TtfContext {
 impl<'f, 't, T> renderer::FontTexturizer<'f, 't> for render::TextureCreator<T> {
     type Texture = render::Texture<'t>;
     type Font = SdlFont<'f, 'static>;
-    fn texturize(&'t self,
-                 font: &Self::Font,
-                 text: &str,
-                 color: &renderer::ColorRGBA)
-                 -> Result<Self::Texture> {
+    fn texturize(
+        &'t self,
+        font: &Self::Font,
+        text: &str,
+        color: &renderer::ColorRGBA,
+    ) -> Result<Self::Texture> {
         let &renderer::ColorRGBA(red, green, blue, alpha) = color;
         let color = Color::RGBA(red, green, blue, alpha);
         let surface = font.render(text)

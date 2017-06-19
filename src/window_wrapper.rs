@@ -10,7 +10,12 @@ pub fn wrap_rects(original: glm::IVec4, max: glm::UVec2) -> [Option<glm::IVec4>;
     let vert = vert_wrap(left, top, original, max);
     let side_vert = match (side, vert) {
         (Some(side_center), Some(vert_center)) => {
-            Some(glm::ivec4(side_center.x, vert_center.y, original.z, original.w))
+            Some(glm::ivec4(
+                side_center.x,
+                vert_center.y,
+                original.z,
+                original.w,
+            ))
         }
         _ => None,
     };
@@ -23,7 +28,12 @@ fn side_wrap(left: i32, top: i32, original: glm::IVec4, max: glm::IVec2) -> Opti
     if left < 0 {
         Some(glm::ivec4(left + max.x, top, original.z, original.w))
     } else if right > max.x {
-        Some(glm::ivec4((right % max.x) - original.z, top, original.z, original.w))
+        Some(glm::ivec4(
+            (right % max.x) - original.z,
+            top,
+            original.z,
+            original.w,
+        ))
     } else {
         None
     }
@@ -34,7 +44,12 @@ fn vert_wrap(left: i32, top: i32, original: glm::IVec4, max: glm::IVec2) -> Opti
     if top < 0 {
         Some(glm::ivec4(left, top + max.y, original.z, original.w))
     } else if bottom > max.y {
-        Some(glm::ivec4(left, bottom % max.y - original.w, original.z, original.w))
+        Some(glm::ivec4(
+            left,
+            bottom % max.y - original.w,
+            original.z,
+            original.w,
+        ))
     } else {
         None
     }

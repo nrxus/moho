@@ -42,12 +42,12 @@ impl State {
 
     pub fn did_click_mouse(&self, mouse_button: MouseButton) -> bool {
         self.pressed_buttons.contains(&mouse_button) &&
-        !self.prev_pressed_buttons.contains(&mouse_button)
+            !self.prev_pressed_buttons.contains(&mouse_button)
     }
 
     pub fn did_release_mouse(&self, mouse_button: MouseButton) -> bool {
         !self.pressed_buttons.contains(&mouse_button) &&
-        self.prev_pressed_buttons.contains(&mouse_button)
+            self.prev_pressed_buttons.contains(&mouse_button)
     }
 
     pub fn is_mouse_down(&self, mouse_button: MouseButton) -> bool {

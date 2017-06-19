@@ -15,11 +15,12 @@ pub trait FontLoader<'a>
 pub trait FontTexturizer<'f, 't> {
     type Texture: Texture;
     type Font: Font;
-    fn texturize(&'t self,
-                 font: &Self::Font,
-                 text: &str,
-                 color: &ColorRGBA)
-                 -> Result<Self::Texture>;
+    fn texturize(
+        &'t self,
+        font: &Self::Font,
+        text: &str,
+        color: &ColorRGBA,
+    ) -> Result<Self::Texture>;
 }
 
 #[derive(PartialEq, Eq, Hash)]

@@ -30,10 +30,17 @@ error_chain!{
     }
 }
 
-pub fn init(name: &'static str,
-            width: u32,
-            height: u32)
-            -> Result<(SdlCanvas, TextureCreator<WindowContext>, input::Manager<SdlEventPump>)> {
+pub fn init(
+    name: &'static str,
+    width: u32,
+    height: u32,
+) -> Result<
+    (
+        SdlCanvas,
+        TextureCreator<WindowContext>,
+        input::Manager<SdlEventPump>,
+    ),
+> {
     let sdl_ctx = sdl2::init()?;
     let video_ctx = sdl_ctx.video()?;
     let _image_ctx = sdl2::image::init(INIT_PNG | INIT_JPG)?;

@@ -49,9 +49,11 @@ macro_rules! mouse_event {
 
 #[test]
 fn press_keys() {
-    let streams = vec![None,
-                       Some(key_event!(KeyDown, Keycode::Up)),
-                       Some(key_event!(KeyDown, Keycode::Down))];
+    let streams = vec![
+        None,
+        Some(key_event!(KeyDown, Keycode::Up)),
+        Some(key_event!(KeyDown, Keycode::Down)),
+    ];
 
     let mut subject = Manager::new(MockEventPump { streams: streams });
 
@@ -68,11 +70,13 @@ fn press_keys() {
 
 #[test]
 fn release_keys() {
-    let streams = vec![None,
-                       Some(key_event!(KeyUp, Keycode::Down)),
-                       None,
-                       Some(key_event!(KeyDown, Keycode::Down)),
-                       Some(key_event!(KeyDown, Keycode::Up))];
+    let streams = vec![
+        None,
+        Some(key_event!(KeyUp, Keycode::Down)),
+        None,
+        Some(key_event!(KeyDown, Keycode::Down)),
+        Some(key_event!(KeyDown, Keycode::Up)),
+    ];
 
     let mut subject = Manager::new(MockEventPump { streams: streams });
     {
@@ -101,11 +105,13 @@ fn release_keys() {
 
 #[test]
 fn did_press_key() {
-    let streams = vec![None,
-                       Some(key_event!(KeyUp, Keycode::Down)),
-                       Some(key_event!(KeyDown, Keycode::Up)),
-                       None,
-                       Some(key_event!(KeyDown, Keycode::Down))];
+    let streams = vec![
+        None,
+        Some(key_event!(KeyUp, Keycode::Down)),
+        Some(key_event!(KeyDown, Keycode::Up)),
+        None,
+        Some(key_event!(KeyDown, Keycode::Down)),
+    ];
 
     let mut subject = Manager::new(MockEventPump { streams: streams });
 
@@ -129,17 +135,19 @@ fn did_press_key() {
 
 #[test]
 fn mouse_coords() {
-    let streams = vec![None,
-                       Some(Event::MouseMotion {
-                                timestamp: 0,
-                                window_id: 0,
-                                which: 0,
-                                mousestate: MouseState::from_sdl_state(0),
-                                x: 50,
-                                y: 30,
-                                xrel: 0,
-                                yrel: 0,
-                            })];
+    let streams = vec![
+        None,
+        Some(Event::MouseMotion {
+            timestamp: 0,
+            window_id: 0,
+            which: 0,
+            mousestate: MouseState::from_sdl_state(0),
+            x: 50,
+            y: 30,
+            xrel: 0,
+            yrel: 0,
+        }),
+    ];
 
     let mut subject = Manager::new(MockEventPump { streams: streams });
     let state = subject.update();
@@ -148,10 +156,12 @@ fn mouse_coords() {
 
 #[test]
 fn mouse_clicks() {
-    let streams = vec![None,
-                       Some(mouse_event!(MouseButtonDown, MouseButton::Right)),
-                       None,
-                       Some(mouse_event!(MouseButtonDown, MouseButton::Left))];
+    let streams = vec![
+        None,
+        Some(mouse_event!(MouseButtonDown, MouseButton::Right)),
+        None,
+        Some(mouse_event!(MouseButtonDown, MouseButton::Left)),
+    ];
 
     let mut subject = Manager::new(MockEventPump { streams: streams });
 
@@ -174,12 +184,14 @@ fn mouse_clicks() {
 
 #[test]
 fn mouse_releases() {
-    let streams = vec![None,
-                       Some(mouse_event!(MouseButtonDown, MouseButton::Right)),
-                       None,
-                       Some(mouse_event!(MouseButtonUp, MouseButton::Left)),
-                       None,
-                       Some(mouse_event!(MouseButtonDown, MouseButton::Left))];
+    let streams = vec![
+        None,
+        Some(mouse_event!(MouseButtonDown, MouseButton::Right)),
+        None,
+        Some(mouse_event!(MouseButtonUp, MouseButton::Left)),
+        None,
+        Some(mouse_event!(MouseButtonDown, MouseButton::Left)),
+    ];
 
     let mut subject = Manager::new(MockEventPump { streams: streams });
 

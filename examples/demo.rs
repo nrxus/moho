@@ -9,8 +9,9 @@ use moho::shape::*;
 use moho::timer::*;
 
 pub struct MainGame<'f, 't, TL: 't, FL: 'f, R, E>
-    where TL: TextureLoader<'t>,
-          FL: FontLoader<'f>
+where
+    TL: TextureLoader<'t>,
+    FL: FontLoader<'f>,
 {
     input_manager: input::Manager<E>,
     texture_manager: TextureManager<'t, TL>,
@@ -20,14 +21,16 @@ pub struct MainGame<'f, 't, TL: 't, FL: 'f, R, E>
 }
 
 impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
-    where TL: TextureLoader<'t>,
-          FL: FontLoader<'f>
+where
+    TL: TextureLoader<'t>,
+    FL: FontLoader<'f>,
 {
-    pub fn new(renderer: R,
-               input_manager: input::Manager<E>,
-               font_loader: &'f FL,
-               texture_loader: &'t TL)
-               -> Self {
+    pub fn new(
+        renderer: R,
+        input_manager: input::Manager<E>,
+        font_loader: &'f FL,
+        texture_loader: &'t TL,
+    ) -> Self {
         let texture_manager = TextureManager::new(texture_loader);
         let font_manager = FontManager::new(font_loader);
         MainGame {
@@ -40,12 +43,10 @@ impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
     }
 
     pub fn run(&mut self) -> Result<()>
-        where TL: FontTexturizer<'f,
-                                 't,
-                                 Texture = <TL as TextureLoader<'t>>::Texture,
-                                 Font = FL::Font>,
-              R: Canvas<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
-              E: input::EventPump
+    where
+        TL: FontTexturizer<'f, 't, Texture = <TL as TextureLoader<'t>>::Texture, Font = FL::Font>,
+        R: Canvas<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
+        E: input::EventPump,
     {
         let image = self.texture_manager.load("examples/background.png")?;
         let font_details = FontDetails {
@@ -75,18 +76,21 @@ impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
             let fps = format!("{}", game_time.fps() as u32);
             let font_texture = self.texture_loader
                 .texturize(&font, &fps, &ColorRGBA(255, 255, 0, 255))?;
-            let font_dst = glm::ivec4(0,
-                                      0,
-                                      font_texture.dims().x as i32,
-                                      font_texture.dims().y as i32);
+            let font_dst = glm::ivec4(
+                0,
+                0,
+                font_texture.dims().x as i32,
+                font_texture.dims().y as i32,
+            );
             self.renderer.clear();
             self.renderer
                 .copy(&image, options::flip(TextureFlip::Both))?;
             self.renderer.copy(&image, options::none())?;
             self.renderer.copy(&font_texture, options::at(&font_dst))?;
-            self.renderer
-                .copy(&button_texture,
-                      options::at(&button_dst).flip(TextureFlip::Horizontal))?;
+            self.renderer.copy(
+                &button_texture,
+                options::at(&button_dst).flip(TextureFlip::Horizontal),
+            )?;
             self.renderer.present();
         }
         Ok(())
