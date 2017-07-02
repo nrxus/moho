@@ -1,5 +1,5 @@
 use errors::*;
-use super::{ColorRGBA, Loader, Texture};
+use super::{ColorRGBA, Loader};
 
 use glm;
 
@@ -9,11 +9,11 @@ pub trait Font {
 
 pub trait FontLoader<'a>
     : Loader<'a, <Self as FontLoader<'a>>::Font, Args = FontDetails> {
-    type Font: Font;
+    type Font;
 }
 
 pub trait FontTexturizer<'t, F> {
-    type Texture: Texture;
+    type Texture;
     fn texturize(&'t self, font: &F, text: &str, color: &ColorRGBA) -> Result<Self::Texture>;
 }
 

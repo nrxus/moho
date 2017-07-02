@@ -23,7 +23,9 @@ where
 impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
 where
     TL: TextureLoader<'t>,
+    TL::Texture: Texture,
     FL: FontLoader<'f>,
+    FL::Font: Font,
 {
     pub fn new(
         renderer: R,

@@ -92,7 +92,7 @@ pub trait Loader<'a, T> {
 
 pub trait TextureLoader<'a>
     : Loader<'a, <Self as TextureLoader<'a>>::Texture, Args = str> {
-    type Texture: Texture;
+    type Texture;
 }
 
 pub trait Window {
