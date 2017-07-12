@@ -44,8 +44,7 @@ impl Intersect<Rectangle> for Circle {
             .min_by(|&x, &y| {
                 glm::dot(x, x).partial_cmp(&glm::dot(y, y)).unwrap()
             })
-            .unwrap()
-            .clone();
+            .unwrap();
         let circle_axis = Axis(glm::normalize(closest));
         fixed
             .axes()

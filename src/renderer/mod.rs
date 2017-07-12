@@ -31,11 +31,11 @@ pub mod options {
         Options::default()
     }
 
-    pub fn at<'a>(dst: &'a glm::IVec4) -> Options<'a> {
+    pub fn at(dst: &glm::IVec4) -> Options {
         Options::default().at(dst)
     }
 
-    pub fn from<'a>(src: &'a glm::UVec4) -> Options<'a> {
+    pub fn from(src: &glm::UVec4) -> Options {
         Options::default().from(src)
     }
 
@@ -43,7 +43,7 @@ pub mod options {
         Options::default().flip(flip)
     }
 
-    pub fn rotate<'a>(rotation: &'a Rotation) -> Options<'a> {
+    pub fn rotate(rotation: &Rotation) -> Options {
         Options::default().rotate(rotation)
     }
 }
