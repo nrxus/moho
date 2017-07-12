@@ -71,10 +71,16 @@ impl State {
                 Event::Quit { .. } => {
                     self.game_quit = true;
                 }
-                Event::KeyDown { keycode: Some(keycode), .. } => {
+                Event::KeyDown {
+                    keycode: Some(keycode),
+                    ..
+                } => {
                     self.pressed_keys.insert(keycode);
                 }
-                Event::KeyUp { keycode: Some(keycode), .. } => {
+                Event::KeyUp {
+                    keycode: Some(keycode),
+                    ..
+                } => {
                     self.pressed_keys.remove(&keycode);
                 }
                 Event::MouseMotion { x, y, .. } => {

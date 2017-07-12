@@ -107,8 +107,8 @@ where
 fn main() {
     const WINDOW_WIDTH: u32 = 1280;
     const WINDOW_HEIGHT: u32 = 720;
-    let (renderer, creator, input_manager) = moho::init("MohoGame", WINDOW_WIDTH, WINDOW_HEIGHT)
-        .unwrap();
+    let (renderer, creator, input_manager) =
+        moho::init("MohoGame", WINDOW_WIDTH, WINDOW_HEIGHT).unwrap();
     let font_loader = sdl2::ttf::init()
         .chain_err(|| "cannot init loader")
         .unwrap();

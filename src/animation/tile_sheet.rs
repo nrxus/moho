@@ -81,7 +81,9 @@ mod tests {
 
     #[test]
     fn single_frame() {
-        let texture = MockTexture { dims: glm::uvec2(10, 10) };
+        let texture = MockTexture {
+            dims: glm::uvec2(10, 10),
+        };
         let rc_texture = Rc::new(texture);
         let sheet = TileSheet::new(glm::uvec2(1, 1), rc_texture.clone());
         let tile = sheet.tile(0);
@@ -91,7 +93,9 @@ mod tests {
 
     #[test]
     fn single_row() {
-        let texture = MockTexture { dims: glm::uvec2(10, 10) };
+        let texture = MockTexture {
+            dims: glm::uvec2(10, 10),
+        };
         let rc_texture = Rc::new(texture);
         let sheet = TileSheet::new(glm::uvec2(10, 1), rc_texture.clone());
         let tile = sheet.tile(4);
@@ -101,7 +105,9 @@ mod tests {
 
     #[test]
     fn single_column() {
-        let texture = MockTexture { dims: glm::uvec2(10, 10) };
+        let texture = MockTexture {
+            dims: glm::uvec2(10, 10),
+        };
         let rc_texture = Rc::new(texture);
         let sheet = TileSheet::new(glm::uvec2(1, 5), rc_texture.clone());
         let tile = sheet.tile(4);
@@ -111,7 +117,9 @@ mod tests {
 
     #[test]
     fn mult_frames() {
-        let texture = MockTexture { dims: glm::uvec2(20, 10) };
+        let texture = MockTexture {
+            dims: glm::uvec2(20, 10),
+        };
         let rc_texture = Rc::new(texture);
         let sheet = TileSheet::new(glm::uvec2(4, 2), rc_texture.clone());
         let tile = sheet.tile(5);
