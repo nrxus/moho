@@ -52,6 +52,10 @@ impl<'t, T: RenderTarget> renderer::Renderer<'t> for render::Canvas<T> {
         self.fill_rects(rects).map_err(Into::into)
     }
 
+    fn draw_rects(&mut self, rects: &[rect::Rect]) -> Result<()> {
+        self.draw_rects(rects).map_err(Into::into)
+    }
+
     fn copy(&mut self, texture: &Self::Texture, options: renderer::Options) -> Result<()> {
         let src = options
             .src

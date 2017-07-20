@@ -117,6 +117,7 @@ pub trait Renderer<'t> {
     type Texture;
 
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
+    fn draw_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
     fn copy(&mut self, texture: &Self::Texture, options: Options) -> Result<()>;
 
     /// Default implemenations for drawing assets
