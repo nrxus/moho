@@ -9,14 +9,12 @@ pub fn wrap_rects(original: glm::IVec4, max: glm::UVec2) -> [Option<glm::IVec4>;
     let side = side_wrap(left, top, original, max);
     let vert = vert_wrap(left, top, original, max);
     let side_vert = match (side, vert) {
-        (Some(side_center), Some(vert_center)) => {
-            Some(glm::ivec4(
-                side_center.x,
-                vert_center.y,
-                original.z,
-                original.w,
-            ))
-        }
+        (Some(side_center), Some(vert_center)) => Some(glm::ivec4(
+            side_center.x,
+            vert_center.y,
+            original.z,
+            original.w,
+        )),
         _ => None,
     };
 

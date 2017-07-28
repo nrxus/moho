@@ -8,7 +8,7 @@ use sdl2::render::WindowCanvas as SdlCanvas;
 use sdl2::render::TextureCreator;
 use sdl2::video::WindowContext;
 use sdl2::EventPump as SdlEventPump;
-use sdl2::image::{INIT_PNG, INIT_JPG};
+use sdl2::image::{INIT_JPG, INIT_PNG};
 
 pub mod animation;
 pub mod input;

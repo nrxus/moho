@@ -5,7 +5,7 @@ extern crate sdl2;
 use moho::input::*;
 use sdl2::keyboard::{Keycode, NOMOD};
 use sdl2::event::Event;
-use sdl2::mouse::{MouseState, MouseButton};
+use sdl2::mouse::{MouseButton, MouseState};
 
 struct MockEventPump {
     streams: Vec<Option<Event>>,

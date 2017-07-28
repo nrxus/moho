@@ -1,4 +1,4 @@
-use super::{EventPump, EventGenerator};
+use super::{EventGenerator, EventPump};
 
 use glm;
 use num_traits::Zero;
