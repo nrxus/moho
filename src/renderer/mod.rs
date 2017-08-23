@@ -13,9 +13,16 @@ use sdl2::rect;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Destination {
-    dims: Option<glm::UVec2>,
-    vertical: align::Alignment<align::Vertical>,
-    horizontal: align::Alignment<align::Horizontal>,
+    pub dims: Option<glm::UVec2>,
+    pub vertical: align::Alignment<align::Vertical>,
+    pub horizontal: align::Alignment<align::Horizontal>,
+}
+
+impl Destination {
+    pub fn dims(mut self, dims: glm::UVec2) -> Destination {
+        self.dims = Some(dims);
+        self
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
