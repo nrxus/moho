@@ -70,7 +70,7 @@ impl<T> TileSheet<T> {
 
 impl<'t, R: Renderer<'t>> Asset<R> for Tile<R::Texture> {
     fn draw(&self, options: Options, renderer: &mut R) -> Result<()> {
-        let options = options.from(&self.src);
+        let options = options.from(self.src);
         renderer.copy(&*self.texture, options)
     }
 }

@@ -1,3 +1,4 @@
+pub mod align;
 mod font;
 mod resource_manager;
 mod sdl2;
@@ -10,11 +11,20 @@ use errors::*;
 use glm;
 use sdl2::rect;
 
+#[derive(Debug, Clone, Copy)]
+pub struct Destination {
+    dims: Option<glm::UVec2>,
+    vertical: align::Alignment<align::Vertical>,
+    horizontal: align::Alignment<align::Horizontal>,
+}
+
+#[derive(Debug, Clone, Copy)]
 pub struct Rotation {
     pub angle: f64,
     pub center: glm::IVec2,
 }
 
+#[derive(Debug, Clone, Copy)]
 pub enum TextureFlip {
     Horizontal,
     Vertical,
@@ -23,46 +33,80 @@ pub enum TextureFlip {
 
 pub mod options {
     use glm;
-    use super::Options;
-    use super::TextureFlip;
-    use super::Rotation;
+    use super::{Destination, Options, Rotation, TextureFlip};
 
-    pub fn none<'a>() -> Options<'a> {
+    pub fn none() -> Options {
         Options::default()
     }
 
-    pub fn at(dst: &glm::IVec4) -> Options {
+    pub fn at<D: Into<Destination>>(dst: D) -> Options {
         Options::default().at(dst)
     }
 
-    pub fn from(src: &glm::UVec4) -> Options {
+    pub fn from(src: glm::UVec4) -> Options {
         Options::default().from(src)
     }
 
-    pub fn flip<'a>(flip: TextureFlip) -> Options<'a> {
+    pub fn flip(flip: TextureFlip) -> Options {
         Options::default().flip(flip)
     }
 
-    pub fn rotate(rotation: &Rotation) -> Options {
+    pub fn rotate(rotation: Rotation) -> Options {
         Options::default().rotate(rotation)
     }
 }
 
-#[derive(Default)]
-pub struct Options<'a> {
-    pub dst: Option<&'a glm::IVec4>,
-    pub src: Option<&'a glm::UVec4>,
-    pub rotation: Option<&'a Rotation>,
+#[derive(Debug, Default, Clone)]
+pub struct Options {
+    pub dst: Option<Destination>,
+    pub src: Option<glm::UVec4>,
+    pub rotation: Option<Rotation>,
     pub flip: Option<TextureFlip>,
 }
 
-impl<'a> Options<'a> {
-    pub fn at(mut self, dst: &'a glm::IVec4) -> Self {
-        self.dst = Some(dst);
+impl From<glm::IVec4> for Destination {
+    fn from(rect: glm::IVec4) -> Destination {
+        let horizontal = align::Alignment {
+            pos: rect.x,
+            align: align::Horizontal::Left,
+        };
+        let vertical = align::Alignment {
+            pos: rect.y,
+            align: align::Vertical::Top,
+        };
+        Destination {
+            horizontal,
+            vertical,
+            dims: Some(glm::uvec2(rect.z as u32, rect.w as u32)),
+        }
+    }
+}
+
+impl From<glm::IVec2> for Destination {
+    fn from(tl: glm::IVec2) -> Destination {
+        let horizontal = align::Alignment {
+            pos: tl.x,
+            align: align::Horizontal::Left,
+        };
+        let vertical = align::Alignment {
+            pos: tl.y,
+            align: align::Vertical::Top,
+        };
+        Destination {
+            horizontal,
+            vertical,
+            dims: None,
+        }
+    }
+}
+
+impl Options {
+    pub fn at<D: Into<Destination>>(mut self, dst: D) -> Self {
+        self.dst = Some(dst.into());
         self
     }
 
-    pub fn from(mut self, src: &'a glm::UVec4) -> Self {
+    pub fn from(mut self, src: glm::UVec4) -> Self {
         self.src = Some(src);
         self
     }
@@ -72,7 +116,7 @@ impl<'a> Options<'a> {
         self
     }
 
-    pub fn rotate(mut self, rotation: &'a Rotation) -> Self {
+    pub fn rotate(mut self, rotation: Rotation) -> Self {
         self.rotation = Some(rotation);
         self
     }

@@ -59,11 +59,11 @@ where
         let font = self.font_manager.load(&font_details)?;
         let button_dims = font.measure(button_text)?;
 
+        let button_tl = glm::ivec2(60, 60);
         let rect = Rectangle {
-            top_left: glm::dvec2(60., 60.),
+            top_left: glm::to_dvec2(button_tl),
             dims: glm::to_dvec2(button_dims),
         };
-        let button_dst = glm::ivec4(60, 60, button_dims.x as i32, button_dims.y as i32);
         let mut timer = Timer::new();
         while !self.game_quit() {
             let game_time = timer.update();
@@ -79,19 +79,14 @@ where
             let font_texture =
                 self.texture_loader
                     .texturize(&font, &fps, &ColorRGBA(255, 255, 0, 255))?;
-            let font_dst = glm::ivec4(
-                0,
-                0,
-                font_texture.dims().x as i32,
-                font_texture.dims().y as i32,
-            );
             self.renderer.clear();
             self.renderer.copy(&image, options::flip(TextureFlip::Both))?;
             self.renderer.copy(&image, options::none())?;
-            self.renderer.copy(&font_texture, options::at(&font_dst))?;
+            self.renderer
+                .copy(&font_texture, options::at(align::top(0).right(1280)))?;
             self.renderer.copy(
                 &button_texture,
-                options::at(&button_dst).flip(TextureFlip::Horizontal),
+                options::at(button_tl).flip(TextureFlip::Horizontal),
             )?;
             self.renderer.present();
         }
