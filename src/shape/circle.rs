@@ -105,8 +105,7 @@ impl Intersect<Line> for Circle {
         let normal = glm::normalize(len);
         let normal = glm::dvec2(-normal.y, normal.x);
         let distance = (len.y * self.center.x - len.x * self.center.y + fixed.1.x * fixed.0.y -
-            fixed.1.y * fixed.0.x) /
-            glm::length(len);
+            fixed.1.y * fixed.0.x) / glm::length(len);
         if distance.abs() < self.radius {
             let normal = if distance < 0. { normal * -1. } else { normal };
             Some(glm::ext::normalize_to(normal, distance.abs() - self.radius))

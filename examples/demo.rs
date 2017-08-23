@@ -76,8 +76,9 @@ where
             };
             let button_texture = self.texture_loader.texturize(&font, button_text, &color)?;
             let fps = format!("{}", game_time.fps() as u32);
-            let font_texture = self.texture_loader
-                .texturize(&font, &fps, &ColorRGBA(255, 255, 0, 255))?;
+            let font_texture =
+                self.texture_loader
+                    .texturize(&font, &fps, &ColorRGBA(255, 255, 0, 255))?;
             let font_dst = glm::ivec4(
                 0,
                 0,
@@ -85,8 +86,7 @@ where
                 font_texture.dims().y as i32,
             );
             self.renderer.clear();
-            self.renderer
-                .copy(&image, options::flip(TextureFlip::Both))?;
+            self.renderer.copy(&image, options::flip(TextureFlip::Both))?;
             self.renderer.copy(&image, options::none())?;
             self.renderer.copy(&font_texture, options::at(&font_dst))?;
             self.renderer.copy(

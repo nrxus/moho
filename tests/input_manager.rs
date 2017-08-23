@@ -1,5 +1,6 @@
-extern crate moho;
+
 extern crate glm;
+extern crate moho;
 extern crate sdl2;
 
 use moho::input::*;
@@ -124,7 +125,6 @@ fn did_press_key() {
         let state = subject.update();
         assert_eq!(state.did_press_key(Keycode::Down), true);
         assert_eq!(state.did_press_key(Keycode::Up), false);
-
     }
 
     // Up key is pressed - Down key has not been released yet

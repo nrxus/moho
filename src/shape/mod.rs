@@ -96,15 +96,15 @@ where
                 .unwrap()
         }
 
-        self.collect::<Option<Vec<_>>>().map(|p| pick_min(&p)).map(
-            |v| {
+        self.collect::<Option<Vec<_>>>()
+            .map(|p| pick_min(&p))
+            .map(|v| {
                 let p = glm::dot(object.center() - fixed.center(), v);
                 if p < 0. {
                     v * -1.
                 } else {
                     v
                 }
-            },
-        )
+            })
     }
 }
