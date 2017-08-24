@@ -23,6 +23,27 @@ impl Destination {
         self.dims = Some(dims);
         self
     }
+
+    pub fn rect<F: FnOnce() -> glm::UVec2>(&self, op: F) -> glm::IVec4 {
+        let dims = glm::to_ivec2(self.dims.unwrap_or_else(op));
+        let top = {
+            let align::Alignment { align, pos } = self.vertical;
+            match align {
+                align::Vertical::Top => pos,
+                align::Vertical::Middle => pos - dims.y / 2,
+                align::Vertical::Bottom => pos - dims.y,
+            }
+        };
+        let left = {
+            let align::Alignment { align, pos } = self.horizontal;
+            match align {
+                align::Horizontal::Left => pos,
+                align::Horizontal::Center => pos - dims.x / 2,
+                align::Horizontal::Right => pos - dims.x,
+            }
+        };
+        glm::ivec4(left, top, dims.x, dims.y)
+    }
 }
 
 #[derive(Debug, Clone, Copy)]

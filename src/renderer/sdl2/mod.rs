@@ -1,7 +1,7 @@
 mod font;
 
 use errors::*;
-use renderer::{self, align};
+use renderer;
 
 use glm;
 use sdl2::image::LoadTexture;
@@ -61,28 +61,11 @@ impl<'t, T: RenderTarget> renderer::Renderer<'t> for render::Canvas<T> {
             .src
             .map(|r| rect::Rect::new(r.x as i32, r.y as i32, r.z, r.w));
         let dst = options.dst.map(|d| {
-            let dims = d.dims.unwrap_or_else(|| {
+            let rect = d.rect(|| {
                 let query = texture.query();
                 glm::uvec2(query.width, query.height)
             });
-            let top = {
-                let align::Alignment { align, pos } = d.vertical;
-                match align {
-                    align::Vertical::Top => pos,
-                    align::Vertical::Middle => pos - dims.y as i32 / 2,
-                    align::Vertical::Bottom => pos - dims.y as i32,
-                }
-            };
-            let left = {
-                let align::Alignment { align, pos } = d.horizontal;
-                match align {
-                    align::Horizontal::Left => pos,
-                    align::Horizontal::Center => pos - dims.x as i32 / 2,
-                    align::Horizontal::Right => pos - dims.x as i32,
-                }
-            };
-
-            rect::Rect::new(left, top, dims.x, dims.y)
+            rect::Rect::new(rect.x, rect.y, rect.z as u32, rect.w as u32)
         });
         match (options.rotation, options.flip) {
             (None, None) => self.copy(texture, src, dst).map_err(Into::into),

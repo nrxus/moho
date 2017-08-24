@@ -1,4 +1,3 @@
-
 extern crate glm;
 extern crate moho;
 extern crate sdl2;
