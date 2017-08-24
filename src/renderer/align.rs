@@ -18,6 +18,13 @@ pub struct Alignment<T> {
     pub pos: i32,
 }
 
+impl<T> Alignment<T> {
+    pub fn nudge(mut self, delta: i32) -> Self {
+        self.pos += delta;
+        self
+    }
+}
+
 impl Alignment<Vertical> {
     pub fn left(self, pos: i32) -> super::Destination {
         let horizontal = Alignment {
