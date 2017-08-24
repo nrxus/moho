@@ -24,6 +24,12 @@ impl Destination {
         self
     }
 
+    pub fn nudge(mut self, delta: glm::IVec2) -> Destination {
+        self.vertical.pos += delta.y;
+        self.horizontal.pos += delta.x;
+        self
+    }
+
     pub fn rect<F: FnOnce() -> glm::UVec2>(&self, op: F) -> glm::IVec4 {
         let dims = glm::to_ivec2(self.dims.unwrap_or_else(op));
         let top = {
