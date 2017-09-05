@@ -1,7 +1,7 @@
 mod font;
 
 use errors::*;
-use renderer;
+use renderer::{self, options};
 
 use glm;
 use sdl2::image::LoadTexture;
@@ -76,9 +76,9 @@ impl<'t, T: RenderTarget> renderer::Renderer<'t> for render::Canvas<T> {
                 };
                 let (hflip, vflip) = match f {
                     None => (false, false),
-                    Some(renderer::TextureFlip::Horizontal) => (true, false),
-                    Some(renderer::TextureFlip::Vertical) => (false, true),
-                    Some(renderer::TextureFlip::Both) => (true, true),
+                    Some(options::Flip::Horizontal) => (true, false),
+                    Some(options::Flip::Vertical) => (false, true),
+                    Some(options::Flip::Both) => (true, true),
                 };
                 self.copy_ex(texture, src, dst, angle, center, hflip, vflip)
                     .map_err(Into::into)

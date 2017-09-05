@@ -80,13 +80,14 @@ where
                 self.texture_loader
                     .texturize(&font, &fps, &ColorRGBA(255, 255, 0, 255))?;
             self.renderer.clear();
-            self.renderer.copy(&image, options::flip(TextureFlip::Both))?;
+            self.renderer
+                .copy(&image, options::flip(options::Flip::Both))?;
             self.renderer.copy(&image, options::none())?;
             self.renderer
                 .copy(&font_texture, options::at(align::top(0).right(1280)))?;
             self.renderer.copy(
                 &button_texture,
-                options::at(button_tl).flip(TextureFlip::Horizontal),
+                options::at(button_tl).flip(options::Flip::Horizontal),
             )?;
             self.renderer.present();
         }

@@ -1,3 +1,5 @@
+use super::options::Destination;
+
 #[derive(Debug, Clone, Copy)]
 pub enum Vertical {
     Top,
@@ -26,37 +28,25 @@ impl<T> Alignment<T> {
 }
 
 impl Alignment<Vertical> {
-    pub fn left(self, pos: i32) -> super::Destination {
-        let horizontal = Alignment {
-            pos,
-            align: Horizontal::Left,
-        };
-        super::Destination {
-            horizontal,
+    pub fn left(self, pos: i32) -> Destination {
+        Destination {
+            horizontal: left(pos),
             vertical: self,
             dims: None,
         }
     }
 
-    pub fn center(self, pos: i32) -> super::Destination {
-        let horizontal = Alignment {
-            pos,
-            align: Horizontal::Center,
-        };
-        super::Destination {
-            horizontal,
+    pub fn center(self, pos: i32) -> Destination {
+        Destination {
+            horizontal: center(pos),
             vertical: self,
             dims: None,
         }
     }
 
-    pub fn right(self, pos: i32) -> super::Destination {
-        let horizontal = Alignment {
-            pos,
-            align: Horizontal::Right,
-        };
-        super::Destination {
-            horizontal,
+    pub fn right(self, pos: i32) -> Destination {
+        Destination {
+            horizontal: right(pos),
             vertical: self,
             dims: None,
         }
@@ -64,37 +54,25 @@ impl Alignment<Vertical> {
 }
 
 impl Alignment<Horizontal> {
-    pub fn top(self, pos: i32) -> super::Destination {
-        let vertical = Alignment {
-            pos,
-            align: Vertical::Top,
-        };
-        super::Destination {
-            vertical,
+    pub fn top(self, pos: i32) -> Destination {
+        Destination {
+            vertical: top(pos),
             horizontal: self,
             dims: None,
         }
     }
 
-    pub fn middle(self, pos: i32) -> super::Destination {
-        let vertical = Alignment {
-            pos,
-            align: Vertical::Middle,
-        };
-        super::Destination {
-            vertical,
+    pub fn middle(self, pos: i32) -> Destination {
+        Destination {
+            vertical: middle(pos),
             horizontal: self,
             dims: None,
         }
     }
 
-    pub fn bottom(self, pos: i32) -> super::Destination {
-        let vertical = Alignment {
-            pos,
-            align: Vertical::Bottom,
-        };
-        super::Destination {
-            vertical,
+    pub fn bottom(self, pos: i32) -> Destination {
+        Destination {
+            vertical: bottom(pos),
             horizontal: self,
             dims: None,
         }
