@@ -1,6 +1,6 @@
 use std::time::{Duration, Instant};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct GameTime {
     pub total: Duration,
     pub since_update: Duration,

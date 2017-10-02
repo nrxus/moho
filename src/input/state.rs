@@ -8,7 +8,7 @@ use sdl2::event::Event;
 
 use std::collections::HashSet;
 
-#[derive(Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct MouseCoords(glm::IVec2);
 
 impl Default for MouseCoords {
@@ -17,7 +17,7 @@ impl Default for MouseCoords {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct State {
     pressed_keys: HashSet<Keycode>,
     pressed_buttons: HashSet<MouseButton>,
