@@ -4,9 +4,21 @@ use timer::{self, Timer};
 
 use std::time::Duration;
 
-pub enum GameState<U> {
+pub enum GameState<S> {
     Quit,
-    Running(U),
+    Running(S),
+}
+
+impl<S> GameState<S> {
+    fn flat_map<F>(self, f: F) -> Self
+    where
+        F: FnOnce(S) -> Self,
+    {
+        match self {
+            GameState::Quit => GameState::Quit,
+            GameState::Running(s) => f(s),
+        }
+    }
 }
 
 pub struct Runner<L: Loop> {
@@ -101,7 +113,8 @@ impl<E: input::EventPump, C> Loop for FixedUpdate<E, C> {
     {
         self.leftover += time.since_update;
         let mut current = GameState::Running(state);
-        while self.leftover >= self.step {
+        let mut loops = 0;
+        while self.leftover >= self.step && loops <= self.max_skip {
             match current {
                 GameState::Quit => break,
                 GameState::Running(s) => {
@@ -114,11 +127,10 @@ impl<E: input::EventPump, C> Loop for FixedUpdate<E, C> {
                 }
             }
             self.leftover -= self.step;
+            loops += 1;
         }
 
-        if let GameState::Running(s) = current {
-            current = s.tick(time);
-        }
+        current = current.flat_map(|s| s.tick(time));
 
         Ok(current)
     }
@@ -191,9 +203,11 @@ mod test {
 
         state = subject.advance(state, time).expect_running();
 
-        let (last_input, duration) = state.last_update_in.clone().unwrap();
-        assert_eq!(last_input, input::State::default());
-        assert_eq!(duration, subject.step);
+        let updates = &state.updates;
+        assert_eq!(updates.len(), 1);
+        let (ref input, ref duration) = updates[0];
+        assert_eq!(*input, input::State::default());
+        assert_eq!(*duration, subject.step);
     }
 
     #[test]
@@ -204,28 +218,63 @@ mod test {
         //first advance
         let time = timer::GameTime {
             total: Duration::from_secs(1),
-            since_update: Duration::new(0, subject.step.subsec_nanos() / 2),
+            since_update: subject.step / 2,
         };
         state = subject.advance(state, time).expect_running();
-        assert!(state.last_update_in.is_none());
+        assert!(state.updates.is_empty());
 
         //second advance
         let time = timer::GameTime {
             total: Duration::from_secs(1),
-            since_update: Duration::new(0, subject.step.subsec_nanos() / 4),
+            since_update: subject.step / 4,
         };
         state = subject.advance(state, time).expect_running();
-        assert!(state.last_update_in.is_none());
+        assert!(state.updates.is_empty());
 
         //third advance
         let time = timer::GameTime {
             total: Duration::from_secs(1),
-            since_update: Duration::new(0, subject.step.subsec_nanos() / 3),
+            since_update: subject.step / 2,
         };
         state = subject.advance(state, time).expect_running();
-        let (last_input, duration) = state.last_update_in.clone().unwrap();
-        assert_eq!(last_input, input::State::default());
-        assert_eq!(duration, subject.step);
+        let updates = &state.updates;
+        assert_eq!(updates.len(), 1);
+        let (ref input, ref duration) = updates[0];
+        assert_eq!(*input, input::State::default());
+        assert_eq!(*duration, subject.step);
+    }
+
+    #[test]
+    fn slow_updates_skips() {
+        let mut subject = subject().max_skip(2);
+        let mut state = MockState::default();
+        let time = timer::GameTime {
+            total: Duration::from_secs(1),
+            since_update: subject.step * 4,
+        };
+        state = subject.advance(state, time).expect_running();
+        let updates = &state.updates;
+        assert_eq!(updates.len(), 3);
+        updates.iter().for_each(|&(ref i, ref d)| {
+            assert_eq!(*i, input::State::default());
+            assert_eq!(*d, subject.step);
+        });
+    }
+
+    #[test]
+    fn slow_updates_no_skip() {
+        let mut subject = subject().max_skip(0);
+        let mut state = MockState::default();
+        let time = timer::GameTime {
+            total: Duration::from_secs(1),
+            since_update: subject.step * 2,
+        };
+        state = subject.advance(state, time).expect_running();
+        let updates = &state.updates;
+        assert_eq!(updates.len(), 1);
+        let (ref input, ref duration) = updates[0];
+        assert_eq!(*input, input::State::default());
+        assert_eq!(*duration, subject.step);
     }
 
     #[test]
@@ -265,8 +314,8 @@ mod test {
 
     #[derive(Default)]
     struct MockState {
+        updates: Vec<(input::State, Duration)>,
         last_tick_in: Option<timer::GameTime>,
-        last_update_in: Option<(input::State, Duration)>,
         next_tick_quits: bool,
         next_update_quits: bool,
     }
@@ -294,7 +343,7 @@ mod test {
             if self.next_update_quits {
                 GameState::Quit
             } else {
-                self.last_update_in = Some((input.clone(), duration));
+                self.updates.push((input.clone(), duration));
                 GameState::Running(self)
             }
         }
