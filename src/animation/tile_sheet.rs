@@ -27,7 +27,7 @@ impl<T> Clone for TileSheet<T> {
 }
 
 #[derive(Debug)]
-pub struct Tile<T> {
+pub struct Tile<T: ?Sized> {
     pub texture: Rc<T>,
     pub src: glm::UVec4,
 }

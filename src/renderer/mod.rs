@@ -45,12 +45,12 @@ pub trait Scene<R: ?Sized> {
 pub trait Canvas<'t>: Renderer<'t> {
     fn clear(&mut self);
     fn present(&mut self);
-    fn set_draw_color(&mut self, color: ColorRGBA);
 }
 
 pub trait Renderer<'t> {
-    type Texture;
+    type Texture: ?Sized;
 
+    fn set_draw_color(&mut self, color: ColorRGBA);
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
     fn draw_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
     fn copy(&mut self, texture: &Self::Texture, options: Options) -> Result<()>;

@@ -1,36 +1,53 @@
 use errors::*;
 use input;
+use renderer::{Canvas, Renderer};
 use timer::{self, Timer};
 
 use std::time::Duration;
 
-pub enum GameState<S> {
+pub enum GameState<L: Loop, U: Update<L::DrawInfo>> {
     Quit,
-    Running(S),
+    Running(State<L, U>),
 }
 
-impl<S> GameState<S> {
-    fn flat_map<F>(self, f: F) -> Self
+pub enum UpdateState<W> {
+    Quit,
+    Running(W),
+}
+
+pub struct State<L: Loop, U: Update<L::DrawInfo>> {
+    pub world: U,
+    pub draw: U::Draw,
+    pub loop_state: L::State,
+}
+
+impl<S> UpdateState<S> {
+    pub fn flat_map<F, T>(self, f: F) -> UpdateState<T>
     where
-        F: FnOnce(S) -> Self,
+        F: FnOnce(S) -> UpdateState<T>,
     {
         match self {
-            GameState::Quit => GameState::Quit,
-            GameState::Running(s) => f(s),
+            UpdateState::Quit => UpdateState::Quit,
+            UpdateState::Running(s) => f(s),
         }
     }
 }
 
-pub struct Runner<L: Loop> {
+pub struct Runner<L, C> {
     game_loop: L,
+    canvas: C,
 }
 
-impl<L: Loop> Runner<L> {
-    pub fn new(game_loop: L) -> Self {
-        Runner { game_loop }
+impl<'t, L: Loop, C: Canvas<'t>> Runner<L, C> {
+    pub fn new(game_loop: L, canvas: C) -> Self {
+        Runner { game_loop, canvas }
     }
 
-    pub fn run<U: Update>(mut self, initial: U) -> Result<()> {
+    pub fn run<U>(mut self, initial: State<L, U>) -> Result<()>
+    where
+        U: Update<L::DrawInfo>,
+        U::Draw: Draw<Texture = C::Texture>,
+    {
         let mut timer = Timer::new();
         let mut state = initial;
 
@@ -38,60 +55,65 @@ impl<L: Loop> Runner<L> {
             let game_time = timer.update();
             match self.game_loop.advance(state, game_time)? {
                 GameState::Quit => return Ok(()),
-                GameState::Running(s) => state = s,
+                GameState::Running(s) => {
+                    self.canvas.clear();
+                    s.draw.draw(&mut self.canvas)?;
+                    self.canvas.present();
+                    state = s;
+                }
             }
         }
     }
 }
 
-pub trait Update: Sized {
-    fn update(self, input: &input::State, elapsed: Duration) -> GameState<Self>;
-    fn tick(self, _: timer::GameTime) -> GameState<Self> {
-        GameState::Running(self)
+pub trait Update<L>: Sized {
+    type Draw: Draw;
+
+    fn update(self, input: &input::State, elapsed: Duration) -> UpdateState<Self>;
+    fn tick(self, _: timer::GameTime) -> UpdateState<Self> {
+        UpdateState::Running(self)
     }
+    fn next_draw(&self, previous: Self::Draw, loop_state: L) -> Result<Self::Draw>;
+}
 
-    fn try_into<D>(&self) -> Result<D>
+pub trait Draw {
+    type Texture: ?Sized;
+
+    fn draw<'t, R>(&self, renderer: &mut R) -> Result<()>
     where
-        D: DrawOn<State = Self>,
-    {
-        D::try_from(self)
-    }
+        R: Renderer<'t, Texture = Self::Texture>;
 }
 
-pub trait DrawOn {
-    type State;
+pub trait Loop: Sized {
+    type State: Default;
+    type DrawInfo;
 
-    fn draw_on<C>(&self, canvas: &mut C) -> Result<()>;
-    fn try_from(state: &Self::State) -> Result<Self>
+    fn advance<U>(
+        &mut self,
+        state: State<Self, U>,
+        time: timer::GameTime,
+    ) -> Result<GameState<Self, U>>
     where
-        Self: Sized;
+        U: Update<Self::DrawInfo>;
 }
 
-pub trait Loop {
-    fn advance<U: Update>(&mut self, state: U, time: timer::GameTime) -> Result<GameState<U>>;
-}
-
-pub struct FixedUpdate<E, C> {
+pub struct FixedUpdate<E> {
     step: Duration,
     max_skip: u32,
-    leftover: Duration,
     input_manager: input::Manager<E>,
-    canvas: C,
 }
 
-impl<E: input::EventPump, C> FixedUpdate<E, C> {
+impl<E> FixedUpdate<E> {
     const NS_IN_SEC: u32 = 1_000_000_000;
 
-    pub fn new(input_manager: input::Manager<E>, canvas: C) -> Self {
+    pub fn new(input_manager: input::Manager<E>) -> Self {
         const DEFAULT_RATE: u32 = 60;
         const DEFAULT_MAX_SKIP: u32 = 10;
 
         FixedUpdate {
             step: Duration::new(0, Self::NS_IN_SEC / DEFAULT_RATE),
             max_skip: DEFAULT_MAX_SKIP,
-            leftover: Duration::default(),
             input_manager,
-            canvas,
         }
     }
 
@@ -106,33 +128,51 @@ impl<E: input::EventPump, C> FixedUpdate<E, C> {
     }
 }
 
-impl<E: input::EventPump, C> Loop for FixedUpdate<E, C> {
-    fn advance<U>(&mut self, state: U, time: timer::GameTime) -> Result<GameState<U>>
+impl<E> Loop for FixedUpdate<E>
+where
+    E: input::EventPump,
+{
+    type State = Duration;
+    type DrawInfo = f64;
+
+    fn advance<U>(
+        &mut self,
+        state: State<Self, U>,
+        time: timer::GameTime,
+    ) -> Result<GameState<Self, U>>
     where
-        U: Update,
+        U: Update<f64>,
     {
-        self.leftover += time.since_update;
-        let mut current = GameState::Running(state);
+        let mut leftover = state.loop_state + time.since_update;
+        let mut current = UpdateState::Running(state.world);
         let mut loops = 0;
-        while self.leftover >= self.step && loops <= self.max_skip {
-            match current {
-                GameState::Quit => break,
-                GameState::Running(s) => {
-                    let input = self.input_manager.update();
-                    current = if input.game_quit() {
-                        GameState::Quit
-                    } else {
-                        s.update(input, self.step)
-                    }
+        while leftover >= self.step && loops <= self.max_skip {
+            current = current.flat_map(|s| {
+                let input = self.input_manager.update();
+                if input.game_quit() {
+                    UpdateState::Quit
+                } else {
+                    s.update(input, self.step)
                 }
-            }
-            self.leftover -= self.step;
+            });
+            leftover -= self.step;
             loops += 1;
         }
 
         current = current.flat_map(|s| s.tick(time));
-
-        Ok(current)
+        match current {
+            UpdateState::Quit => Ok(GameState::Quit),
+            UpdateState::Running(world) => {
+                let interpolation =
+                    f64::from(leftover.subsec_nanos()) / f64::from(self.step.subsec_nanos());
+                let draw = world.next_draw(state.draw, interpolation)?;
+                Ok(GameState::Running(State {
+                    world,
+                    draw,
+                    loop_state: leftover,
+                }))
+            }
+        }
     }
 }
 
@@ -140,6 +180,9 @@ impl<E: input::EventPump, C> Loop for FixedUpdate<E, C> {
 mod test {
     use super::*;
     use sdl2::event::Event;
+    use sdl2::rect;
+    use renderer::options::{self, Options};
+    use renderer::ColorRGBA;
 
     #[test]
     fn default() {
@@ -156,7 +199,43 @@ mod test {
     }
 
     #[test]
-    fn draws() {}
+    fn draws() {
+        use std;
+
+        let mut subject = subject();
+        let mut state = MockState::default();
+
+        //draw no update
+        let time = timer::GameTime {
+            total: Duration::default(),
+            since_update: subject.step / 2,
+        };
+        state = subject.advance(state, time).expect_running();
+        assert!((state.draw.interpolation - 0.5) < std::f64::EPSILON);
+        assert_eq!(state.draw.update_count, 0);
+
+        //draw with update
+        let time = timer::GameTime {
+            total: Duration::default(),
+            since_update: subject.step * 3 / 4,
+        };
+        state = subject.advance(state, time).expect_running();
+        assert!((state.draw.interpolation - 0.25) < std::f64::EPSILON);
+        assert_eq!(state.draw.update_count, 1);
+        assert!((state.draw.previous_interpolation - 0.5) < std::f64::EPSILON);
+        assert_eq!(state.draw.previous_update_count, 0);
+
+        //draw with multiple updates
+        let time = timer::GameTime {
+            total: Duration::default(),
+            since_update: subject.step * 3,
+        };
+        state = subject.advance(state, time).expect_running();
+        assert!((state.draw.interpolation - 0.25) < std::f64::EPSILON);
+        assert_eq!(state.draw.update_count, 4);
+        assert!((state.draw.previous_interpolation - 0.5) < std::f64::EPSILON);
+        assert_eq!(state.draw.previous_update_count, 1);
+    }
 
     #[test]
     fn propagates_draw_failure() {}
@@ -174,7 +253,7 @@ mod test {
 
         state = subject.advance(state, time).expect_running();
 
-        assert_eq!(time, state.last_tick_in.unwrap());
+        assert_eq!(time, state.world.last_tick_in.unwrap());
 
         //second advance
         let time = timer::GameTime {
@@ -184,10 +263,10 @@ mod test {
 
         state = subject.advance(state, time).expect_running();
 
-        assert_eq!(time, state.last_tick_in.unwrap());
+        assert_eq!(time, state.world.last_tick_in.unwrap());
 
         //last advance
-        state.next_tick_quits = true;
+        state.world.next_tick_quits = true;
         subject.advance(state, time).expect_quit()
     }
 
@@ -203,7 +282,7 @@ mod test {
 
         state = subject.advance(state, time).expect_running();
 
-        let updates = &state.updates;
+        let updates = &state.world.updates;
         assert_eq!(updates.len(), 1);
         let (ref input, ref duration) = updates[0];
         assert_eq!(*input, input::State::default());
@@ -221,7 +300,7 @@ mod test {
             since_update: subject.step / 2,
         };
         state = subject.advance(state, time).expect_running();
-        assert!(state.updates.is_empty());
+        assert!(state.world.updates.is_empty());
 
         //second advance
         let time = timer::GameTime {
@@ -229,7 +308,7 @@ mod test {
             since_update: subject.step / 4,
         };
         state = subject.advance(state, time).expect_running();
-        assert!(state.updates.is_empty());
+        assert!(state.world.updates.is_empty());
 
         //third advance
         let time = timer::GameTime {
@@ -237,7 +316,7 @@ mod test {
             since_update: subject.step / 2,
         };
         state = subject.advance(state, time).expect_running();
-        let updates = &state.updates;
+        let updates = &state.world.updates;
         assert_eq!(updates.len(), 1);
         let (ref input, ref duration) = updates[0];
         assert_eq!(*input, input::State::default());
@@ -253,7 +332,7 @@ mod test {
             since_update: subject.step * 4,
         };
         state = subject.advance(state, time).expect_running();
-        let updates = &state.updates;
+        let updates = &state.world.updates;
         assert_eq!(updates.len(), 3);
         updates.iter().for_each(|&(ref i, ref d)| {
             assert_eq!(*i, input::State::default());
@@ -270,7 +349,7 @@ mod test {
             since_update: subject.step * 2,
         };
         state = subject.advance(state, time).expect_running();
-        let updates = &state.updates;
+        let updates = &state.world.updates;
         assert_eq!(updates.len(), 1);
         let (ref input, ref duration) = updates[0];
         assert_eq!(*input, input::State::default());
@@ -286,7 +365,7 @@ mod test {
             since_update: subject.step,
         };
 
-        state.next_tick_quits = true;
+        state.world.next_tick_quits = true;
         subject.advance(state, time).expect_quit();
     }
 
@@ -294,8 +373,7 @@ mod test {
     fn quits_on_exit_input() {
         let pump = MockEventPump { quit: true };
         let input_manager = input::Manager::new(pump);
-        let canvas = MockCanvas {};
-        let mut subject = FixedUpdate::new(input_manager, canvas);
+        let mut subject = FixedUpdate::new(input_manager);
         let state = MockState::default();
         let time = timer::GameTime {
             total: Duration::from_secs(1),
@@ -305,19 +383,19 @@ mod test {
         subject.advance(state, time).expect_quit();
     }
 
-    fn subject() -> FixedUpdate<MockEventPump, MockCanvas> {
+    fn subject() -> FixedUpdate<MockEventPump> {
         let pump = MockEventPump::default();
         let input_manager = input::Manager::new(pump);
-        let canvas = MockCanvas {};
-        FixedUpdate::new(input_manager, canvas)
+        FixedUpdate::new(input_manager)
     }
 
     #[derive(Default)]
-    struct MockState {
+    struct MockWorld {
         updates: Vec<(input::State, Duration)>,
         last_tick_in: Option<timer::GameTime>,
         next_tick_quits: bool,
         next_update_quits: bool,
+        next_try_fails: bool,
     }
 
     #[derive(Default)]
@@ -336,24 +414,104 @@ mod test {
         }
     }
 
-    struct MockCanvas {}
+    #[derive(Default)]
+    struct MockCanvas {
+        clear_count: usize,
+        present_count: usize,
+        drawn: Vec<MockDrawState>,
+    }
 
-    impl Update for MockState {
-        fn update(mut self, input: &input::State, duration: Duration) -> GameState<Self> {
+    impl<'t> Canvas<'t> for MockCanvas {
+        fn clear(&mut self) {
+            self.clear_count += 1;
+        }
+
+        fn present(&mut self) {
+            self.present_count += 1;
+        }
+    }
+
+    impl<'t> Renderer<'t> for MockCanvas {
+        type Texture = MockDrawState;
+
+        fn set_draw_color(&mut self, _: ColorRGBA) {}
+
+        fn fill_rects(&mut self, _: &[rect::Rect]) -> Result<()> {
+            Ok(())
+        }
+
+        fn draw_rects(&mut self, _: &[rect::Rect]) -> Result<()> {
+            Ok(())
+        }
+
+        fn copy(&mut self, texture: &MockDrawState, _: Options) -> Result<()> {
+            self.drawn.push(texture.clone());
+            Ok(())
+        }
+    }
+
+    #[derive(Clone, Copy, Default)]
+    struct MockDrawState {
+        previous_interpolation: f64,
+        previous_update_count: usize,
+        interpolation: f64,
+        update_count: usize,
+    }
+
+    impl Draw for MockDrawState {
+        type Texture = Self;
+
+        fn draw<'t, R>(&self, renderer: &mut R) -> Result<()>
+        where
+            R: Renderer<'t, Texture = Self::Texture>,
+        {
+            renderer.copy(self, options::none())
+        }
+    }
+
+    impl Update<f64> for MockWorld {
+        type Draw = MockDrawState;
+
+        fn update(mut self, input: &input::State, duration: Duration) -> UpdateState<Self> {
             if self.next_update_quits {
-                GameState::Quit
+                UpdateState::Quit
             } else {
                 self.updates.push((input.clone(), duration));
-                GameState::Running(self)
+                UpdateState::Running(self)
             }
         }
 
-        fn tick(mut self, time: timer::GameTime) -> GameState<Self> {
+        fn tick(mut self, time: timer::GameTime) -> UpdateState<Self> {
             if self.next_tick_quits {
-                GameState::Quit
+                UpdateState::Quit
             } else {
                 self.last_tick_in = Some(time);
-                GameState::Running(self)
+                UpdateState::Running(self)
+            }
+        }
+
+        fn next_draw(&self, previous: MockDrawState, interpolation: f64) -> Result<MockDrawState> {
+            if self.next_try_fails {
+                Err("failed to convert".into())
+            } else {
+                Ok(MockDrawState {
+                    interpolation,
+                    update_count: self.updates.len(),
+                    previous_interpolation: previous.interpolation,
+                    previous_update_count: previous.update_count,
+                })
+            }
+        }
+    }
+
+    type MockState = State<FixedUpdate<MockEventPump>, MockWorld>;
+
+    impl Default for MockState {
+        fn default() -> MockState {
+            State {
+                world: MockWorld::default(),
+                draw: MockDrawState::default(),
+                loop_state: Duration::default(),
             }
         }
     }
@@ -364,8 +522,8 @@ mod test {
         fn expect_quit(self);
     }
 
-    impl<U> GameStateAdvanceHelper for Result<GameState<U>> {
-        type State = U;
+    impl<L: Loop, U: Update<L::DrawInfo>> GameStateAdvanceHelper for Result<GameState<L, U>> {
+        type State = State<L, U>;
 
         fn expect_running(self) -> Self::State {
             match self.expect("got an error as a game state") {

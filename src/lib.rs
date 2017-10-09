@@ -16,6 +16,7 @@ pub mod shape;
 pub mod renderer;
 pub mod timer;
 pub mod window_wrapper;
+pub mod runner;
 
 pub mod errors {
     error_chain!{}

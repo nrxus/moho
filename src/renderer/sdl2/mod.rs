@@ -37,16 +37,16 @@ impl<'t, T: RenderTarget> renderer::Canvas<'t> for render::Canvas<T> {
     fn present(&mut self) {
         self.present();
     }
+}
+
+impl<'t, T: RenderTarget> renderer::Renderer<'t> for render::Canvas<T> {
+    type Texture = SdlTexture<'t>;
 
     fn set_draw_color(&mut self, color: renderer::ColorRGBA) {
         let renderer::ColorRGBA(r, g, b, a) = color;
         let color = pixels::Color::RGBA(r, g, b, a);
         self.set_draw_color(color)
     }
-}
-
-impl<'t, T: RenderTarget> renderer::Renderer<'t> for render::Canvas<T> {
-    type Texture = SdlTexture<'t>;
 
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()> {
         self.fill_rects(rects).map_err(Into::into)
