@@ -38,8 +38,8 @@ impl Shape for Rectangle {
     }
 
     fn contains(&self, point: &glm::DVec2) -> bool {
-        !(self.top_left.x > point.x) && !(self.top_left.x + self.dims.x < point.x) &&
-            !(self.top_left.y > point.y) && !(self.top_left.y + self.dims.y < point.y)
+        !(self.top_left.x > point.x) && !(self.top_left.x + self.dims.x < point.x)
+            && !(self.top_left.y > point.y) && !(self.top_left.y + self.dims.y < point.y)
     }
 
     fn nudge(&self, nudge: glm::DVec2) -> Rectangle {
@@ -57,10 +57,10 @@ impl Shape for Rectangle {
 
 impl Intersect<Rectangle> for Rectangle {
     fn intersects(&self, other: &Rectangle) -> bool {
-        !(self.top_left.x > other.top_left.x + other.dims.x) &&
-            !(self.top_left.x + self.dims.x < other.top_left.x) &&
-            !(self.top_left.y > other.top_left.y + other.dims.y) &&
-            !(self.top_left.y + self.dims.y < other.top_left.y)
+        !(self.top_left.x > other.top_left.x + other.dims.x)
+            && !(self.top_left.x + self.dims.x < other.top_left.x)
+            && !(self.top_left.y > other.top_left.y + other.dims.y)
+            && !(self.top_left.y + self.dims.y < other.top_left.y)
     }
 
     fn mtv(&self, fixed: &Rectangle) -> Option<glm::DVec2> {

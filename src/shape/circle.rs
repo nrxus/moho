@@ -32,8 +32,8 @@ impl Shape for Circle {
 
 impl Intersect<Rectangle> for Circle {
     fn intersects(&self, other: &Rectangle) -> bool {
-        self.contains(&other.top_left) || other.contains(&self.center) ||
-            other.get_lines().iter().any(|l| self.intersects(l))
+        self.contains(&other.top_left) || other.contains(&self.center)
+            || other.get_lines().iter().any(|l| self.intersects(l))
     }
 
     fn mtv(&self, fixed: &Rectangle) -> Option<glm::DVec2> {
@@ -104,8 +104,8 @@ impl Intersect<Line> for Circle {
         let len = fixed.1 - fixed.0;
         let normal = glm::normalize(len);
         let normal = glm::dvec2(-normal.y, normal.x);
-        let distance = (len.y * self.center.x - len.x * self.center.y + fixed.1.x * fixed.0.y -
-            fixed.1.y * fixed.0.x) / glm::length(len);
+        let distance = (len.y * self.center.x - len.x * self.center.y + fixed.1.x * fixed.0.y
+            - fixed.1.y * fixed.0.x) / glm::length(len);
         if distance.abs() < self.radius {
             let normal = if distance < 0. { normal * -1. } else { normal };
             Some(glm::ext::normalize_to(normal, distance.abs() - self.radius))
