@@ -1,90 +1,11 @@
 use errors::*;
 use input;
-use renderer::{Canvas, Renderer};
-use timer::{self, Timer};
+use runner::{GameState, State, Update, UpdateState};
+use timer;
 
 use std::time::Duration;
 
-pub enum GameState<L: Loop, U: Update<L::DrawInfo>> {
-    Quit,
-    Running(State<L, U>),
-}
-
-pub enum UpdateState<W> {
-    Quit,
-    Running(W),
-}
-
-pub struct State<L: Loop, U: Update<L::DrawInfo>> {
-    pub world: U,
-    pub draw: U::Draw,
-    pub loop_state: L::State,
-}
-
-impl<S> UpdateState<S> {
-    pub fn flat_map<F, T>(self, f: F) -> UpdateState<T>
-    where
-        F: FnOnce(S) -> UpdateState<T>,
-    {
-        match self {
-            UpdateState::Quit => UpdateState::Quit,
-            UpdateState::Running(s) => f(s),
-        }
-    }
-}
-
-pub struct Runner<L, C> {
-    game_loop: L,
-    canvas: C,
-}
-
-impl<'t, L: Loop, C: Canvas<'t>> Runner<L, C> {
-    pub fn new(game_loop: L, canvas: C) -> Self {
-        Runner { game_loop, canvas }
-    }
-
-    pub fn run<U>(mut self, initial: State<L, U>) -> Result<()>
-    where
-        U: Update<L::DrawInfo>,
-        U::Draw: Draw<Texture = C::Texture>,
-    {
-        let mut timer = Timer::new();
-        let mut state = initial;
-
-        loop {
-            let game_time = timer.update();
-            match self.game_loop.advance(state, game_time)? {
-                GameState::Quit => return Ok(()),
-                GameState::Running(s) => {
-                    self.canvas.clear();
-                    s.draw.draw(&mut self.canvas)?;
-                    self.canvas.present();
-                    state = s;
-                }
-            }
-        }
-    }
-}
-
-pub trait Update<L>: Sized {
-    type Draw: Draw;
-
-    fn update(self, input: &input::State, elapsed: Duration) -> UpdateState<Self>;
-    fn tick(self, _: timer::GameTime) -> UpdateState<Self> {
-        UpdateState::Running(self)
-    }
-    fn next_draw(&self, previous: Self::Draw, loop_state: L) -> Result<Self::Draw>;
-}
-
-pub trait Draw {
-    type Texture: ?Sized;
-
-    fn draw<'t, R>(&self, renderer: &mut R) -> Result<()>
-    where
-        R: Renderer<'t, Texture = Self::Texture>;
-}
-
-pub trait Loop: Sized {
+pub trait Advance: Sized {
     type State: Default;
     type DrawInfo;
 
@@ -128,21 +49,18 @@ impl<E> FixedUpdate<E> {
     }
 }
 
-impl<E> Loop for FixedUpdate<E>
+impl<E> Advance for FixedUpdate<E>
 where
     E: input::EventPump,
 {
     type State = Duration;
     type DrawInfo = f64;
 
-    fn advance<U>(
+    fn advance<U: Update<f64>>(
         &mut self,
         state: State<Self, U>,
         time: timer::GameTime,
-    ) -> Result<GameState<Self, U>>
-    where
-        U: Update<f64>,
-    {
+    ) -> Result<GameState<Self, U>> {
         let mut leftover = state.loop_state + time.since_update;
         let mut current = UpdateState::Running(state.world);
         let mut loops = 0;
@@ -179,10 +97,9 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
+    use runner::Draw;
+    use renderer::Renderer;
     use sdl2::event::Event;
-    use sdl2::rect;
-    use renderer::options::{self, Options};
-    use renderer::ColorRGBA;
 
     #[test]
     fn default() {
@@ -238,7 +155,19 @@ mod test {
     }
 
     #[test]
-    fn propagates_draw_failure() {}
+    fn propagates_draw_failure() {
+        let mut subject = subject();
+        let mut state = MockState::default();
+        state.world.next_draw_fails = true;
+
+        //draw no update
+        let time = timer::GameTime {
+            total: Duration::default(),
+            since_update: subject.step / 2,
+        };
+
+        assert!(subject.advance(state, time).is_err());
+    }
 
     #[test]
     fn ticks() {
@@ -389,16 +318,16 @@ mod test {
         FixedUpdate::new(input_manager)
     }
 
-    #[derive(Default)]
+    #[derive(Default, Debug)]
     struct MockWorld {
         updates: Vec<(input::State, Duration)>,
         last_tick_in: Option<timer::GameTime>,
         next_tick_quits: bool,
         next_update_quits: bool,
-        next_try_fails: bool,
+        next_draw_fails: bool,
     }
 
-    #[derive(Default)]
+    #[derive(Default, Debug)]
     struct MockEventPump {
         quit: bool,
     }
@@ -414,43 +343,7 @@ mod test {
         }
     }
 
-    #[derive(Default)]
-    struct MockCanvas {
-        clear_count: usize,
-        present_count: usize,
-        drawn: Vec<MockDrawState>,
-    }
-
-    impl<'t> Canvas<'t> for MockCanvas {
-        fn clear(&mut self) {
-            self.clear_count += 1;
-        }
-
-        fn present(&mut self) {
-            self.present_count += 1;
-        }
-    }
-
-    impl<'t> Renderer<'t> for MockCanvas {
-        type Texture = MockDrawState;
-
-        fn set_draw_color(&mut self, _: ColorRGBA) {}
-
-        fn fill_rects(&mut self, _: &[rect::Rect]) -> Result<()> {
-            Ok(())
-        }
-
-        fn draw_rects(&mut self, _: &[rect::Rect]) -> Result<()> {
-            Ok(())
-        }
-
-        fn copy(&mut self, texture: &MockDrawState, _: Options) -> Result<()> {
-            self.drawn.push(texture.clone());
-            Ok(())
-        }
-    }
-
-    #[derive(Clone, Copy, Default)]
+    #[derive(Clone, Copy, Default, Debug)]
     struct MockDrawState {
         previous_interpolation: f64,
         previous_update_count: usize,
@@ -459,13 +352,10 @@ mod test {
     }
 
     impl Draw for MockDrawState {
-        type Texture = Self;
+        type Texture = ();
 
-        fn draw<'t, R>(&self, renderer: &mut R) -> Result<()>
-        where
-            R: Renderer<'t, Texture = Self::Texture>,
-        {
-            renderer.copy(self, options::none())
+        fn draw<'t, R: Renderer<'t, Texture = ()>>(&self, _: &mut R) -> Result<()> {
+            Ok(())
         }
     }
 
@@ -491,7 +381,7 @@ mod test {
         }
 
         fn next_draw(&self, previous: MockDrawState, interpolation: f64) -> Result<MockDrawState> {
-            if self.next_try_fails {
+            if self.next_draw_fails {
                 Err("failed to convert".into())
             } else {
                 Ok(MockDrawState {
@@ -522,7 +412,7 @@ mod test {
         fn expect_quit(self);
     }
 
-    impl<L: Loop, U: Update<L::DrawInfo>> GameStateAdvanceHelper for Result<GameState<L, U>> {
+    impl<L: Advance, U: Update<L::DrawInfo>> GameStateAdvanceHelper for Result<GameState<L, U>> {
         type State = State<L, U>;
 
         fn expect_running(self) -> Self::State {
