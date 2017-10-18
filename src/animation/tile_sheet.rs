@@ -19,7 +19,7 @@ pub struct TileSheet<T> {
 impl<T> Clone for TileSheet<T> {
     fn clone(&self) -> TileSheet<T> {
         TileSheet {
-            texture: self.texture.clone(),
+            texture: Rc::clone(&self.texture),
             tiles: self.tiles,
             dimensions: self.dimensions,
         }
@@ -38,7 +38,7 @@ pub struct Tile<T: ?Sized> {
 impl<T> Clone for Tile<T> {
     fn clone(&self) -> Tile<T> {
         Tile {
-            texture: self.texture.clone(),
+            texture: Rc::clone(&self.texture),
             src: self.src,
         }
     }
@@ -62,7 +62,7 @@ impl<T> TileSheet<T> {
         let src = glm::uvec4(position.x, position.y, self.dimensions.x, self.dimensions.y);
 
         Tile {
-            texture: self.texture.clone(),
+            texture: Rc::clone(&self.texture),
             src: src,
         }
     }
@@ -85,7 +85,7 @@ mod tests {
             dims: glm::uvec2(10, 10),
         };
         let rc_texture = Rc::new(texture);
-        let sheet = TileSheet::new(glm::uvec2(1, 1), rc_texture.clone());
+        let sheet = TileSheet::new(glm::uvec2(1, 1), Rc::clone(&rc_texture));
         let tile = sheet.tile(0);
         assert_eq!(tile.texture, rc_texture);
         assert_eq!(tile.src, glm::uvec4(0, 0, 10, 10));
@@ -97,7 +97,7 @@ mod tests {
             dims: glm::uvec2(10, 10),
         };
         let rc_texture = Rc::new(texture);
-        let sheet = TileSheet::new(glm::uvec2(10, 1), rc_texture.clone());
+        let sheet = TileSheet::new(glm::uvec2(10, 1), Rc::clone(&rc_texture));
         let tile = sheet.tile(4);
         assert_eq!(tile.texture, rc_texture);
         assert_eq!(tile.src, glm::uvec4(4, 0, 1, 10));
@@ -109,7 +109,7 @@ mod tests {
             dims: glm::uvec2(10, 10),
         };
         let rc_texture = Rc::new(texture);
-        let sheet = TileSheet::new(glm::uvec2(1, 5), rc_texture.clone());
+        let sheet = TileSheet::new(glm::uvec2(1, 5), Rc::clone(&rc_texture));
         let tile = sheet.tile(4);
         assert_eq!(tile.texture, rc_texture);
         assert_eq!(tile.src, glm::uvec4(0, 8, 10, 2));
@@ -121,7 +121,7 @@ mod tests {
             dims: glm::uvec2(20, 10),
         };
         let rc_texture = Rc::new(texture);
-        let sheet = TileSheet::new(glm::uvec2(4, 2), rc_texture.clone());
+        let sheet = TileSheet::new(glm::uvec2(4, 2), Rc::clone(&rc_texture));
         let tile = sheet.tile(5);
         assert_eq!(tile.texture, rc_texture);
         assert_eq!(tile.src, glm::uvec4(5, 5, 5, 5));

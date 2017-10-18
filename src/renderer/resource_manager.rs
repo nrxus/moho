@@ -38,7 +38,7 @@ where
         self.cache.get(details).cloned().map_or_else(
             || {
                 let resource = Rc::new(self.loader.load(details)?);
-                self.cache.insert(details.into(), resource.clone());
+                self.cache.insert(details.into(), Rc::clone(&resource));
                 Ok(resource)
             },
             Ok,
@@ -128,7 +128,7 @@ mod tests {
         let tracker = Rc::new(Cell::new(Counter(0)));
         let loader = MockLoader {
             error: error,
-            tracker: tracker.clone(),
+            tracker: Rc::clone(&tracker),
         };
         (loader, tracker)
     }
