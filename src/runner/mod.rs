@@ -54,15 +54,18 @@ impl<'t, L: Advance, C: Canvas<'t>> Runner<L, C> {
     {
         let mut timer = Timer::new();
         let mut state = initial;
+        let canvas = &mut self.canvas;
 
         loop {
             let game_time = timer.update();
-            match self.game_loop.advance(state, game_time)? {
+            match self.game_loop.advance(state, game_time, |draw_state| {
+                canvas.clear();
+                draw_state.draw(canvas)?;
+                canvas.present();
+                Ok(())
+            })? {
                 GameState::Quit => return Ok(()),
                 GameState::Running(s) => {
-                    self.canvas.clear();
-                    s.draw.draw(&mut self.canvas)?;
-                    self.canvas.present();
                     state = s;
                 }
             }

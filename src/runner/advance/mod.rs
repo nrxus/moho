@@ -1,6 +1,6 @@
 use errors::*;
 use input;
-use runner::{GameState, State, Update, UpdateState};
+use runner::{Draw, GameState, State, Update, UpdateState};
 use timer;
 
 use std::time::Duration;
@@ -9,13 +9,15 @@ pub trait Advance: Sized {
     type State: Default;
     type DrawInfo;
 
-    fn advance<U>(
+    fn advance<U, D, T: Draw>(
         &mut self,
         state: State<Self, U>,
         time: timer::GameTime,
+        draw: D,
     ) -> Result<GameState<Self, U>>
     where
-        U: Update<Self::DrawInfo>;
+        U: Update<Self::DrawInfo, Draw = T>,
+        D: FnOnce(&T) -> Result<()>;
 }
 
 pub struct FixedUpdate<E> {
@@ -56,11 +58,16 @@ where
     type State = Duration;
     type DrawInfo = f64;
 
-    fn advance<U: Update<f64>>(
+    fn advance<U, D, T: Draw>(
         &mut self,
         state: State<Self, U>,
         time: timer::GameTime,
-    ) -> Result<GameState<Self, U>> {
+        draw: D,
+    ) -> Result<GameState<Self, U>>
+    where
+        U: Update<Self::DrawInfo, Draw = T>,
+        D: FnOnce(&T) -> Result<()>,
+    {
         let mut leftover = state.loop_state + time.since_update;
         let mut current = UpdateState::Running(state.world);
         let mut loops = 0;
@@ -83,10 +90,11 @@ where
             UpdateState::Running(world) => {
                 let interpolation =
                     f64::from(leftover.subsec_nanos()) / f64::from(self.step.subsec_nanos());
-                let draw = world.next_draw(state.draw, interpolation)?;
+                let draw_state = world.next_draw(state.draw, interpolation)?;
+                draw(&draw_state)?;
                 Ok(GameState::Running(State {
                     world,
-                    draw,
+                    draw: draw_state,
                     loop_state: leftover,
                 }))
             }
