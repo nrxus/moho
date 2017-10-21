@@ -37,14 +37,19 @@ impl<S> UpdateState<S> {
     }
 }
 
-pub struct Runner<L, C> {
+pub struct Runner<L, C, E> {
     game_loop: L,
     canvas: C,
+    input_manager: input::Manager<E>,
 }
 
-impl<'t, L: Advance, C: Canvas<'t>> Runner<L, C> {
-    pub fn new(game_loop: L, canvas: C) -> Self {
-        Runner { game_loop, canvas }
+impl<'t, L: Advance, C: Canvas<'t>, E: input::EventPump> Runner<L, C, E> {
+    pub fn new(game_loop: L, canvas: C, input_manager: input::Manager<E>) -> Self {
+        Runner {
+            game_loop,
+            canvas,
+            input_manager,
+        }
     }
 
     pub fn run<U>(mut self, initial: State<L, U>) -> Result<()>
@@ -55,15 +60,28 @@ impl<'t, L: Advance, C: Canvas<'t>> Runner<L, C> {
         let mut timer = Timer::new();
         let mut state = initial;
         let canvas = &mut self.canvas;
+        let input_manager = &mut self.input_manager;
 
         loop {
             let game_time = timer.update();
-            match self.game_loop.advance(state, game_time, |draw_state| {
-                canvas.clear();
-                draw_state.draw(canvas)?;
-                canvas.present();
-                Ok(())
-            })? {
+            match self.game_loop.advance(
+                state,
+                game_time,
+                |world, elapsed| {
+                    let input = input_manager.update();
+                    if input.game_quit() {
+                        UpdateState::Quit
+                    } else {
+                        world.update(input, elapsed)
+                    }
+                },
+                |draw_state| {
+                    canvas.clear();
+                    draw_state.draw(canvas)?;
+                    canvas.present();
+                    Ok(())
+                },
+            )? {
                 GameState::Quit => return Ok(()),
                 GameState::Running(s) => {
                     state = s;

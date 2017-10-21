@@ -1,5 +1,4 @@
 use errors::*;
-use input;
 use runner::{Draw, GameState, State, Update, UpdateState};
 use timer;
 
@@ -9,36 +8,38 @@ pub trait Advance: Sized {
     type State: Default;
     type DrawInfo;
 
-    fn advance<U, D, T: Draw>(
-        &mut self,
-        state: State<Self, U>,
+    fn advance<W, U, D, T: Draw>(
+        &self,
+        state: State<Self, W>,
         time: timer::GameTime,
+        update: U,
         draw: D,
-    ) -> Result<GameState<Self, U>>
+    ) -> Result<GameState<Self, W>>
     where
-        U: Update<Self::DrawInfo, Draw = T>,
+        W: Update<Self::DrawInfo, Draw = T>,
+        U: FnMut(W, Duration) -> UpdateState<W>,
         D: FnOnce(&T) -> Result<()>;
 }
 
-pub struct FixedUpdate<E> {
+pub struct FixedUpdate {
     step: Duration,
     max_skip: u32,
-    input_manager: input::Manager<E>,
 }
 
-impl<E> FixedUpdate<E> {
-    const NS_IN_SEC: u32 = 1_000_000_000;
-
-    pub fn new(input_manager: input::Manager<E>) -> Self {
+impl Default for FixedUpdate {
+    fn default() -> Self {
         const DEFAULT_RATE: u32 = 60;
         const DEFAULT_MAX_SKIP: u32 = 10;
 
         FixedUpdate {
             step: Duration::new(0, Self::NS_IN_SEC / DEFAULT_RATE),
             max_skip: DEFAULT_MAX_SKIP,
-            input_manager,
         }
     }
+}
+
+impl FixedUpdate {
+    const NS_IN_SEC: u32 = 1_000_000_000;
 
     pub fn rate(mut self, rate: u32) -> Self {
         self.step = Duration::new(0, Self::NS_IN_SEC / rate);
@@ -51,35 +52,27 @@ impl<E> FixedUpdate<E> {
     }
 }
 
-impl<E> Advance for FixedUpdate<E>
-where
-    E: input::EventPump,
-{
+impl Advance for FixedUpdate {
     type State = Duration;
     type DrawInfo = f64;
 
-    fn advance<U, D, T: Draw>(
-        &mut self,
-        state: State<Self, U>,
+    fn advance<W, U, D, T: Draw>(
+        &self,
+        state: State<Self, W>,
         time: timer::GameTime,
+        mut update: U,
         draw: D,
-    ) -> Result<GameState<Self, U>>
+    ) -> Result<GameState<Self, W>>
     where
-        U: Update<Self::DrawInfo, Draw = T>,
+        W: Update<Self::DrawInfo, Draw = T>,
+        U: FnMut(W, Duration) -> UpdateState<W>,
         D: FnOnce(&T) -> Result<()>,
     {
         let mut leftover = state.loop_state + time.since_update;
         let mut current = UpdateState::Running(state.world);
         let mut loops = 0;
         while leftover >= self.step && loops <= self.max_skip {
-            current = current.flat_map(|s| {
-                let input = self.input_manager.update();
-                if input.game_quit() {
-                    UpdateState::Quit
-                } else {
-                    s.update(input, self.step)
-                }
-            });
+            current = current.flat_map(|s| update(s, self.step));
             leftover -= self.step;
             loops += 1;
         }
