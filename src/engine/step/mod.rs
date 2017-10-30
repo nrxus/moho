@@ -48,26 +48,25 @@ pub mod mock {
     pub struct MockRunner<S> {
         time_count: usize,
         pub time_stubs: Vec<Duration>,
-        pub updates: Vec<Duration>,
         pub quit_on_update: bool,
         pub errors_on_draw: bool,
-        pub drawn: Vec<Snapshot<usize, S>>,
+        pub drawn: Vec<Snapshot<Vec<Duration>, S>>,
     }
 
-    impl<S> Runner<usize, S> for MockRunner<S>
+    impl<S> Runner<Vec<Duration>, S> for MockRunner<S>
     where
         S: Clone,
     {
-        fn update(&mut self, world: usize, elapsed: Duration) -> State<usize> {
+        fn update(&mut self, mut world: Vec<Duration>, elapsed: Duration) -> State<Vec<Duration>> {
             if self.quit_on_update {
                 State::Quit
             } else {
-                self.updates.push(elapsed);
-                State::Running(world + 1)
+                world.push(elapsed);
+                State::Running(world)
             }
         }
 
-        fn draw(&mut self, snapshot: &Snapshot<usize, S>) -> Result<()> {
+        fn draw(&mut self, snapshot: &Snapshot<Vec<Duration>, S>) -> Result<()> {
             if self.errors_on_draw {
                 Err("failed to draw".into())
             } else {
