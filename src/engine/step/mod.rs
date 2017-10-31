@@ -6,7 +6,6 @@ use std::time::Duration;
 
 mod fixed;
 pub use self::fixed::FixedUpdate;
-pub use self::fixed::FixedUpdateState;
 
 type GameState<W, S> = Result<State<Snapshot<W, S>>>;
 

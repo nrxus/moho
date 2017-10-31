@@ -1,10 +1,10 @@
-use engine::State;
+use engine;
 use super::{GameState, Runner, Snapshot, Step};
 
 use std::time::Duration;
 
 #[derive(PartialEq, Default, Debug, Clone)]
-pub struct FixedUpdateState {
+pub struct State {
     pub leftover: Duration,
     pub interpolation: f64,
 }
@@ -42,15 +42,14 @@ impl Default for FixedUpdate {
 }
 
 impl Step for FixedUpdate {
-    type State = FixedUpdateState;
+    type State = State;
 
-    fn step<W, R: Runner<W, FixedUpdateState>>(
-        &self,
-        snapshot: Snapshot<W, Self::State>,
-        runner: &mut R,
-    ) -> GameState<W, Self::State> {
+    fn step<W, R>(&self, snapshot: Snapshot<W, State>, runner: &mut R) -> GameState<W, State>
+    where
+        R: Runner<W, State>,
+    {
         let mut leftover = runner.elapsed() + snapshot.step_state.leftover;
-        let mut current = State::Running(snapshot.world);
+        let mut current = engine::State::Running(snapshot.world);
         let mut loops = 0;
 
         while leftover >= self.step && loops <= self.max_skip {
@@ -63,14 +62,14 @@ impl Step for FixedUpdate {
             let interpolation =
                 f64::from(leftover.subsec_nanos()) / f64::from(self.step.subsec_nanos());
 
-            let step_state = FixedUpdateState {
+            let step_state = State {
                 leftover,
                 interpolation,
             };
             Snapshot { world, step_state }
         });
 
-        if let State::Running(ref s) = state {
+        if let engine::State::Running(ref s) = state {
             runner.draw(s)?;
         }
 
@@ -100,7 +99,7 @@ mod test {
     #[test]
     fn perfect_steps() {
         let subject = FixedUpdate::default();
-        let step_state = FixedUpdateState::default();
+        let step_state = State::default();
         let snapshot = Snapshot {
             world: vec![],
             step_state,
@@ -120,7 +119,7 @@ mod test {
     #[test]
     fn fast_updates() {
         let subject = FixedUpdate::default();
-        let step_state = FixedUpdateState::default();
+        let step_state = State::default();
         let snapshot = Snapshot {
             world: vec![],
             step_state,
@@ -155,7 +154,7 @@ mod test {
     #[test]
     fn slow_updates_skips() {
         let subject = FixedUpdate::default().max_skip(10);
-        let step_state = FixedUpdateState::default();
+        let step_state = State::default();
         let snapshot = Snapshot {
             world: vec![],
             step_state,
@@ -182,7 +181,7 @@ mod test {
     #[test]
     fn slow_updates_not_enough_skip() {
         let subject = FixedUpdate::default().max_skip(1);
-        let step_state = FixedUpdateState::default();
+        let step_state = State::default();
         let snapshot = Snapshot {
             world: vec![],
             step_state,
@@ -199,7 +198,7 @@ mod test {
     #[test]
     fn slow_updates_no_skip() {
         let subject = FixedUpdate::default().max_skip(0);
-        let step_state = FixedUpdateState::default();
+        let step_state = State::default();
         let snapshot = Snapshot {
             world: vec![],
             step_state,
@@ -215,7 +214,7 @@ mod test {
     #[test]
     fn quits() {
         let subject = FixedUpdate::default().max_skip(0);
-        let step_state = FixedUpdateState::default();
+        let step_state = State::default();
         let snapshot = Snapshot {
             world: vec![],
             step_state,
@@ -231,7 +230,7 @@ mod test {
         use std;
 
         let subject = FixedUpdate::default().max_skip(0);
-        let step_state = FixedUpdateState::default();
+        let step_state = State::default();
         let snapshot = Snapshot {
             world: vec![],
             step_state,
@@ -258,7 +257,7 @@ mod test {
     #[test]
     fn errors() {
         let subject = FixedUpdate::default().max_skip(0);
-        let step_state = FixedUpdateState::default();
+        let step_state = State::default();
         let snapshot = Snapshot {
             world: vec![],
             step_state,
@@ -267,6 +266,8 @@ mod test {
         runner.time_stubs = vec![subject.step / 2];
         runner.errors_on_draw = true;
 
-        subject.step(snapshot, &mut runner).expect_err("expected error; got a state");
+        subject
+            .step(snapshot, &mut runner)
+            .expect_err("expected error; got a state");
     }
 }
