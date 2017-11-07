@@ -41,7 +41,9 @@ impl<S> State<S> {
 
 pub trait World: Sized {
     fn update(self, input: &input::State, elapsed: Duration) -> State<Self>;
-    fn tick(self, time: &timer::GameTime) -> Self;
+    fn tick(self, _: &timer::GameTime) -> Self {
+        self
+    }
 }
 
 pub trait Scene<W, S, H>: Sized {
@@ -60,16 +62,16 @@ where
 {
     timer: Timer,
     helpers: H,
-    renderer: &'a mut R,
+    canvas: &'a mut R,
     input_manager: &'a mut input::Manager<E>,
     _marker: marker::PhantomData<*const S>,
 }
 
 impl<'a, S, H, R, E> App<'a, S, H, R, E> {
-    pub fn new(helpers: H, renderer: &'a mut R, input_manager: &'a mut input::Manager<E>) -> Self {
+    pub fn new(helpers: H, canvas: &'a mut R, input_manager: &'a mut input::Manager<E>) -> Self {
         App {
             helpers,
-            renderer,
+            canvas,
             input_manager,
             timer: Timer::new(),
             _marker: marker::PhantomData,
@@ -77,10 +79,10 @@ impl<'a, S, H, R, E> App<'a, S, H, R, E> {
     }
 }
 
-impl<'a, 't, W, S, H, R, E, D> Runner<W, S> for App<'a, D, H, R, E>
+impl<'a, 't, W, S, H, C, E, D> Runner<W, S> for App<'a, D, H, C, E>
 where
     W: World,
-    R: Renderer<'t, Texture = D::Texture>,
+    C: Canvas<'t, Texture = D::Texture>,
     E: input::EventPump,
     D: Scene<W, S, H>,
 {
@@ -99,7 +101,10 @@ where
 
     fn draw(&mut self, snapshot: &step::Snapshot<W, S>) -> Result<()> {
         let scene = D::from(snapshot, &mut self.helpers)?;
-        scene.draw_onto(self.renderer)
+        self.canvas.clear();
+        scene.draw_onto(self.canvas)?;
+        self.canvas.present();
+        Ok(())
     }
 
     fn time(&mut self) -> timer::GameTime {
