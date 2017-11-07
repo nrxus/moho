@@ -48,8 +48,9 @@ impl Step for FixedUpdate {
     where
         R: Runner<W, State>,
     {
-        let mut leftover = runner.elapsed() + snapshot.step_state.leftover;
-        let mut current = engine::State::Running(snapshot.world);
+        let time = runner.time();
+        let mut current = engine::State::Running(runner.tick(snapshot.world, &time));
+        let mut leftover = time.since_update + snapshot.step_state.leftover;
         let mut loops = 0;
 
         while leftover >= self.step && loops <= self.max_skip {
@@ -80,7 +81,22 @@ impl Step for FixedUpdate {
 #[cfg(test)]
 mod test {
     use super::*;
-    use engine::step::mock::*;
+    use engine::step::mock::{self, GameStateHelper, MockRunner};
+    use timer;
+
+    fn game_times(durations: Vec<Duration>) -> Vec<timer::GameTime> {
+        let mut total = Duration::from_secs(0);
+        durations
+            .iter()
+            .map(|&d| {
+                total += d;
+                timer::GameTime {
+                    total: total,
+                    since_update: d,
+                }
+            })
+            .collect()
+    }
 
     #[test]
     fn default() {
@@ -101,19 +117,19 @@ mod test {
         let subject = FixedUpdate::default();
         let step_state = State::default();
         let snapshot = Snapshot {
-            world: vec![],
+            world: mock::World::default(),
             step_state,
         };
         let mut runner = MockRunner::default();
-        runner.time_stubs = vec![subject.step, subject.step];
+        runner.time_stubs = game_times(vec![subject.step, subject.step]);
 
         let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
-        assert_eq!(snapshot.world.len(), 1);
-        assert_eq!(snapshot.world[0], subject.step);
+        assert_eq!(snapshot.world.updates.len(), 1);
 
         let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
-        assert_eq!(snapshot.world.len(), 2);
-        assert_eq!(snapshot.world[1], subject.step);
+        assert_eq!(snapshot.world.updates.len(), 2);
+
+        assert!(snapshot.world.updates.iter().all(|&u| u == subject.step));
     }
 
     #[test]
@@ -121,34 +137,34 @@ mod test {
         let subject = FixedUpdate::default();
         let step_state = State::default();
         let snapshot = Snapshot {
-            world: vec![],
+            world: mock::World::default(),
             step_state,
         };
         let mut runner = MockRunner::default();
-        runner.time_stubs = vec![
+        runner.time_stubs = game_times(vec![
             subject.step / 2,
             subject.step / 2,
             subject.step / 2,
             subject.step / 3,
             subject.step / 4,
-        ];
+        ]);
 
         let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
-        assert_eq!(snapshot.world.len(), 0);
+        assert_eq!(snapshot.world.updates.len(), 0);
 
         let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
-        assert_eq!(snapshot.world.len(), 1);
-        assert_eq!(snapshot.world[0], subject.step);
+        assert_eq!(snapshot.world.updates.len(), 1);
 
         let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
-        assert_eq!(snapshot.world.len(), 1);
+        assert_eq!(snapshot.world.updates.len(), 1);
 
         let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
-        assert_eq!(snapshot.world.len(), 1);
+        assert_eq!(snapshot.world.updates.len(), 1);
 
         let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
-        assert_eq!(snapshot.world.len(), 2);
-        assert_eq!(snapshot.world[1], subject.step);
+        assert_eq!(snapshot.world.updates.len(), 2);
+
+        assert!(snapshot.world.updates.iter().all(|&u| u == subject.step));
     }
 
     #[test]
@@ -156,26 +172,26 @@ mod test {
         let subject = FixedUpdate::default().max_skip(10);
         let step_state = State::default();
         let snapshot = Snapshot {
-            world: vec![],
+            world: mock::World::default(),
             step_state,
         };
         let mut runner = MockRunner::default();
-        runner.time_stubs = vec![subject.step * 3 / 2, subject.step * 3, subject.step * 3 / 2];
+        runner.time_stubs = game_times(vec![
+            subject.step * 3 / 2,
+            subject.step * 3,
+            subject.step * 3 / 2,
+        ]);
 
         let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
-        assert_eq!(snapshot.world.len(), 1);
-        assert_eq!(snapshot.world[0], subject.step);
+        assert_eq!(snapshot.world.updates.len(), 1);
 
         let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
-        assert_eq!(snapshot.world.len(), 4);
-        assert_eq!(snapshot.world[1], subject.step);
-        assert_eq!(snapshot.world[2], subject.step);
-        assert_eq!(snapshot.world[3], subject.step);
+        assert_eq!(snapshot.world.updates.len(), 4);
 
         let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
-        assert_eq!(snapshot.world.len(), 6);
-        assert_eq!(snapshot.world[4], subject.step);
-        assert_eq!(snapshot.world[5], subject.step);
+        assert_eq!(snapshot.world.updates.len(), 6);
+
+        assert!(snapshot.world.updates.iter().all(|&u| u == subject.step));
     }
 
     #[test]
@@ -183,16 +199,16 @@ mod test {
         let subject = FixedUpdate::default().max_skip(1);
         let step_state = State::default();
         let snapshot = Snapshot {
-            world: vec![],
+            world: mock::World::default(),
             step_state,
         };
         let mut runner = MockRunner::default();
-        runner.time_stubs = vec![subject.step * 3];
+        runner.time_stubs = game_times(vec![subject.step * 3]);
 
         let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
-        assert_eq!(snapshot.world.len(), 2);
-        assert_eq!(snapshot.world[0], subject.step);
-        assert_eq!(snapshot.world[1], subject.step);
+        assert_eq!(snapshot.world.updates.len(), 2);
+
+        assert!(snapshot.world.updates.iter().all(|&u| u == subject.step));
     }
 
     #[test]
@@ -200,15 +216,16 @@ mod test {
         let subject = FixedUpdate::default().max_skip(0);
         let step_state = State::default();
         let snapshot = Snapshot {
-            world: vec![],
+            world: mock::World::default(),
             step_state,
         };
         let mut runner = MockRunner::default();
-        runner.time_stubs = vec![subject.step * 2];
+        runner.time_stubs = game_times(vec![subject.step * 2]);
 
         let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
-        assert_eq!(snapshot.world.len(), 1);
-        assert_eq!(snapshot.world[0], subject.step);
+        assert_eq!(snapshot.world.updates.len(), 1);
+
+        assert!(snapshot.world.updates.iter().all(|&u| u == subject.step));
     }
 
     #[test]
@@ -216,12 +233,12 @@ mod test {
         let subject = FixedUpdate::default().max_skip(0);
         let step_state = State::default();
         let snapshot = Snapshot {
-            world: vec![],
+            world: mock::World::default(),
             step_state,
         };
         let mut runner = MockRunner::default();
         runner.quit_on_update = true;
-        runner.time_stubs = vec![subject.step];
+        runner.time_stubs = game_times(vec![subject.step]);
         subject.step(snapshot, &mut runner).expect_quit();
     }
 
@@ -232,25 +249,29 @@ mod test {
         let subject = FixedUpdate::default().max_skip(0);
         let step_state = State::default();
         let snapshot = Snapshot {
-            world: vec![],
+            world: mock::World::default(),
             step_state,
         };
         let mut runner = MockRunner::default();
-        runner.time_stubs = vec![subject.step / 2, subject.step / 2, subject.step * 5 / 4];
+        runner.time_stubs = game_times(vec![
+            subject.step / 2,
+            subject.step / 2,
+            subject.step * 5 / 4,
+        ]);
 
         let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
         assert_eq!(runner.drawn.len(), 1);
-        assert_eq!(runner.drawn[0].world, vec![]);
+        assert_eq!(runner.drawn[0].world, snapshot.world);
         assert!((runner.drawn[0].step_state.interpolation - 0.5).abs() < std::f64::EPSILON);
 
         let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
         assert_eq!(runner.drawn.len(), 2);
-        assert_eq!(runner.drawn[1].world, vec![subject.step]);
+        assert_eq!(runner.drawn[1].world, snapshot.world);
         assert!((runner.drawn[1].step_state.interpolation - 0.0).abs() < std::f64::EPSILON);
 
-        subject.step(snapshot, &mut runner).expect_snapshot();
+        let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
         assert_eq!(runner.drawn.len(), 3);
-        assert_eq!(runner.drawn[2].world, vec![subject.step, subject.step]);
+        assert_eq!(runner.drawn[2].world, snapshot.world);
         assert!((runner.drawn[2].step_state.interpolation - 0.25).abs() < 0.0000001);
     }
 
@@ -259,15 +280,37 @@ mod test {
         let subject = FixedUpdate::default().max_skip(0);
         let step_state = State::default();
         let snapshot = Snapshot {
-            world: vec![],
+            world: mock::World::default(),
             step_state,
         };
         let mut runner = MockRunner::default();
-        runner.time_stubs = vec![subject.step / 2];
+        runner.time_stubs = game_times(vec![subject.step / 2]);
         runner.errors_on_draw = true;
 
         subject
             .step(snapshot, &mut runner)
             .expect_err("expected error; got a state");
+    }
+
+    #[test]
+    fn ticks() {
+        let subject = FixedUpdate::default().max_skip(0);
+        let step_state = State::default();
+        let snapshot = Snapshot {
+            world: mock::World::default(),
+            step_state,
+        };
+        let mut runner = MockRunner::default();
+        let game_times = game_times(vec![subject.step / 2, subject.step, subject.step / 3]);
+        runner.time_stubs = game_times.clone();
+
+        let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
+        assert_eq!(snapshot.world.ticks, vec![game_times[0]]);
+
+        let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
+        assert_eq!(snapshot.world.ticks, vec![game_times[0], game_times[1]]);
+
+        let snapshot = subject.step(snapshot, &mut runner).expect_snapshot();
+        assert_eq!(snapshot.world.ticks, game_times);
     }
 }
