@@ -2,33 +2,34 @@ extern crate glm;
 extern crate moho;
 extern crate sdl2;
 
-use moho::engine::{self, Engine, State};
+use moho::engine::{self, Engine, IntoScene};
 use moho::errors::*;
 use moho::{input, timer};
 use moho::engine::step::{self, fixed};
-use moho::renderer::{align, options, ColorRGBA, Font, FontDetails, FontLoader, FontTexturizer,
-                     Renderer, TextureLoader};
+use moho::renderer::{self, align, options, ColorRGBA, Font, FontDetails, FontLoader,
+                     FontTexturizer, Renderer, TextureLoader};
 use moho::shape::{Rectangle, Shape};
 
 use std::rc::Rc;
 use std::time::Duration;
 
-struct Helper<'t, 'f, TL: 't, FL: 'f>
+struct Helper<'t, F, TL>
 where
-    TL: TextureLoader<'t>,
-    FL: FontLoader<'f>,
+    TL: 't + FontTexturizer<'t, F>,
 {
-    font: FL::Font,
+    font: F,
     texture_loader: &'t TL,
     background: Rc<TL::Texture>,
 }
 
-impl<'t, 'f, TL, FL> Helper<'t, 'f, TL, FL>
+impl<'t, F, TL> Helper<'t, F, TL>
 where
-    TL: TextureLoader<'t>,
-    FL: FontLoader<'f>,
+    TL: FontTexturizer<'t, F> + TextureLoader<'t, Texture = <TL as FontTexturizer<'t, F>>::Texture>,
 {
-    fn load(texture_loader: &'t TL, font_loader: &'f FL) -> Result<Self> {
+    fn load<'f, FL>(texture_loader: &'t TL, font_loader: &'f FL) -> Result<Self>
+    where
+        FL: FontLoader<'f, Font = F>,
+    {
         let background = texture_loader.load("examples/background.png").map(Rc::new)?;
         let font_details = FontDetails {
             path: "examples/fonts/kenpixel_mini.ttf",
@@ -68,14 +69,51 @@ impl World {
 }
 
 impl engine::World for World {
-    fn update(mut self, input: &input::State, _: Duration) -> State<Self> {
+    fn update(mut self, input: &input::State, _: Duration) -> engine::State<Self> {
         self.cursor = input.mouse_coords();
-        State::Running(self)
+        engine::State::Running(self)
     }
 
     fn tick(mut self, time: &timer::GameTime) -> Self {
         self.fps = time.fps();
         self
+    }
+}
+
+impl<'t, F, TL> IntoScene<Scene<TL::Texture>, fixed::State, Helper<'t, F, TL>> for World
+where
+    TL: FontTexturizer<'t, F>,
+{
+    fn try_into(
+        &self,
+        _: &fixed::State,
+        helpers: &mut Helper<'t, F, TL>,
+    ) -> Result<Scene<TL::Texture>> {
+        let background = Rc::clone(&helpers.background);
+        let fps = {
+            let fps = format!("{}", self.fps as u32);
+            helpers
+                .texture_loader
+                .texturize(&helpers.font, &fps, &ColorRGBA(255, 255, 0, 255))
+        }?;
+        let button = {
+            let color = if self.button.contains(&glm::to_dvec2(self.cursor)) {
+                ColorRGBA(255, 0, 0, 255)
+            } else {
+                ColorRGBA(255, 255, 0, 255)
+            };
+            helpers
+                .texture_loader
+                .texturize(&helpers.font, self.text, &color)
+        }?;
+        let button_tl = glm::to_ivec2(self.button.top_left);
+
+        Ok(Scene {
+            background,
+            fps,
+            button,
+            button_tl,
+        })
     }
 }
 
@@ -86,49 +124,12 @@ struct Scene<T> {
     button_tl: glm::IVec2,
 }
 
-impl<'t, 'f, TL, FL> engine::Scene<World, fixed::State, Helper<'t, 'f, TL, FL>>
-    for Scene<<TL as TextureLoader<'t>>::Texture>
-where
-    TL: TextureLoader<'t>,
-    FL: FontLoader<'f>,
-    TL: FontTexturizer<'t, FL::Font, Texture = <TL as TextureLoader<'t>>::Texture>,
-{
-    type Texture = <TL as TextureLoader<'t>>::Texture;
-    fn from(
-        snapshot: &step::Snapshot<World, fixed::State>,
-        helpers: &mut Helper<'t, 'f, TL, FL>,
-    ) -> Result<Self> {
-        let background = Rc::clone(&helpers.background);
-        let fps = {
-            let fps = format!("{}", snapshot.world.fps as u32);
-            helpers
-                .texture_loader
-                .texturize(&helpers.font, &fps, &ColorRGBA(255, 255, 0, 255))
-        }?;
-        let button = {
-            let world = &snapshot.world;
-            let color = if world.button.contains(&glm::to_dvec2(world.cursor)) {
-                ColorRGBA(255, 0, 0, 255)
-            } else {
-                ColorRGBA(255, 255, 0, 255)
-            };
-            helpers
-                .texture_loader
-                .texturize(&helpers.font, world.text, &color)
-        }?;
-        let button_tl = glm::to_ivec2(snapshot.world.button.top_left);
+impl<T> renderer::Scene for Scene<T> {
+    type Texture = T;
 
-        Ok(Scene {
-            background,
-            fps,
-            button,
-            button_tl,
-        })
-    }
-
-    fn draw_onto<'tr, R>(&self, renderer: &mut R) -> Result<()>
+    fn show<'t, R>(&self, renderer: &mut R) -> Result<()>
     where
-        R: Renderer<'tr, Texture = Self::Texture>,
+        R: ?Sized + Renderer<'t, Texture = Self::Texture>,
     {
         renderer.copy(&self.background, options::flip(options::Flip::Both))?;
         renderer.copy(&self.background, options::none())?;
@@ -160,7 +161,7 @@ fn main() {
 
     let helper = Helper::load(&texture_loader, &font_loader).unwrap();
     let world = World::load(&helper.font).unwrap();
-    let step = step::FixedUpdate::default();
+    let step = step::FixedUpdate::default().rate(30);
     let mut engine = Engine::new(event_pump, canvas, step);
     engine
         .run::<Scene<sdl2::render::Texture>, _, _>(world, helper)

@@ -4,7 +4,7 @@ pub use self::step::Step;
 
 use errors::*;
 use input;
-use renderer::{Canvas, Renderer};
+use renderer::{Canvas, Scene};
 use timer::{self, Timer};
 use self::step::Runner;
 
@@ -46,13 +46,8 @@ pub trait World: Sized {
     }
 }
 
-pub trait Scene<W, S, H>: Sized {
-    type Texture: ?Sized;
-
-    fn from(snapshot: &step::Snapshot<W, S>, helpers: &mut H) -> Result<Self>;
-    fn draw_onto<'t, R>(&self, renderer: &mut R) -> Result<()>
-    where
-        R: Renderer<'t, Texture = Self::Texture>;
+pub trait IntoScene<D, S, H> {
+    fn try_into(&self, step: &S, helpers: &mut H) -> Result<D>;
 }
 
 pub struct App<'a, S, H, R, E>
@@ -81,10 +76,10 @@ impl<'a, S, H, R, E> App<'a, S, H, R, E> {
 
 impl<'a, 't, W, S, H, C, E, D> Runner<W, S> for App<'a, D, H, C, E>
 where
-    W: World,
+    W: World + IntoScene<D, S, H>,
     C: Canvas<'t, Texture = D::Texture>,
     E: input::EventPump,
-    D: Scene<W, S, H>,
+    D: Scene,
 {
     fn tick(&mut self, world: W, time: &timer::GameTime) -> W {
         world.tick(time)
@@ -100,9 +95,11 @@ where
     }
 
     fn draw(&mut self, snapshot: &step::Snapshot<W, S>) -> Result<()> {
-        let scene = D::from(snapshot, &mut self.helpers)?;
+        let scene = snapshot
+            .world
+            .try_into(&snapshot.step_state, &mut self.helpers)?;
         self.canvas.clear();
-        scene.draw_onto(self.canvas)?;
+        self.canvas.show(&scene)?;
         self.canvas.present();
         Ok(())
     }
@@ -134,8 +131,8 @@ where
 
     pub fn run<D, W, H>(&mut self, world: W, helpers: H) -> Result<()>
     where
-        W: World,
-        D: Scene<W, S::State, H, Texture = C::Texture>,
+        W: World + IntoScene<D, S::State, H>,
+        D: Scene<Texture = C::Texture>,
     {
         let mut app: App<D, _, _, _> = App::new(helpers, &mut self.canvas, &mut self.input_manager);
         let mut snapshot = step::Snapshot::new::<S>(world);
