@@ -124,13 +124,8 @@ struct Scene<T> {
     button_tl: glm::IVec2,
 }
 
-impl<T> renderer::Scene for Scene<T> {
-    type Texture = T;
-
-    fn show<'t, R>(&self, renderer: &mut R) -> Result<()>
-    where
-        R: ?Sized + Renderer<'t, Texture = Self::Texture>,
-    {
+impl<'t, R: Renderer<'t>> renderer::Scene<R> for Scene<R::Texture> {
+    fn show(&self, renderer: &mut R) -> Result<()> {
         renderer.copy(&self.background, options::flip(options::Flip::Both))?;
         renderer.copy(&self.background, options::none())?;
         renderer.copy(&self.fps, options::at(align::top(0).right(1280)))?;

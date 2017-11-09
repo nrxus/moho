@@ -77,9 +77,9 @@ impl<'a, S, H, R, E> App<'a, S, H, R, E> {
 impl<'a, 't, W, S, H, C, E, D> Runner<W, S> for App<'a, D, H, C, E>
 where
     W: World + IntoScene<D, S, H>,
-    C: Canvas<'t, Texture = D::Texture>,
+    C: Canvas<'t>,
     E: input::EventPump,
-    D: Scene,
+    D: Scene<C>,
 {
     fn tick(&mut self, world: W, time: &timer::GameTime) -> W {
         world.tick(time)
@@ -132,7 +132,7 @@ where
     pub fn run<D, W, H>(&mut self, world: W, helpers: H) -> Result<()>
     where
         W: World + IntoScene<D, S::State, H>,
-        D: Scene<Texture = C::Texture>,
+        D: Scene<C>,
     {
         let mut app: App<D, _, _, _> = App::new(helpers, &mut self.canvas, &mut self.input_manager);
         let mut snapshot = step::Snapshot::new::<S>(world);

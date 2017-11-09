@@ -38,12 +38,8 @@ pub trait Asset<R: ?Sized> {
     fn draw(&self, options: Options, renderer: &mut R) -> Result<()>;
 }
 
-pub trait Scene {
-    type Texture: ?Sized;
-
-    fn show<'t, R>(&self, renderer: &mut R) -> Result<()>
-    where
-        R: Renderer<'t, Texture = Self::Texture>;
+pub trait Scene<R: ?Sized> {
+    fn show(&self, renderer: &mut R) -> Result<()>;
 }
 
 pub trait Canvas<'t>: Renderer<'t> {
@@ -52,7 +48,7 @@ pub trait Canvas<'t>: Renderer<'t> {
 }
 
 pub trait Renderer<'t> {
-    type Texture: ?Sized;
+    type Texture;
 
     fn set_draw_color(&mut self, color: ColorRGBA);
     fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
@@ -70,8 +66,7 @@ pub trait Renderer<'t> {
     /// Default implementation for drawing scenes
     fn show<S>(&mut self, scene: &S) -> Result<()>
     where
-        Self: Sized,
-        S: Scene<Texture = Self::Texture>,
+        S: Scene<Self>,
     {
         scene.show(self)
     }
