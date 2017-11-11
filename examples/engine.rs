@@ -44,33 +44,80 @@ where
     }
 }
 
+struct HoverText {
+    text: &'static str,
+    body: Rectangle,
+    is_hovering: bool,
+}
+
+struct HoverTextScene<T> {
+    texture: T,
+    top_left: glm::IVec2,
+}
+
+impl<'t, T, F, FT> IntoScene<HoverTextScene<T>, fixed::State, Helper<'t, F, FT>> for HoverText
+where
+    FT: FontTexturizer<'t, F, Texture = T>,
+{
+    fn try_into(
+        &self,
+        _: &fixed::State,
+        helpers: &mut Helper<'t, F, FT>,
+    ) -> Result<HoverTextScene<FT::Texture>> {
+        let texture = {
+            let color = if self.is_hovering {
+                ColorRGBA(255, 0, 0, 255)
+            } else {
+                ColorRGBA(255, 255, 0, 255)
+            };
+            helpers
+                .texture_loader
+                .texturize(&helpers.font, self.text, &color)
+        }?;
+        let top_left = glm::to_ivec2(self.body.top_left);
+
+        Ok(HoverTextScene { texture, top_left })
+    }
+}
+
+impl<'t, R: Renderer<'t>> renderer::Scene<R> for HoverTextScene<R::Texture> {
+    fn show(&self, renderer: &mut R) -> Result<()> {
+        renderer.copy(
+            &self.texture,
+            options::at(self.top_left).flip(options::Flip::Horizontal),
+        )
+    }
+}
+
 struct World {
     fps: f64,
-    button: Rectangle,
-    text: &'static str,
-    cursor: glm::IVec2,
+    text: HoverText,
 }
 
 impl World {
     fn load<F: Font>(font: &F) -> Result<Self> {
-        let text = "HOVER ON ME";
-        let button_dims = font.measure(text)?;
-        let button = Rectangle {
-            top_left: glm::dvec2(60., 60.),
-            dims: glm::to_dvec2(button_dims),
+        let text = {
+            let text = "HOVER ON ME";
+            let dims = font.measure(text)?;
+            let body = Rectangle {
+                top_left: glm::dvec2(60., 60.),
+                dims: glm::to_dvec2(dims),
+            };
+            HoverText {
+                text,
+                body,
+                is_hovering: false,
+            }
         };
-        Ok(World {
-            text,
-            button,
-            fps: 0.,
-            cursor: glm::ivec2(0, 0),
-        })
+        Ok(World { text, fps: 0. })
     }
 }
 
 impl engine::World for World {
     fn update(mut self, input: &input::State, _: Duration) -> engine::State<Self> {
-        self.cursor = input.mouse_coords();
+        self.text.is_hovering = self.text
+            .body
+            .contains(&glm::to_dvec2(input.mouse_coords()));
         engine::State::Running(self)
     }
 
@@ -86,7 +133,7 @@ where
 {
     fn try_into(
         &self,
-        _: &fixed::State,
+        fixed: &fixed::State,
         helpers: &mut Helper<'t, F, TL>,
     ) -> Result<Scene<TL::Texture>> {
         let background = Rc::clone(&helpers.background);
@@ -96,23 +143,12 @@ where
                 .texture_loader
                 .texturize(&helpers.font, &fps, &ColorRGBA(255, 255, 0, 255))
         }?;
-        let button = {
-            let color = if self.button.contains(&glm::to_dvec2(self.cursor)) {
-                ColorRGBA(255, 0, 0, 255)
-            } else {
-                ColorRGBA(255, 255, 0, 255)
-            };
-            helpers
-                .texture_loader
-                .texturize(&helpers.font, self.text, &color)
-        }?;
-        let button_tl = glm::to_ivec2(self.button.top_left);
+        let text = self.text.try_into(fixed, helpers)?;
 
         Ok(Scene {
             background,
             fps,
-            button,
-            button_tl,
+            text,
         })
     }
 }
@@ -120,8 +156,7 @@ where
 struct Scene<T> {
     background: Rc<T>,
     fps: T,
-    button: T,
-    button_tl: glm::IVec2,
+    text: HoverTextScene<T>,
 }
 
 impl<'t, R: Renderer<'t>> renderer::Scene<R> for Scene<R::Texture> {
@@ -129,10 +164,7 @@ impl<'t, R: Renderer<'t>> renderer::Scene<R> for Scene<R::Texture> {
         renderer.copy(&self.background, options::flip(options::Flip::Both))?;
         renderer.copy(&self.background, options::none())?;
         renderer.copy(&self.fps, options::at(align::top(0).right(1280)))?;
-        renderer.copy(
-            &self.button,
-            options::at(self.button_tl).flip(options::Flip::Horizontal),
-        )
+        renderer.show(&self.text)
     }
 }
 
