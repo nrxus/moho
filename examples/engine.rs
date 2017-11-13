@@ -10,6 +10,7 @@ use moho::renderer::{self, align, options, ColorRGBA, Font, FontDetails, FontLoa
                      FontTexturizer, Renderer, TextureLoader};
 use moho::shape::{Rectangle, Shape};
 
+use std::iter;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -90,7 +91,7 @@ impl<'t, R: Renderer<'t>> renderer::Scene<R> for HoverTextScene<R::Texture> {
 }
 
 struct World {
-    fps: f64,
+    times: Vec<f64>,
     text: HoverText,
 }
 
@@ -109,7 +110,10 @@ impl World {
                 is_hovering: false,
             }
         };
-        Ok(World { text, fps: 0. })
+        Ok(World {
+            text,
+            times: vec![],
+        })
     }
 }
 
@@ -122,7 +126,10 @@ impl engine::World for World {
     }
 
     fn tick(mut self, time: &timer::GameTime) -> Self {
-        self.fps = time.fps();
+        self.times = iter::once(time.fps())
+            .chain(self.times.into_iter())
+            .take(10)
+            .collect();
         self
     }
 }
@@ -138,7 +145,9 @@ where
     ) -> Result<Scene<TL::Texture>> {
         let background = Rc::clone(&helpers.background);
         let fps = {
-            let fps = format!("{}", self.fps as u32);
+            let fps: f64 = self.times.iter().sum();
+            let fps = fps / self.times.len() as f64;
+            let fps = format!("{:.1}", fps);
             helpers
                 .texture_loader
                 .texturize(&helpers.font, &fps, &ColorRGBA(255, 255, 0, 255))
