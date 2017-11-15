@@ -1,4 +1,5 @@
-use renderer::{FontDetails, FontLoader, Loader, TextureLoader};
+use renderer::font;
+use renderer::{FontLoader, Loader, TextureLoader};
 use errors::*;
 
 use std::borrow::Borrow;
@@ -7,7 +8,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 pub type TextureManager<'l, L: TextureLoader<'l>> = ResourceManager<'l, String, L::Texture, L>;
-pub type FontManager<'l, L: FontLoader<'l>> = ResourceManager<'l, FontDetails, L::Font, L>;
+pub type FontManager<'l, L: FontLoader<'l>> = ResourceManager<'l, font::Details, L::Font, L>;
 
 pub struct ResourceManager<'l, K, R, L>
 where

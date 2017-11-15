@@ -6,42 +6,65 @@ use glm;
 use sdl2::pixels::Color;
 use sdl2::render;
 use sdl2::ttf::Font as SdlFont;
-use sdl2::ttf::Sdl2TtfContext;
+use sdl2::ttf::{self, Sdl2TtfContext};
 
-impl<'a> font::Font for SdlFont<'a, 'static> {
+pub struct Font<'t, 'f, T: 't> {
+    inner: SdlFont<'f, 'static>,
+    creator: &'t render::TextureCreator<T>,
+}
+
+impl<'t, 'f, T> font::Font for Font<'t, 'f, T> {
+    type Texture = render::Texture<'t>;
+
     fn measure(&self, text: &str) -> Result<glm::UVec2> {
-        self.size_of(text)
+        self.inner
+            .size_of(text)
             .map(|(x, y)| glm::uvec2(x, y))
             .chain_err(|| "error measuring font")
     }
-}
 
-impl<'a> renderer::FontLoader<'a> for Sdl2TtfContext {
-    type Font = SdlFont<'a, 'static>;
-}
+    fn texturize(&self, text: &str, color: &renderer::ColorRGBA) -> Result<Self::Texture> {
+        let &renderer::ColorRGBA(red, green, blue, alpha) = color;
+        let color = Color::RGBA(red, green, blue, alpha);
+        let surface = self.inner
+            .render(text)
+            .blended(color)
+            .chain_err(|| "error when creating a blended SDL font surface")?;
 
-impl<'a> renderer::Loader<'a, SdlFont<'a, 'static>> for Sdl2TtfContext {
-    type Args = renderer::FontDetails;
-    fn load(&'a self, data: &renderer::FontDetails) -> Result<SdlFont<'a, 'static>> {
-        self.load_font(data.path, data.size).map_err(Into::into)
+        self.creator
+            .create_texture_from_surface(&surface)
+            .chain_err(|| "error creating a SDL texture from a font surface")
     }
 }
 
-impl<'t, 'f, T> renderer::FontTexturizer<'t, SdlFont<'f, 'static>> for render::TextureCreator<T> {
-    type Texture = render::Texture<'t>;
-    fn texturize(
-        &'t self,
-        font: &SdlFont<'f, 'static>,
-        text: &str,
-        color: &renderer::ColorRGBA,
-    ) -> Result<Self::Texture> {
-        let &renderer::ColorRGBA(red, green, blue, alpha) = color;
-        let color = Color::RGBA(red, green, blue, alpha);
-        let surface = font.render(text)
-            .blended(color)
-            .chain_err(|| "error when creatinga a blended font surface")?;
+pub struct Loader<'t, T: 't> {
+    inner: Sdl2TtfContext,
+    creator: &'t render::TextureCreator<T>,
+}
 
-        self.create_texture_from_surface(&surface)
-            .chain_err(|| "error creating a texture from a surface")
+impl<'t, T> Loader<'t, T> {
+    pub fn load(creator: &'t render::TextureCreator<T>) -> Result<Self> {
+        ttf::init()
+            .map(|inner| Loader { inner, creator })
+            .chain_err(|| "could not load SDL TTF")
+    }
+}
+
+impl<'f, 't, T> renderer::FontLoader<'f> for Loader<'t, T> {
+    type Font = Font<'t, 'f, T>;
+}
+
+impl<'f, 't, T> renderer::Loader<'f, Font<'t, 'f, T>> for Loader<'t, T> {
+    type Args = font::Details;
+    fn load(&'f self, data: &font::Details) -> Result<Font<'t, 'f, T>> {
+        self.inner
+            .load_font(data.path, data.size)
+            .map(|inner| {
+                Font {
+                    inner,
+                    creator: self.creator,
+                }
+            })
+            .map_err(Into::into)
     }
 }

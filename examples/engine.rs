@@ -6,42 +6,32 @@ use moho::engine::{self, Engine, IntoScene};
 use moho::errors::*;
 use moho::{input, timer};
 use moho::engine::step::{self, fixed};
-use moho::renderer::{self, align, options, ColorRGBA, Font, FontDetails, FontLoader,
-                     FontTexturizer, Renderer, TextureLoader};
+use moho::renderer::font;
+use moho::renderer::{self, align, options, ColorRGBA, Font, FontLoader, Renderer, TextureLoader};
 use moho::shape::{Rectangle, Shape};
 
 use std::iter;
 use std::rc::Rc;
 use std::time::Duration;
 
-struct Helper<'t, F, TL>
-where
-    TL: 't + FontTexturizer<'t, F>,
-{
+struct Helper<F, T> {
     font: F,
-    texture_loader: &'t TL,
-    background: Rc<TL::Texture>,
+    background: Rc<T>,
 }
 
-impl<'t, F, TL> Helper<'t, F, TL>
-where
-    TL: FontTexturizer<'t, F> + TextureLoader<'t, Texture = <TL as FontTexturizer<'t, F>>::Texture>,
-{
-    fn load<'f, FL>(texture_loader: &'t TL, font_loader: &'f FL) -> Result<Self>
+impl<F: Font, T> Helper<F, T> {
+    fn load<'t, 'f, TL, FL>(texture_loader: &'t TL, font_loader: &'f FL) -> Result<Self>
     where
+        TL: TextureLoader<'t, Texture = T>,
         FL: FontLoader<'f, Font = F>,
     {
         let background = texture_loader.load("examples/background.png").map(Rc::new)?;
-        let font_details = FontDetails {
+        let font_details = font::Details {
             path: "examples/fonts/kenpixel_mini.ttf",
             size: 48,
         };
         let font = font_loader.load(&font_details)?;
-        Ok(Helper {
-            background,
-            font,
-            texture_loader,
-        })
+        Ok(Helper { background, font })
     }
 }
 
@@ -56,24 +46,18 @@ struct HoverTextScene<T> {
     top_left: glm::IVec2,
 }
 
-impl<'t, T, F, FT> IntoScene<HoverTextScene<T>, fixed::State, Helper<'t, F, FT>> for HoverText
+impl<F, T> IntoScene<HoverTextScene<T>, fixed::State, Helper<F, T>> for HoverText
 where
-    FT: FontTexturizer<'t, F, Texture = T>,
+    F: Font<Texture = T>,
 {
-    fn try_into(
-        &self,
-        _: &fixed::State,
-        helpers: &mut Helper<'t, F, FT>,
-    ) -> Result<HoverTextScene<FT::Texture>> {
+    fn try_into(&self, _: &fixed::State, helpers: &mut Helper<F, T>) -> Result<HoverTextScene<T>> {
         let texture = {
             let color = if self.is_hovering {
                 ColorRGBA(255, 0, 0, 255)
             } else {
                 ColorRGBA(255, 255, 0, 255)
             };
-            helpers
-                .texture_loader
-                .texturize(&helpers.font, self.text, &color)
+            helpers.font.texturize(self.text, &color)
         }?;
         let top_left = glm::to_ivec2(self.body.top_left);
 
@@ -134,23 +118,17 @@ impl engine::World for World {
     }
 }
 
-impl<'t, F, TL> IntoScene<Scene<TL::Texture>, fixed::State, Helper<'t, F, TL>> for World
+impl<F, T> IntoScene<Scene<T>, fixed::State, Helper<F, T>> for World
 where
-    TL: FontTexturizer<'t, F>,
+    F: Font<Texture = T>,
 {
-    fn try_into(
-        &self,
-        fixed: &fixed::State,
-        helpers: &mut Helper<'t, F, TL>,
-    ) -> Result<Scene<TL::Texture>> {
+    fn try_into(&self, fixed: &fixed::State, helpers: &mut Helper<F, T>) -> Result<Scene<T>> {
         let background = Rc::clone(&helpers.background);
         let fps = {
             let fps: f64 = self.times.iter().sum();
             let fps = fps / self.times.len() as f64;
             let fps = format!("{:.1}", fps);
-            helpers
-                .texture_loader
-                .texturize(&helpers.font, &fps, &ColorRGBA(255, 255, 0, 255))
+            helpers.font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))
         }?;
         let text = self.text.try_into(fixed, helpers)?;
 
@@ -192,8 +170,8 @@ fn main() {
         .unwrap();
     let event_pump = sdl_ctx.event_pump().unwrap();
     let canvas = window.into_canvas().present_vsync().build().unwrap();
-    let font_loader = sdl2::ttf::init().unwrap();
     let texture_loader = canvas.texture_creator();
+    let font_loader = moho::renderer::sdl2::font::Loader::load(&texture_loader).unwrap();
 
     let helper = Helper::load(&texture_loader, &font_loader).unwrap();
     let world = World::load(&helper.font).unwrap();

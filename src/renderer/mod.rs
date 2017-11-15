@@ -1,11 +1,11 @@
+pub mod sdl2;
 pub mod align;
 pub mod options;
-mod font;
+pub mod font;
 mod resource_manager;
-mod sdl2;
 
 pub use self::options::Options;
-pub use self::font::*;
+pub use self::font::{Font, FontLoader};
 pub use self::resource_manager::{FontManager, ResourceManager, TextureManager};
 
 use errors::*;

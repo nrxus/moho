@@ -17,7 +17,6 @@ where
     texture_manager: TextureManager<'t, TL>,
     font_manager: FontManager<'f, FL>,
     renderer: R,
-    texture_loader: &'t TL,
 }
 
 impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
@@ -25,7 +24,7 @@ where
     TL: TextureLoader<'t>,
     TL::Texture: Texture,
     FL: FontLoader<'f>,
-    FL::Font: Font,
+    FL::Font: Font<Texture = TL::Texture>,
 {
     pub fn new(
         renderer: R,
@@ -40,18 +39,16 @@ where
             texture_manager: texture_manager,
             font_manager: font_manager,
             renderer: renderer,
-            texture_loader: texture_loader,
         }
     }
 
     pub fn run(&mut self) -> Result<()>
     where
-        TL: FontTexturizer<'t, FL::Font, Texture = <TL as TextureLoader<'t>>::Texture>,
         R: Canvas<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
         E: input::EventPump,
     {
         let image = self.texture_manager.load("examples/background.png")?;
-        let font_details = FontDetails {
+        let font_details = font::Details {
             path: "examples/fonts/kenpixel_mini.ttf",
             size: 48,
         };
@@ -74,11 +71,9 @@ where
             } else {
                 ColorRGBA(255, 255, 0, 255)
             };
-            let button_texture = self.texture_loader.texturize(&font, button_text, &color)?;
+            let button_texture = font.texturize(button_text, &color)?;
             let fps = format!("{}", game_time.fps() as u32);
-            let font_texture =
-                self.texture_loader
-                    .texturize(&font, &fps, &ColorRGBA(255, 255, 0, 255))?;
+            let font_texture = font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))?;
             self.renderer.clear();
             self.renderer
                 .copy(&image, options::flip(options::Flip::Both))?;
@@ -105,9 +100,7 @@ fn main() {
     const WINDOW_HEIGHT: u32 = 720;
     let (renderer, creator, input_manager) =
         moho::init("MohoGame", WINDOW_WIDTH, WINDOW_HEIGHT).unwrap();
-    let font_loader = sdl2::ttf::init()
-        .chain_err(|| "cannot init loader")
-        .unwrap();
+    let font_loader = moho::renderer::sdl2::font::Loader::load(&creator).unwrap();
     let mut game = MainGame::new(renderer, input_manager, &font_loader, &creator);
     game.run().unwrap();
 }

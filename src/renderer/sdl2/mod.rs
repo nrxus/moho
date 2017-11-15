@@ -1,4 +1,5 @@
-mod font;
+pub mod font;
+pub use self::font::Font;
 
 use errors::*;
 use renderer::{self, options};
