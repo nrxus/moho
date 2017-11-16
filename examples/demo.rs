@@ -21,19 +21,16 @@ where
 
 impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
 where
+    E: input::EventPump,
     TL: TextureLoader<'t>,
     TL::Texture: Texture,
     FL: FontLoader<'f>,
     FL::Font: Font<Texture = TL::Texture>,
 {
-    pub fn new(
-        renderer: R,
-        input_manager: input::Manager<E>,
-        font_loader: &'f FL,
-        texture_loader: &'t TL,
-    ) -> Self {
+    pub fn new(renderer: R, event_pump: E, font_loader: &'f FL, texture_loader: &'t TL) -> Self {
         let texture_manager = TextureManager::new(texture_loader);
         let font_manager = font::Manager::new(font_loader);
+        let input_manager = input::Manager::new(event_pump);
         MainGame {
             input_manager: input_manager,
             texture_manager: texture_manager,
@@ -45,7 +42,6 @@ where
     pub fn run(&mut self) -> Result<()>
     where
         R: Canvas<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
-        E: input::EventPump,
     {
         let image = self.texture_manager.load("examples/background.png")?;
         let font_details = font::Details {
@@ -98,9 +94,21 @@ where
 fn main() {
     const WINDOW_WIDTH: u32 = 1280;
     const WINDOW_HEIGHT: u32 = 720;
-    let (renderer, creator, input_manager) =
-        moho::init("MohoGame", WINDOW_WIDTH, WINDOW_HEIGHT).unwrap();
-    let font_loader = moho::renderer::sdl2::font::Loader::load(&creator).unwrap();
-    let mut game = MainGame::new(renderer, input_manager, &font_loader, &creator);
+    let name = "MohoGame";
+
+    let sdl_ctx = sdl2::init().unwrap();
+    let video_ctx = sdl_ctx.video().unwrap();
+    let window = video_ctx
+        .window(name, WINDOW_WIDTH, WINDOW_HEIGHT)
+        .position_centered()
+        .opengl()
+        .build()
+        .unwrap();
+    let event_pump = sdl_ctx.event_pump().unwrap();
+    let canvas = window.into_canvas().present_vsync().build().unwrap();
+    let texture_loader = canvas.texture_creator();
+    let font_loader = moho::renderer::sdl2::font::Loader::load(&texture_loader).unwrap();
+
+    let mut game = MainGame::new(canvas, event_pump, &font_loader, &texture_loader);
     game.run().unwrap();
 }
