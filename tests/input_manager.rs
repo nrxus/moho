@@ -40,6 +40,7 @@ macro_rules! mouse_event {
                 timestamp: 0,
                 window_id: 0,
                 which: 0,
+                clicks: 0,
                 x: 0,
                 y: 0,
             }

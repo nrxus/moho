@@ -11,6 +11,6 @@ num-traits = ">=0.1.36"
 error-chain = ">=0.9"
 
 [dependencies.sdl2]
-version = ">=0.30.0"
+version = ">=0.31.0"
 default-features = false
 features = ["image", "ttf"]
