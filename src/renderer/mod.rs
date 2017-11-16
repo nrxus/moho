@@ -6,7 +6,7 @@ mod resource_manager;
 
 pub use self::options::Options;
 pub use self::font::{Font, FontLoader};
-pub use self::resource_manager::{FontManager, ResourceManager, TextureManager};
+pub use self::resource_manager::{ResourceManager, TextureManager};
 
 use errors::*;
 

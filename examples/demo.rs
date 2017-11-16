@@ -15,7 +15,7 @@ where
 {
     input_manager: input::Manager<E>,
     texture_manager: TextureManager<'t, TL>,
-    font_manager: FontManager<'f, FL>,
+    font_manager: font::Manager<'f, FL>,
     renderer: R,
 }
 
@@ -33,7 +33,7 @@ where
         texture_loader: &'t TL,
     ) -> Self {
         let texture_manager = TextureManager::new(texture_loader);
-        let font_manager = FontManager::new(font_loader);
+        let font_manager = font::Manager::new(font_loader);
         MainGame {
             input_manager: input_manager,
             texture_manager: texture_manager,
