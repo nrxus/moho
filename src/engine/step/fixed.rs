@@ -71,6 +71,7 @@ impl Step for FixedUpdate {
         });
 
         if let engine::State::Running(ref s) = state {
+            let s = s.as_ref();
             runner.draw(s)?;
         }
 

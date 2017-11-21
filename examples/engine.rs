@@ -2,7 +2,7 @@ extern crate glm;
 extern crate moho;
 extern crate sdl2;
 
-use moho::engine::{self, Engine, IntoScene};
+use moho::engine::{self, Engine, NextScene};
 use moho::errors::*;
 use moho::{input, timer};
 use moho::engine::step::{self, fixed};
@@ -11,27 +11,24 @@ use moho::renderer::{self, align, options, ColorRGBA, Font, FontLoader, Renderer
 use moho::shape::{Rectangle, Shape};
 
 use std::iter;
-use std::rc::Rc;
 use std::time::Duration;
 
-struct Helper<F, T> {
+type RefSnapshot<'a, W> = step::Snapshot<&'a W, &'a fixed::State>;
+
+struct Helper<F> {
     font: F,
-    background: Rc<T>,
 }
 
-impl<F: Font, T> Helper<F, T> {
-    fn load<'t, 'f, TL, FL>(texture_loader: &'t TL, font_loader: &'f FL) -> Result<Self>
+impl<F: Font> Helper<F> {
+    fn load<'f, FL>(font_loader: &'f FL) -> Result<Self>
     where
-        TL: TextureLoader<'t, Texture = T>,
         FL: FontLoader<'f, Font = F>,
     {
-        let background = texture_loader.load("examples/background.png").map(Rc::new)?;
         let font_details = font::Details {
             path: "examples/fonts/kenpixel_mini.ttf",
             size: 48,
         };
-        let font = font_loader.load(&font_details)?;
-        Ok(Helper { background, font })
+        font_loader.load(&font_details).map(|font| Helper { font })
     }
 }
 
@@ -46,20 +43,17 @@ struct HoverTextScene<T> {
     top_left: glm::IVec2,
 }
 
-impl<F, T> IntoScene<HoverTextScene<T>, fixed::State, Helper<F, T>> for HoverText
-where
-    F: Font<Texture = T>,
-{
-    fn try_into(&self, _: &fixed::State, helpers: &mut Helper<F, T>) -> Result<HoverTextScene<T>> {
+impl<T> HoverTextScene<T> {
+    fn load<F: Font<Texture = T>>(snapshot: RefSnapshot<HoverText>, font: &F) -> Result<Self> {
         let texture = {
-            let color = if self.is_hovering {
+            let color = if snapshot.world.is_hovering {
                 ColorRGBA(255, 0, 0, 255)
             } else {
                 ColorRGBA(255, 255, 0, 255)
             };
-            helpers.font.texturize(self.text, &color)
+            font.texturize(snapshot.world.text, &color)
         }?;
-        let top_left = glm::to_ivec2(self.body.top_left);
+        let top_left = glm::to_ivec2(snapshot.world.body.top_left);
 
         Ok(HoverTextScene { texture, top_left })
     }
@@ -118,32 +112,51 @@ impl engine::World for World {
     }
 }
 
-impl<F, T> IntoScene<Scene<T>, fixed::State, Helper<F, T>> for World
-where
-    F: Font<Texture = T>,
-{
-    fn try_into(&self, fixed: &fixed::State, helpers: &mut Helper<F, T>) -> Result<Scene<T>> {
-        let background = Rc::clone(&helpers.background);
-        let fps = {
-            let fps: f64 = self.times.iter().sum();
-            let fps = fps / self.times.len() as f64;
-            let fps = format!("{:.1}", fps);
-            helpers.font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))
-        }?;
-        let text = self.text.try_into(fixed, helpers)?;
-
-        Ok(Scene {
-            background,
-            fps,
-            text,
-        })
+impl<T, F: Font<Texture = T>> NextScene<World, fixed::State, Helper<F>> for Scene<T> {
+    fn next(self, snapshot: RefSnapshot<World>, helpers: &mut Helper<F>) -> Result<Self> {
+        Self::load_snapshot(snapshot, &helpers.font, self.background)
     }
 }
 
 struct Scene<T> {
-    background: Rc<T>,
+    background: T,
     fps: T,
     text: HoverTextScene<T>,
+}
+
+impl<T> Scene<T> {
+    fn load<'t, F, TL>(world: &World, font: &F, loader: &'t TL) -> Result<Self>
+    where
+        TL: TextureLoader<'t, Texture = T>,
+        F: Font<Texture = T>,
+    {
+        let background = loader.load("examples/background.png")?;
+        let step_state = fixed::State::default();
+        let snapshot = RefSnapshot {
+            world: world,
+            step_state: &step_state,
+        };
+        Self::load_snapshot(snapshot, font, background)
+    }
+
+    fn load_snapshot<F>(snapshot: RefSnapshot<World>, font: &F, background: T) -> Result<Self>
+    where
+        F: Font<Texture = T>,
+    {
+        let fps = {
+            let fps: f64 = snapshot.world.times.iter().sum();
+            let fps = fps / snapshot.world.times.len() as f64;
+            let fps = format!("{:.1}", fps);
+            font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))
+        }?;
+        let text = snapshot.split(|w| &w.text);
+        let text = HoverTextScene::load(text, font)?;
+        Ok(Scene {
+            fps,
+            text,
+            background,
+        })
+    }
 }
 
 impl<'t, R: Renderer<'t>> renderer::Scene<R> for Scene<R::Texture> {
@@ -173,11 +186,10 @@ fn main() {
     let texture_loader = canvas.texture_creator();
     let font_loader = moho::renderer::sdl2::font::Loader::load(&texture_loader).unwrap();
 
-    let helper = Helper::load(&texture_loader, &font_loader).unwrap();
+    let helper = Helper::load(&font_loader).unwrap();
     let world = World::load(&helper.font).unwrap();
+    let scene = Scene::load(&world, &helper.font, &texture_loader).unwrap();
     let step = step::FixedUpdate::default().rate(30);
     let mut engine = Engine::new(event_pump, canvas, step);
-    engine
-        .run::<Scene<sdl2::render::Texture>, _, _>(world, helper)
-        .unwrap();
+    engine.run(world, scene, helper).unwrap();
 }

@@ -9,6 +9,7 @@ license = "MIT"
 glm = ">=0.2.2"
 num-traits = ">=0.1.36"
 error-chain = ">=0.9"
+take_mut = ">=0.2.0"
 
 [dependencies.sdl2]
 version = ">=0.31.0"

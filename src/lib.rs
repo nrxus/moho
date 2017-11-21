@@ -3,6 +3,7 @@ extern crate error_chain;
 extern crate glm;
 extern crate num_traits;
 extern crate sdl2;
+extern crate take_mut;
 
 use sdl2::render::WindowCanvas as SdlCanvas;
 use sdl2::render::TextureCreator;

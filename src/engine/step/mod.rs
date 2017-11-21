@@ -12,7 +12,7 @@ type GameState<W, S> = Result<State<Snapshot<W, S>>>;
 pub trait Runner<W, S> {
     fn tick(&mut self, world: W, time: &timer::GameTime) -> W;
     fn update(&mut self, world: W, elapsed: Duration) -> State<W>;
-    fn draw(&mut self, snapshot: &Snapshot<W, S>) -> Result<()>;
+    fn draw(&mut self, snapshot: Snapshot<&W, &S>) -> Result<()>;
     fn time(&mut self) -> timer::GameTime;
 }
 
@@ -30,6 +30,34 @@ impl<W, S: Default> Snapshot<W, S> {
         Snapshot {
             world,
             step_state: S::default(),
+        }
+    }
+}
+
+impl<W, S> Snapshot<W, S> {
+    pub fn as_ref<'s>(&'s self) -> Snapshot<&'s W, &'s S> {
+        Snapshot {
+            world: &self.world,
+            step_state: &self.step_state,
+        }
+    }
+
+    pub fn split<T, F>(self, f: F) -> Snapshot<T, S>
+    where
+        F: FnOnce(W) -> T,
+    {
+        Snapshot {
+            world: f(self.world),
+            step_state: self.step_state,
+        }
+    }
+}
+
+impl<'a, W: Clone, S: Clone> Snapshot<&'a W, &'a S> {
+    pub fn cloned(&self) -> Snapshot<W, S> {
+        Snapshot {
+            world: W::clone(self.world),
+            step_state: S::clone(self.step_state),
         }
     }
 }
@@ -76,11 +104,11 @@ pub mod mock {
             }
         }
 
-        fn draw(&mut self, snapshot: &Snapshot<World, S>) -> Result<()> {
+        fn draw(&mut self, snapshot: Snapshot<&World, &S>) -> Result<()> {
             if self.errors_on_draw {
                 Err("failed to draw".into())
             } else {
-                self.drawn.push(snapshot.clone());
+                self.drawn.push(snapshot.cloned());
                 Ok(())
             }
         }
