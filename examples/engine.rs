@@ -7,7 +7,8 @@ use moho::errors::*;
 use moho::{input, timer};
 use moho::engine::step::{self, fixed};
 use moho::renderer::font;
-use moho::renderer::{self, align, options, ColorRGBA, Font, FontLoader, Renderer, TextureLoader};
+use moho::renderer::{self, align, options, ColorRGBA, Font, FontLoader, Renderer, Texture,
+                     TextureLoader};
 use moho::shape::{Rectangle, Shape};
 
 use std::iter;
@@ -40,10 +41,10 @@ struct HoverText {
 
 struct HoverTextScene<T> {
     texture: T,
-    top_left: glm::IVec2,
+    dst: options::Destination,
 }
 
-impl<T> HoverTextScene<T> {
+impl<T: Texture> HoverTextScene<T> {
     fn load<F: Font<Texture = T>>(snapshot: RefSnapshot<HoverText>, font: &F) -> Result<Self> {
         let texture = {
             let color = if snapshot.world.is_hovering {
@@ -54,8 +55,9 @@ impl<T> HoverTextScene<T> {
             font.texturize(snapshot.world.text, &color)
         }?;
         let top_left = glm::to_ivec2(snapshot.world.body.top_left);
+        let dst = options::Position::from(top_left).dims(texture.dims());
 
-        Ok(HoverTextScene { texture, top_left })
+        Ok(HoverTextScene { texture, dst })
     }
 }
 
@@ -63,7 +65,7 @@ impl<'t, R: Renderer<'t>> renderer::Scene<R> for HoverTextScene<R::Texture> {
     fn show(&self, renderer: &mut R) -> Result<()> {
         renderer.copy(
             &self.texture,
-            options::at(self.top_left).flip(options::Flip::Horizontal),
+            options::at(self.dst).flip(options::Flip::Horizontal),
         )
     }
 }
@@ -112,7 +114,7 @@ impl engine::World for World {
     }
 }
 
-impl<T, F: Font<Texture = T>> NextScene<World, fixed::State, Helper<F>> for Scene<T> {
+impl<T: Texture, F: Font<Texture = T>> NextScene<World, fixed::State, Helper<F>> for Scene<T> {
     fn next(self, snapshot: RefSnapshot<World>, helpers: &mut Helper<F>) -> Result<Self> {
         Self::load_snapshot(snapshot, &helpers.font, self.background)
     }
@@ -121,10 +123,11 @@ impl<T, F: Font<Texture = T>> NextScene<World, fixed::State, Helper<F>> for Scen
 struct Scene<T> {
     background: T,
     fps: T,
+    fps_dst: options::Destination,
     text: HoverTextScene<T>,
 }
 
-impl<T> Scene<T> {
+impl<T: Texture> Scene<T> {
     fn load<'t, F, TL>(world: &World, font: &F, loader: &'t TL) -> Result<Self>
     where
         TL: TextureLoader<'t, Texture = T>,
@@ -149,10 +152,12 @@ impl<T> Scene<T> {
             let fps = format!("{:.1}", fps);
             font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))
         }?;
+        let fps_dst = align::top(0).right(1280).dims(fps.dims());
         let text = snapshot.split(|w| &w.text);
         let text = HoverTextScene::load(text, font)?;
         Ok(Scene {
             fps,
+            fps_dst,
             text,
             background,
         })
@@ -163,7 +168,7 @@ impl<'t, R: Renderer<'t>> renderer::Scene<R> for Scene<R::Texture> {
     fn show(&self, renderer: &mut R) -> Result<()> {
         renderer.copy(&self.background, options::flip(options::Flip::Both))?;
         renderer.copy(&self.background, options::none())?;
-        renderer.copy(&self.fps, options::at(align::top(0).right(1280)))?;
+        renderer.copy(&self.fps, options::at(self.fps_dst))?;
         renderer.show(&self.text)
     }
 }

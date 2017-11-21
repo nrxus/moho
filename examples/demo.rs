@@ -68,17 +68,18 @@ where
                 ColorRGBA(255, 255, 0, 255)
             };
             let button_texture = font.texturize(button_text, &color)?;
+            let button_dst = options::Position::from(button_tl).dims(button_texture.dims());
             let fps = format!("{}", game_time.fps() as u32);
             let font_texture = font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))?;
+            let font_dst = align::top(0).right(1280).dims(font_texture.dims());
             self.renderer.clear();
             self.renderer
                 .copy(&image, options::flip(options::Flip::Both))?;
             self.renderer.copy(&image, options::none())?;
-            self.renderer
-                .copy(&font_texture, options::at(align::top(0).right(1280)))?;
+            self.renderer.copy(&font_texture, options::at(font_dst))?;
             self.renderer.copy(
                 &button_texture,
-                options::at(button_tl).flip(options::Flip::Horizontal),
+                options::at(button_dst).flip(options::Flip::Horizontal),
             )?;
             self.renderer.present();
         }

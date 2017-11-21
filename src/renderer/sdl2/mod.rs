@@ -62,14 +62,7 @@ impl<'t, T: RenderTarget> renderer::Renderer<'t> for render::Canvas<T> {
             .src
             .map(|r| rect::Rect::new(r.x as i32, r.y as i32, r.z, r.w));
         let dst = options.dst.map(|d| {
-            let rect = match d {
-                options::Destination::Rect(r) => r,
-                options::Destination::Pos(p) => {
-                    let query = texture.query();
-                    let dims = glm::uvec2(query.width, query.height);
-                    p.dims(dims)
-                }
-            }.rect();
+            let rect = d.rect();
             rect::Rect::new(rect.x, rect.y, rect.z as u32, rect.w as u32)
         });
         match (options.rotation, options.flip) {

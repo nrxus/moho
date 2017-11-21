@@ -20,15 +20,9 @@ pub struct Position {
     pub horizontal: align::Alignment<align::Horizontal>,
 }
 
-impl From<Position> for Destination {
-    fn from(pos: Position) -> Destination {
-        Destination::Pos(pos)
-    }
-}
-
 impl Position {
-    pub fn dims(self, dims: glm::UVec2) -> Rectangle {
-        Rectangle {
+    pub fn dims(self, dims: glm::UVec2) -> Destination {
+        Destination {
             pos: self,
             dims: dims,
         }
@@ -42,24 +36,12 @@ impl Position {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Rectangle {
+pub struct Destination {
     pub pos: Position,
     pub dims: glm::UVec2,
 }
 
-impl From<Rectangle> for Destination {
-    fn from(rect: Rectangle) -> Destination {
-        Destination::Rect(rect)
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum Destination {
-    Rect(Rectangle),
-    Pos(Position),
-}
-
-impl Rectangle {
+impl Destination {
     pub fn rect(&self) -> glm::IVec4 {
         let dims = glm::to_ivec2(self.dims);
         let top = {
@@ -85,13 +67,13 @@ impl Rectangle {
 impl From<glm::IVec4> for Destination {
     fn from(rect: glm::IVec4) -> Destination {
         let dims = glm::uvec2(rect.z as u32, rect.w as u32);
-        Destination::Rect(align::left(rect.x).top(rect.y).dims(dims))
+        align::left(rect.x).top(rect.y).dims(dims)
     }
 }
 
-impl From<glm::IVec2> for Destination {
-    fn from(tl: glm::IVec2) -> Destination {
-        Destination::Pos(align::left(tl.x).top(tl.y))
+impl From<glm::IVec2> for Position {
+    fn from(tl: glm::IVec2) -> Position {
+        align::left(tl.x).top(tl.y)
     }
 }
 
