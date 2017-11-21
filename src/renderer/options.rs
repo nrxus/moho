@@ -15,28 +15,55 @@ pub enum Flip {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Destination {
-    pub dims: Option<glm::UVec2>,
+pub struct Position {
     pub vertical: align::Alignment<align::Vertical>,
     pub horizontal: align::Alignment<align::Horizontal>,
 }
 
-impl Destination {
-    pub fn dims(mut self, dims: glm::UVec2) -> Destination {
-        self.dims = Some(dims);
-        self
+impl From<Position> for Destination {
+    fn from(pos: Position) -> Destination {
+        Destination::Pos(pos)
+    }
+}
+
+impl Position {
+    pub fn dims(self, dims: glm::UVec2) -> Rectangle {
+        Rectangle {
+            pos: self,
+            dims: dims,
+        }
     }
 
-    pub fn nudge(mut self, delta: glm::IVec2) -> Destination {
+    pub fn nudge(mut self, delta: glm::IVec2) -> Position {
         self.vertical.pos += delta.y;
         self.horizontal.pos += delta.x;
         self
     }
+}
 
-    pub fn rect<F: FnOnce() -> glm::UVec2>(&self, op: F) -> glm::IVec4 {
-        let dims = glm::to_ivec2(self.dims.unwrap_or_else(op));
+#[derive(Debug, Clone, Copy)]
+pub struct Rectangle {
+    pub pos: Position,
+    pub dims: glm::UVec2,
+}
+
+impl From<Rectangle> for Destination {
+    fn from(rect: Rectangle) -> Destination {
+        Destination::Rect(rect)
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum Destination {
+    Rect(Rectangle),
+    Pos(Position),
+}
+
+impl Rectangle {
+    pub fn rect(&self) -> glm::IVec4 {
+        let dims = glm::to_ivec2(self.dims);
         let top = {
-            let align::Alignment { align, pos } = self.vertical;
+            let align::Alignment { align, pos } = self.pos.vertical;
             match align {
                 align::Vertical::Top => pos,
                 align::Vertical::Middle => pos - dims.y / 2,
@@ -44,7 +71,7 @@ impl Destination {
             }
         };
         let left = {
-            let align::Alignment { align, pos } = self.horizontal;
+            let align::Alignment { align, pos } = self.pos.horizontal;
             match align {
                 align::Horizontal::Left => pos,
                 align::Horizontal::Center => pos - dims.x / 2,
@@ -57,37 +84,14 @@ impl Destination {
 
 impl From<glm::IVec4> for Destination {
     fn from(rect: glm::IVec4) -> Destination {
-        let horizontal = align::Alignment {
-            pos: rect.x,
-            align: align::Horizontal::Left,
-        };
-        let vertical = align::Alignment {
-            pos: rect.y,
-            align: align::Vertical::Top,
-        };
-        Destination {
-            horizontal,
-            vertical,
-            dims: Some(glm::uvec2(rect.z as u32, rect.w as u32)),
-        }
+        let dims = glm::uvec2(rect.z as u32, rect.w as u32);
+        Destination::Rect(align::left(rect.x).top(rect.y).dims(dims))
     }
 }
 
 impl From<glm::IVec2> for Destination {
     fn from(tl: glm::IVec2) -> Destination {
-        let horizontal = align::Alignment {
-            pos: tl.x,
-            align: align::Horizontal::Left,
-        };
-        let vertical = align::Alignment {
-            pos: tl.y,
-            align: align::Vertical::Top,
-        };
-        Destination {
-            horizontal,
-            vertical,
-            dims: None,
-        }
+        Destination::Pos(align::left(tl.x).top(tl.y))
     }
 }
 

@@ -1,4 +1,4 @@
-use super::options::Destination;
+use super::options::Position;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Vertical {
@@ -28,53 +28,47 @@ impl<T> Alignment<T> {
 }
 
 impl Alignment<Vertical> {
-    pub fn left(self, pos: i32) -> Destination {
-        Destination {
+    pub fn left(self, pos: i32) -> Position {
+        Position {
             horizontal: left(pos),
             vertical: self,
-            dims: None,
         }
     }
 
-    pub fn center(self, pos: i32) -> Destination {
-        Destination {
+    pub fn center(self, pos: i32) -> Position {
+        Position {
             horizontal: center(pos),
             vertical: self,
-            dims: None,
         }
     }
 
-    pub fn right(self, pos: i32) -> Destination {
-        Destination {
+    pub fn right(self, pos: i32) -> Position {
+        Position {
             horizontal: right(pos),
             vertical: self,
-            dims: None,
         }
     }
 }
 
 impl Alignment<Horizontal> {
-    pub fn top(self, pos: i32) -> Destination {
-        Destination {
+    pub fn top(self, pos: i32) -> Position {
+        Position {
             vertical: top(pos),
             horizontal: self,
-            dims: None,
         }
     }
 
-    pub fn middle(self, pos: i32) -> Destination {
-        Destination {
+    pub fn middle(self, pos: i32) -> Position {
+        Position {
             vertical: middle(pos),
             horizontal: self,
-            dims: None,
         }
     }
 
-    pub fn bottom(self, pos: i32) -> Destination {
-        Destination {
+    pub fn bottom(self, pos: i32) -> Position {
+        Position {
             vertical: bottom(pos),
             horizontal: self,
-            dims: None,
         }
     }
 }
