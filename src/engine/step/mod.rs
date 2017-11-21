@@ -1,17 +1,17 @@
 use errors::*;
 use timer;
-use super::State;
+use state::State;
 
 use std::time::Duration;
 
 pub mod fixed;
 pub use self::fixed::FixedUpdate;
 
-type GameState<W, S> = Result<State<Snapshot<W, S>>>;
+type GameState<W, S> = Result<State<Snapshot<W, S>, ()>>;
 
 pub trait Runner<W, S> {
     fn tick(&mut self, world: W, time: &timer::GameTime) -> W;
-    fn update(&mut self, world: W, elapsed: Duration) -> State<W>;
+    fn update(&mut self, world: W, elapsed: Duration) -> State<W, ()>;
     fn draw(&mut self, snapshot: Snapshot<&W, &S>) -> Result<()>;
     fn time(&mut self) -> timer::GameTime;
 }
@@ -95,9 +95,9 @@ pub mod mock {
     where
         S: Clone,
     {
-        fn update(&mut self, mut world: World, elapsed: Duration) -> State<World> {
+        fn update(&mut self, mut world: World, elapsed: Duration) -> State<World, ()> {
             if self.quit_on_update {
-                State::Quit
+                State::Quit(())
             } else {
                 world.updates.push(elapsed);
                 State::Running(world)
@@ -132,7 +132,7 @@ pub mod mock {
     impl<W, S> GameStateHelper<W, S> for GameState<W, S> {
         fn expect_snapshot(self) -> Snapshot<W, S> {
             match self.expect("game state in unexpected error state") {
-                State::Quit => panic!("game state in unexpected quit state"),
+                State::Quit(_) => panic!("game state in unexpected quit state"),
                 State::Running(s) => s,
             }
         }

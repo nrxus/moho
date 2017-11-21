@@ -5,12 +5,7 @@ extern crate num_traits;
 extern crate sdl2;
 extern crate take_mut;
 
-use sdl2::render::WindowCanvas as SdlCanvas;
-use sdl2::render::TextureCreator;
-use sdl2::video::WindowContext;
-use sdl2::EventPump as SdlEventPump;
-use sdl2::image::{INIT_JPG, INIT_PNG};
-
+mod state;
 pub mod animation;
 pub mod input;
 pub mod shape;
@@ -18,6 +13,14 @@ pub mod renderer;
 pub mod timer;
 pub mod window_wrapper;
 pub mod engine;
+
+pub use state::{Never, RunState, State};
+
+use sdl2::render::WindowCanvas as SdlCanvas;
+use sdl2::render::TextureCreator;
+use sdl2::video::WindowContext;
+use sdl2::EventPump as SdlEventPump;
+use sdl2::image::{INIT_JPG, INIT_PNG};
 
 pub mod errors {
     error_chain!{}

@@ -4,6 +4,7 @@ pub use self::step::Step;
 use self::step::Runner;
 use errors::*;
 use input;
+use state::State;
 use renderer::{Canvas, Scene};
 use timer::{self, Timer};
 
@@ -11,36 +12,8 @@ use take_mut;
 
 use std::time::Duration;
 
-#[derive(Debug)]
-pub enum State<S> {
-    Quit,
-    Running(S),
-}
-
-impl<S> State<S> {
-    pub fn flat_map<F, T>(self, f: F) -> State<T>
-    where
-        F: FnOnce(S) -> State<T>,
-    {
-        match self {
-            State::Quit => State::Quit,
-            State::Running(s) => f(s),
-        }
-    }
-
-    pub fn map<F, T>(self, f: F) -> State<T>
-    where
-        F: FnOnce(S) -> T,
-    {
-        match self {
-            State::Quit => State::Quit,
-            State::Running(s) => State::Running(f(s)),
-        }
-    }
-}
-
 pub trait World: Sized {
-    fn update(self, input: &input::State, elapsed: Duration) -> State<Self>;
+    fn update(self, input: &input::State, elapsed: Duration) -> State<Self, ()>;
     fn tick(self, _: &timer::GameTime) -> Self {
         self
     }
@@ -90,10 +63,10 @@ where
         world.tick(time)
     }
 
-    fn update(&mut self, world: W, elapsed: Duration) -> State<W> {
+    fn update(&mut self, world: W, elapsed: Duration) -> State<W, ()> {
         let input = self.input_manager.update();
         if input.game_quit() {
-            State::Quit
+            State::Quit(())
         } else {
             world.update(input, elapsed)
         }
@@ -153,7 +126,7 @@ where
         let mut snapshot = step::Snapshot::new::<S>(world);
         loop {
             match self.step.step(snapshot, &mut app)? {
-                State::Quit => {
+                State::Quit(_) => {
                     break;
                 }
                 State::Running(s) => snapshot = s,

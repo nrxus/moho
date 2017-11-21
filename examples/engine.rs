@@ -98,11 +98,11 @@ impl World {
 }
 
 impl engine::World for World {
-    fn update(mut self, input: &input::State, _: Duration) -> engine::State<Self> {
+    fn update(mut self, input: &input::State, _: Duration) -> moho::State<Self, ()> {
         self.text.is_hovering = self.text
             .body
             .contains(&glm::to_dvec2(input.mouse_coords()));
-        engine::State::Running(self)
+        moho::State::Running(self)
     }
 
     fn tick(mut self, time: &timer::GameTime) -> Self {

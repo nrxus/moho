@@ -1,7 +1,9 @@
-use engine;
-use super::{GameState, Runner, Snapshot, Step};
+use super::{GameState, Runner, Step};
+use state::State as AppState;
 
 use std::time::Duration;
+
+pub type Snapshot<W> = super::Snapshot<W, State>;
 
 #[derive(PartialEq, Default, Debug, Clone)]
 pub struct State {
@@ -44,12 +46,12 @@ impl Default for FixedUpdate {
 impl Step for FixedUpdate {
     type State = State;
 
-    fn step<W, R>(&self, snapshot: Snapshot<W, State>, runner: &mut R) -> GameState<W, State>
+    fn step<W, R>(&self, snapshot: Snapshot<W>, runner: &mut R) -> GameState<W, State>
     where
         R: Runner<W, State>,
     {
         let time = runner.time();
-        let mut current = engine::State::Running(runner.tick(snapshot.world, &time));
+        let mut current = AppState::Running(runner.tick(snapshot.world, &time));
         let mut leftover = time.since_update + snapshot.step_state.leftover;
         let mut loops = 0;
 
@@ -70,7 +72,7 @@ impl Step for FixedUpdate {
             Snapshot { world, step_state }
         });
 
-        if let engine::State::Running(ref s) = state {
+        if let AppState::Running(ref s) = state {
             let s = s.as_ref();
             runner.draw(s)?;
         }
