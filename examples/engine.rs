@@ -98,6 +98,8 @@ impl World {
 }
 
 impl engine::World for World {
+    type Quit = ();
+
     fn update(mut self, input: &input::State, _: Duration) -> moho::State<Self, ()> {
         self.text.is_hovering = self.text
             .body

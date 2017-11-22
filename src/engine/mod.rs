@@ -13,7 +13,9 @@ use take_mut;
 use std::time::Duration;
 
 pub trait World: Sized {
-    fn update(self, input: &input::State, elapsed: Duration) -> State<Self, ()>;
+    type Quit;
+
+    fn update(self, input: &input::State, elapsed: Duration) -> State<Self, Self::Quit>;
     fn tick(self, _: &timer::GameTime) -> Self {
         self
     }
@@ -54,7 +56,7 @@ impl<'a, S, H, R, E> App<'a, S, H, R, E> {
 
 impl<'a, 't, W, S, H, C, E, D> Runner<W, S> for App<'a, D, H, C, E>
 where
-    W: World,
+    W: World<Quit = ()>,
     C: Canvas<'t>,
     E: input::EventPump,
     D: Scene<C> + NextScene<W, S, H>,
@@ -64,12 +66,9 @@ where
     }
 
     fn update(&mut self, world: W, elapsed: Duration) -> State<W, ()> {
-        let input = self.input_manager.update();
-        if input.game_quit() {
-            State::Quit(())
-        } else {
-            world.update(input, elapsed)
-        }
+        self.input_manager
+            .update()
+            .flat_map(|input| world.update(input, elapsed))
     }
 
     fn draw(&mut self, snapshot: step::Snapshot<&W, &S>) -> Result<()> {
@@ -118,7 +117,7 @@ where
 
     pub fn run<D, W, H>(&mut self, world: W, scene: D, helpers: H) -> Result<()>
     where
-        W: World,
+        W: World<Quit = ()>,
         D: Scene<C> + NextScene<W, S::State, H>,
     {
         let mut app: App<D, _, _, _> =

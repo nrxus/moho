@@ -26,6 +26,7 @@ where
     TL::Texture: Texture,
     FL: FontLoader<'f>,
     FL::Font: Font<Texture = TL::Texture>,
+    R: Canvas<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
 {
     pub fn new(renderer: R, event_pump: E, font_loader: &'f FL, texture_loader: &'t TL) -> Self {
         let texture_manager = TextureManager::new(texture_loader);
@@ -39,17 +40,14 @@ where
         }
     }
 
-    pub fn run(&mut self) -> Result<()>
-    where
-        R: Canvas<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
-    {
+    pub fn run(&mut self) -> Result<()> {
         let image = self.texture_manager.load("examples/background.png")?;
         let font_details = font::Details {
             path: "examples/fonts/kenpixel_mini.ttf",
             size: 48,
         };
-        let button_text = "HOVER ON ME";
         let font = self.font_manager.load(&font_details)?;
+        let button_text = "HOVER ON ME";
         let button_dims = font.measure(button_text)?;
 
         let button_tl = glm::ivec2(60, 60);
@@ -58,36 +56,57 @@ where
             dims: glm::to_dvec2(button_dims),
         };
         let mut timer = Timer::new();
-        while !self.game_quit() {
-            let game_time = timer.update();
-            let state = self.input_manager.update();
-            let cursor_position = state.mouse_coords();
-            let color = if rect.contains(&glm::to_dvec2(cursor_position)) {
-                ColorRGBA(255, 0, 0, 255)
-            } else {
-                ColorRGBA(255, 255, 0, 255)
-            };
-            let button_texture = font.texturize(button_text, &color)?;
-            let button_dst = options::Position::from(button_tl).dims(button_texture.dims());
-            let fps = format!("{}", game_time.fps() as u32);
-            let font_texture = font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))?;
-            let font_dst = align::top(0).right(1280).dims(font_texture.dims());
-            self.renderer.clear();
-            self.renderer
-                .copy(&image, options::flip(options::Flip::Both))?;
-            self.renderer.copy(&image, options::none())?;
-            self.renderer.copy(&font_texture, options::at(font_dst))?;
-            self.renderer.copy(
-                &button_texture,
-                options::at(button_dst).flip(options::Flip::Horizontal),
-            )?;
-            self.renderer.present();
+        loop {
+            match self.input_manager.update() {
+                moho::State::Quit(_) => {
+                    break;
+                }
+                moho::State::Running(input) => Self::process(
+                    input,
+                    &mut timer,
+                    &rect,
+                    &font,
+                    button_text,
+                    &*image,
+                    &mut self.renderer,
+                )?,
+            }
         }
         Ok(())
     }
 
-    fn game_quit(&self) -> bool {
-        self.input_manager.current.game_quit()
+    fn process(
+        input: &input::State,
+        timer: &mut Timer,
+        rect: &Rectangle,
+        font: &FL::Font,
+        button_text: &str,
+        image: &TL::Texture,
+        renderer: &mut R,
+    ) -> Result<()> {
+        let game_time = timer.update();
+        let cursor_position = input.mouse_coords();
+        let color = if rect.contains(&glm::to_dvec2(cursor_position)) {
+            ColorRGBA(255, 0, 0, 255)
+        } else {
+            ColorRGBA(255, 255, 0, 255)
+        };
+        let button_texture = font.texturize(button_text, &color)?;
+        let button_dst =
+            options::Position::from(glm::to_ivec2(rect.top_left)).dims(button_texture.dims());
+        let fps = format!("{}", game_time.fps() as u32);
+        let font_texture = font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))?;
+        let font_dst = align::top(0).right(1280).dims(font_texture.dims());
+        renderer.clear();
+        renderer.copy(image, options::flip(options::Flip::Both))?;
+        renderer.copy(image, options::none())?;
+        renderer.copy(&font_texture, options::at(font_dst))?;
+        renderer.copy(
+            &button_texture,
+            options::at(button_dst).flip(options::Flip::Horizontal),
+        )?;
+        renderer.present();
+        Ok(())
     }
 }
 

@@ -62,7 +62,7 @@ fn press_keys() {
     assert_eq!(subject.current.is_key_down(Keycode::Down), false);
     assert_eq!(subject.current.is_key_down(Keycode::Up), false);
 
-    let state = subject.update();
+    let state = subject.update().expect();
 
     // Both keys are set after
     assert_eq!(state.is_key_down(Keycode::Down), true);
@@ -86,7 +86,7 @@ fn release_keys() {
         assert!(!state.did_release_key(Keycode::Up));
     }
     {
-        let state = subject.update();
+        let state = subject.update().expect();
         // Both keys set after
         assert!(state.is_key_down(Keycode::Down));
         assert!(state.is_key_down(Keycode::Up));
@@ -95,7 +95,7 @@ fn release_keys() {
         assert!(!state.did_release_key(Keycode::Up));
     }
 
-    let state = subject.update();
+    let state = subject.update().expect();
 
     // Only the one released unset after
     assert_eq!(state.is_key_down(Keycode::Down), false);
@@ -122,13 +122,13 @@ fn did_press_key() {
 
     // Down key is pressed
     {
-        let state = subject.update();
+        let state = subject.update().expect();
         assert_eq!(state.did_press_key(Keycode::Down), true);
         assert_eq!(state.did_press_key(Keycode::Up), false);
     }
 
     // Up key is pressed - Down key has not been released yet
-    let state = subject.update();
+    let state = subject.update().expect();
     assert_eq!(state.did_press_key(Keycode::Down), false);
     assert_eq!(state.did_press_key(Keycode::Up), true);
 }
@@ -150,7 +150,7 @@ fn mouse_coords() {
     ];
 
     let mut subject = Manager::new(MockEventPump { streams: streams });
-    let state = subject.update();
+    let state = subject.update().expect();
     assert_eq!(state.mouse_coords(), glm::ivec2(50, 30));
 }
 
@@ -171,13 +171,13 @@ fn mouse_clicks() {
 
     // Left button is click
     {
-        let state = subject.update();
+        let state = subject.update().expect();
         assert_eq!(state.did_click_mouse(MouseButton::Right), false);
         assert_eq!(state.did_click_mouse(MouseButton::Left), true);
     }
 
     // Right button is clicked - left button is still pressed but not a recent click
-    let state = subject.update();
+    let state = subject.update().expect();
     assert_eq!(state.did_click_mouse(MouseButton::Right), true);
     assert_eq!(state.did_click_mouse(MouseButton::Left), false);
 }
@@ -201,14 +201,14 @@ fn mouse_releases() {
 
     {
         // Left button is click
-        let state = subject.update();
+        let state = subject.update().expect();
         assert_eq!(state.did_release_mouse(MouseButton::Right), false);
         assert_eq!(state.did_release_mouse(MouseButton::Left), false);
     }
 
     {
         // Left button is released
-        let state = subject.update();
+        let state = subject.update().expect();
         assert_eq!(state.did_release_mouse(MouseButton::Right), false);
         assert_eq!(state.did_release_mouse(MouseButton::Left), true);
     }
@@ -216,8 +216,28 @@ fn mouse_releases() {
 
     {
         // Right button is clicked; left button is not clicked and not released recently
-        let state = subject.update();
+        let state = subject.update().expect();
         assert_eq!(state.did_release_mouse(MouseButton::Right), false);
         assert_eq!(state.did_release_mouse(MouseButton::Right), false);
+    }
+}
+
+pub trait StateHelper<'a> {
+    fn expect(self) -> &'a State;
+    fn expect_quit(self);
+}
+
+impl<'a> StateHelper<'a> for moho::State<&'a State, ()> {
+    fn expect(self) -> &'a State {
+        match self {
+            moho::State::Quit(_) => panic!("game state in unexpected quit state"),
+            moho::State::Running(s) => s,
+        }
+    }
+
+    fn expect_quit(self) {
+        if let moho::State::Running(_) = self {
+            panic!("game state in unexpected running state")
+        }
     }
 }

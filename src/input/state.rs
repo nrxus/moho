@@ -1,4 +1,5 @@
 use super::{EventGenerator, EventPump};
+use state::State as AppState;
 
 use glm;
 use num_traits::Zero;
@@ -62,15 +63,16 @@ impl State {
         self.game_quit
     }
 
-    pub(super) fn update<P: EventPump>(&mut self, event_generator: &mut EventGenerator<P>) {
+    pub(super) fn update<P: EventPump>(
+        &mut self,
+        event_generator: &mut EventGenerator<P>,
+    ) -> AppState<(), ()> {
         self.prev_pressed_keys = self.pressed_keys.clone();
         self.prev_pressed_buttons = self.pressed_buttons.clone();
 
         for event in event_generator.iter() {
             match event {
-                Event::Quit { .. } => {
-                    self.game_quit = true;
-                }
+                Event::Quit { .. } => return AppState::Quit(()),
                 Event::KeyDown {
                     keycode: Some(keycode),
                     ..
@@ -95,5 +97,7 @@ impl State {
                 _ => {}
             }
         }
+
+        AppState::Running(())
     }
 }

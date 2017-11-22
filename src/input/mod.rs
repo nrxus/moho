@@ -1,6 +1,7 @@
 mod state;
 
 pub use self::state::State;
+use state::State as AppState;
 
 use sdl2::EventPump as SdlEventPump;
 use sdl2::event::Event;
@@ -58,8 +59,8 @@ impl<P: EventPump> Manager<P> {
         }
     }
 
-    pub fn update(&mut self) -> &State {
-        self.current.update(&mut self.event_generator);
-        &self.current
+    pub fn update(&mut self) -> AppState<&State, ()> {
+        let state = self.current.update(&mut self.event_generator);
+        state.map(move |_| &self.current)
     }
 }
