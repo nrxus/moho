@@ -62,6 +62,11 @@ impl Destination {
         };
         glm::ivec4(left, top, dims.x, dims.y)
     }
+
+    pub fn scale(self, scale: u32) -> Destination {
+        let dims = self.dims * scale;
+        Destination { dims, ..self }
+    }
 }
 
 impl From<glm::IVec4> for Destination {
