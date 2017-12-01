@@ -2,11 +2,11 @@ pub mod sdl2;
 pub mod align;
 pub mod options;
 pub mod font;
+pub mod texture;
 mod resource_manager;
 
 pub use self::options::Options;
-pub use self::font::{Font, FontLoader};
-pub use self::resource_manager::{ResourceManager, TextureManager};
+pub use self::resource_manager::ResourceManager;
 
 use errors::*;
 
@@ -16,18 +16,9 @@ use sdl2::rect;
 #[derive(Clone, Copy, Debug)]
 pub struct ColorRGBA(pub u8, pub u8, pub u8, pub u8);
 
-pub trait Texture {
-    fn dims(&self) -> glm::UVec2;
-}
-
 pub trait Loader<'a, T> {
     type Args: ?Sized;
     fn load(&'a self, data: &Self::Args) -> Result<T>;
-}
-
-pub trait TextureLoader<'a>
-    : Loader<'a, <Self as TextureLoader<'a>>::Texture, Args = str> {
-    type Texture;
 }
 
 pub trait Window {

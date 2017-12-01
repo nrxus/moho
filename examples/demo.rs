@@ -4,17 +4,19 @@ extern crate sdl2;
 
 use moho::errors::*;
 use moho::input;
-use moho::renderer::*;
+use moho::renderer::font::{self, Font};
+use moho::renderer::texture::{self, Texture};
+use moho::renderer::{align, options, Canvas, ColorRGBA, Draw};
 use moho::shape::*;
 use moho::timer::*;
 
 pub struct MainGame<'f, 't, TL: 't, FL: 'f, R, E>
 where
-    TL: TextureLoader<'t>,
-    FL: FontLoader<'f>,
+    TL: texture::Loader<'t>,
+    FL: font::Loader<'f>,
 {
     input_manager: input::Manager<E>,
-    texture_manager: TextureManager<'t, TL>,
+    texture_manager: texture::Manager<'t, TL>,
     font_manager: font::Manager<'f, FL>,
     renderer: R,
 }
@@ -22,14 +24,14 @@ where
 impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
 where
     E: input::EventPump,
-    TL: TextureLoader<'t>,
+    TL: texture::Loader<'t>,
     TL::Texture: Texture + Draw<R>,
-    FL: FontLoader<'f>,
+    FL: font::Loader<'f>,
     FL::Font: Font<Texture = TL::Texture>,
     R: Canvas,
 {
     pub fn new(renderer: R, event_pump: E, font_loader: &'f FL, texture_loader: &'t TL) -> Self {
-        let texture_manager = TextureManager::new(texture_loader);
+        let texture_manager = texture::Manager::new(texture_loader);
         let font_manager = font::Manager::new(font_loader);
         let input_manager = input::Manager::new(event_pump);
         MainGame {

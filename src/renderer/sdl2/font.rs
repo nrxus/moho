@@ -50,7 +50,7 @@ impl<'t, T> Loader<'t, T> {
     }
 }
 
-impl<'f, 't, T> renderer::FontLoader<'f> for Loader<'t, T> {
+impl<'f, 't, T> renderer::font::Loader<'f> for Loader<'t, T> {
     type Font = Font<'t, 'f, T>;
 }
 

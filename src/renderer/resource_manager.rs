@@ -1,12 +1,10 @@
-use renderer::{Loader, TextureLoader};
+use renderer::Loader;
 use errors::*;
 
 use std::borrow::Borrow;
 use std::hash::Hash;
 use std::collections::HashMap;
 use std::rc::Rc;
-
-pub type TextureManager<'l, L: TextureLoader<'l>> = ResourceManager<'l, String, L::Texture, L>;
 
 pub struct ResourceManager<'l, K, R, L>
 where

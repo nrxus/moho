@@ -1,5 +1,6 @@
 use errors::*;
-use renderer::{options, Draw, Options, Renderer, Show, Texture};
+use renderer::texture::Texture;
+use renderer::{options, Draw, Options, Renderer, Show};
 
 use glm;
 

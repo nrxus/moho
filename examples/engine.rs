@@ -6,9 +6,9 @@ use moho::engine::{self, Engine, NextScene};
 use moho::errors::*;
 use moho::{input, timer};
 use moho::engine::step::{self, fixed};
-use moho::renderer::font;
-use moho::renderer::{self, align, options, ColorRGBA, Draw, Font, FontLoader, Renderer, Texture,
-                     TextureLoader};
+use moho::renderer::font::{self, Font};
+use moho::renderer::texture::{self, Texture};
+use moho::renderer::{self, align, options, ColorRGBA, Draw, Renderer};
 use moho::shape::{Rectangle, Shape};
 
 use std::iter;
@@ -23,7 +23,7 @@ struct Helper<F> {
 impl<F: Font> Helper<F> {
     fn load<'f, FL>(font_loader: &'f FL) -> Result<Self>
     where
-        FL: FontLoader<'f, Font = F>,
+        FL: font::Loader<'f, Font = F>,
     {
         let font_details = font::Details {
             path: "examples/fonts/kenpixel_mini.ttf",
@@ -132,7 +132,7 @@ struct Scene<T> {
 impl<T: Texture> Scene<T> {
     fn load<'t, F, TL>(world: &World, font: &F, loader: &'t TL) -> Result<Self>
     where
-        TL: TextureLoader<'t, Texture = T>,
+        TL: texture::Loader<'t, Texture = T>,
         F: Font<Texture = T>,
     {
         let background = loader.load("examples/background.png")?;

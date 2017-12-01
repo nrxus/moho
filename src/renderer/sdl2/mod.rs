@@ -2,6 +2,8 @@ pub mod font;
 pub use self::font::Font;
 
 use errors::*;
+use renderer::texture;
+use renderer::texture::Texture as MohoTexture;
 use renderer::{self, options};
 
 use glm;
@@ -10,14 +12,14 @@ use sdl2::rect;
 use sdl2::render::{self, RenderTarget};
 use sdl2::pixels;
 
-impl<'c> renderer::Texture for render::Texture<'c> {
+impl<'c> MohoTexture for render::Texture<'c> {
     fn dims(&self) -> glm::UVec2 {
         let query = self.query();
         glm::uvec2(query.width, query.height)
     }
 }
 
-impl<'c, T> renderer::TextureLoader<'c> for render::TextureCreator<T> {
+impl<'c, T> texture::Loader<'c> for render::TextureCreator<T> {
     type Texture = render::Texture<'c>;
 }
 

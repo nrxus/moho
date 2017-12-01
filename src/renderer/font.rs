@@ -1,10 +1,10 @@
 use errors::*;
 use renderer::resource_manager::ResourceManager;
-use super::{ColorRGBA, Loader};
+use super::ColorRGBA;
 
 use glm;
 
-pub type Manager<'l, L: FontLoader<'l>> = ResourceManager<'l, Details, L::Font, L>;
+pub type Manager<'l, L: Loader<'l>> = ResourceManager<'l, Details, L::Font, L>;
 
 pub trait Font {
     type Texture;
@@ -13,8 +13,8 @@ pub trait Font {
     fn texturize(&self, text: &str, color: &ColorRGBA) -> Result<Self::Texture>;
 }
 
-pub trait FontLoader<'a>
-    : Loader<'a, <Self as FontLoader<'a>>::Font, Args = Details> {
+pub trait Loader<'a>
+    : super::Loader<'a, <Self as Loader<'a>>::Font, Args = Details> {
     type Font: Font;
 }
 
