@@ -23,7 +23,7 @@ impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
 where
     E: input::EventPump,
     TL: TextureLoader<'t>,
-    TL::Texture: Texture + Asset<R>,
+    TL::Texture: Texture + Draw<R>,
     FL: FontLoader<'f>,
     FL::Font: Font<Texture = TL::Texture>,
     R: Canvas,

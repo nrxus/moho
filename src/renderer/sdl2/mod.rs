@@ -40,13 +40,13 @@ impl<T: RenderTarget> renderer::Canvas for render::Canvas<T> {
     }
 }
 
-impl<'t, T: RenderTarget> renderer::Scene<render::Canvas<T>> for SdlTexture<'t> {
+impl<'t, T: RenderTarget> renderer::Show<render::Canvas<T>> for SdlTexture<'t> {
     fn show(&self, renderer: &mut render::Canvas<T>) -> Result<()> {
         renderer.copy(self, None, None).map_err(Into::into)
     }
 }
 
-impl<'t, T: RenderTarget> renderer::Asset<render::Canvas<T>> for SdlTexture<'t> {
+impl<'t, T: RenderTarget> renderer::Draw<render::Canvas<T>> for SdlTexture<'t> {
     fn draw(&self, options: renderer::Options, renderer: &mut render::Canvas<T>) -> Result<()> {
         let src = options
             .src

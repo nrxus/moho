@@ -7,7 +7,7 @@ use moho::errors::*;
 use moho::{input, timer};
 use moho::engine::step::{self, fixed};
 use moho::renderer::font;
-use moho::renderer::{self, align, options, Asset, ColorRGBA, Font, FontLoader, Renderer, Texture,
+use moho::renderer::{self, align, options, ColorRGBA, Draw, Font, FontLoader, Renderer, Texture,
                      TextureLoader};
 use moho::shape::{Rectangle, Shape};
 
@@ -61,7 +61,7 @@ impl<T: Texture> HoverTextScene<T> {
     }
 }
 
-impl<R: Renderer, T: Asset<R>> renderer::Scene<R> for HoverTextScene<T> {
+impl<R: Renderer, T: Draw<R>> renderer::Show<R> for HoverTextScene<T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
         renderer.draw(
             &self.texture,
@@ -166,7 +166,7 @@ impl<T: Texture> Scene<T> {
     }
 }
 
-impl<R: Renderer, T: Asset<R>> renderer::Scene<R> for Scene<T> {
+impl<R: Renderer, T: Draw<R>> renderer::Show<R> for Scene<T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
         renderer.draw(&self.background, options::flip(options::Flip::Both))?;
         renderer.draw(&self.background, options::none())?;

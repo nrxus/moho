@@ -5,7 +5,7 @@ use self::step::Runner;
 use errors::*;
 use input;
 use state::State;
-use renderer::{Canvas, Scene};
+use renderer::{Canvas, Show};
 use timer::{self, Timer};
 
 use take_mut;
@@ -59,7 +59,7 @@ where
     W: World<Quit = ()>,
     C: Canvas,
     E: input::EventPump,
-    D: Scene<C> + NextScene<W, S, H>,
+    D: Show<C> + NextScene<W, S, H>,
 {
     fn tick(&mut self, world: W, time: &timer::GameTime) -> W {
         world.tick(time)
@@ -118,7 +118,7 @@ where
     pub fn run<D, W, H>(&mut self, world: W, scene: D, helpers: H) -> Result<()>
     where
         W: World<Quit = ()>,
-        D: Scene<C> + NextScene<W, S::State, H>,
+        D: Show<C> + NextScene<W, S::State, H>,
     {
         let mut app: App<D, _, _, _> =
             App::new(scene, helpers, &mut self.canvas, &mut self.input_manager);
