@@ -6,6 +6,7 @@ extern crate sdl2;
 extern crate take_mut;
 
 mod state;
+pub mod sdl2_helpers;
 pub mod animation;
 pub mod input;
 pub mod shape;
@@ -14,6 +15,8 @@ pub mod timer;
 pub mod window_wrapper;
 pub mod engine;
 pub mod resource;
+pub mod texture;
+pub mod font;
 
 pub use state::{Never, RunState, State};
 

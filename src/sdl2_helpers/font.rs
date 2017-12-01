@@ -1,5 +1,6 @@
 use errors::*;
-use renderer::{self, font};
+use font as moho;
+use renderer;
 use resource;
 
 use glm;
@@ -13,7 +14,7 @@ pub struct Font<'t, 'f, T: 't> {
     creator: &'t render::TextureCreator<T>,
 }
 
-impl<'t, 'f, T> font::Font for Font<'t, 'f, T> {
+impl<'t, 'f, T> moho::Font for Font<'t, 'f, T> {
     type Texture = render::Texture<'t>;
 
     fn measure(&self, text: &str) -> Result<glm::UVec2> {
@@ -50,13 +51,13 @@ impl<'t, T> Loader<'t, T> {
     }
 }
 
-impl<'f, 't, T> renderer::font::Loader<'f> for Loader<'t, T> {
+impl<'f, 't, T> moho::Loader<'f> for Loader<'t, T> {
     type Font = Font<'t, 'f, T>;
 }
 
 impl<'f, 't, T> resource::Loader<'f, Font<'t, 'f, T>> for Loader<'t, T> {
-    type Args = font::Details;
-    fn load(&'f self, data: &font::Details) -> Result<Font<'t, 'f, T>> {
+    type Args = moho::Details;
+    fn load(&'f self, data: &moho::Details) -> Result<Font<'t, 'f, T>> {
         self.inner
             .load_font(data.path, data.size)
             .map(|inner| {

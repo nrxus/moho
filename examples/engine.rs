@@ -6,8 +6,8 @@ use moho::engine::{self, Engine, NextScene};
 use moho::errors::*;
 use moho::{input, timer};
 use moho::engine::step::{self, fixed};
-use moho::renderer::font::{self, Font};
-use moho::renderer::texture::{self, Image, Texture};
+use moho::font::{self, Font};
+use moho::texture::{self, Image, Texture};
 use moho::renderer::{self, align, options, ColorRGBA, Draw, Renderer};
 use moho::shape::{Rectangle, Shape};
 
@@ -185,7 +185,7 @@ fn main() {
     let event_pump = sdl_ctx.event_pump().unwrap();
     let canvas = window.into_canvas().present_vsync().build().unwrap();
     let texture_loader = canvas.texture_creator();
-    let font_loader = moho::renderer::sdl2::font::Loader::load(&texture_loader).unwrap();
+    let font_loader = moho::sdl2_helpers::font::Loader::load(&texture_loader).unwrap();
 
     let helper = Helper::load(&font_loader).unwrap();
     let world = World::load(&helper.font).unwrap();

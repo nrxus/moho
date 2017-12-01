@@ -69,7 +69,7 @@ impl<T> LimitRun<T> {
 mod tests {
     use super::*;
     use std::rc::Rc;
-    use renderer::texture::Texture;
+    use texture::Texture;
     use glm;
 
     #[test]

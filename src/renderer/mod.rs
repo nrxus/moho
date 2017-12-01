@@ -1,8 +1,5 @@
-pub mod sdl2;
 pub mod align;
 pub mod options;
-pub mod font;
-pub mod texture;
 
 pub use self::options::Options;
 

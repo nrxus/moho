@@ -1,6 +1,6 @@
 use errors::*;
+use renderer::ColorRGBA;
 use resource;
-use super::ColorRGBA;
 
 use glm;
 
