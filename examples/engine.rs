@@ -7,7 +7,7 @@ use moho::errors::*;
 use moho::{input, timer};
 use moho::engine::step::{self, fixed};
 use moho::renderer::font;
-use moho::renderer::{self, align, options, ColorRGBA, Font, FontLoader, Renderer, Texture,
+use moho::renderer::{self, align, options, Asset, ColorRGBA, Font, FontLoader, Renderer, Texture,
                      TextureLoader};
 use moho::shape::{Rectangle, Shape};
 
@@ -61,9 +61,9 @@ impl<T: Texture> HoverTextScene<T> {
     }
 }
 
-impl<'t, R: Renderer<'t>> renderer::Scene<R> for HoverTextScene<R::Texture> {
+impl<R: Renderer, T: Asset<R>> renderer::Scene<R> for HoverTextScene<T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
-        renderer.copy(
+        renderer.draw(
             &self.texture,
             options::at(self.dst).flip(options::Flip::Horizontal),
         )
@@ -166,11 +166,11 @@ impl<T: Texture> Scene<T> {
     }
 }
 
-impl<'t, R: Renderer<'t>> renderer::Scene<R> for Scene<R::Texture> {
+impl<R: Renderer, T: Asset<R>> renderer::Scene<R> for Scene<T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
-        renderer.copy(&self.background, options::flip(options::Flip::Both))?;
-        renderer.copy(&self.background, options::none())?;
-        renderer.copy(&self.fps, options::at(self.fps_dst))?;
+        renderer.draw(&self.background, options::flip(options::Flip::Both))?;
+        renderer.draw(&self.background, options::none())?;
+        renderer.draw(&self.fps, options::at(self.fps_dst))?;
         renderer.show(&self.text)
     }
 }

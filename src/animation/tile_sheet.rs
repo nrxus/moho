@@ -1,5 +1,5 @@
 use errors::*;
-use renderer::{Asset, Options, Renderer, Texture};
+use renderer::{options, Asset, Options, Renderer, Scene, Texture};
 
 use glm;
 
@@ -68,10 +68,15 @@ impl<T> TileSheet<T> {
     }
 }
 
-impl<'t, R: Renderer<'t>> Asset<R> for Tile<R::Texture> {
+impl<R: Renderer, T: Asset<R>> Scene<R> for Tile<T> {
+    fn show(&self, renderer: &mut R) -> Result<()> {
+        renderer.draw(&*self.texture, options::from(self.src))
+    }
+}
+
+impl<R: Renderer, T: Asset<R>> Asset<R> for Tile<T> {
     fn draw(&self, options: Options, renderer: &mut R) -> Result<()> {
-        let options = options.from(self.src);
-        renderer.copy(&*self.texture, options)
+        renderer.draw(&*self.texture, options.from(self.src))
     }
 }
 

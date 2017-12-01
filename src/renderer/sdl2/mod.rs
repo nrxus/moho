@@ -30,7 +30,7 @@ impl<'c, T> renderer::Loader<'c, render::Texture<'c>> for render::TextureCreator
 
 use sdl2::render::Texture as SdlTexture;
 
-impl<'t, T: RenderTarget> renderer::Canvas<'t> for render::Canvas<T> {
+impl<T: RenderTarget> renderer::Canvas for render::Canvas<T> {
     fn clear(&mut self) {
         self.clear();
     }
@@ -40,9 +40,44 @@ impl<'t, T: RenderTarget> renderer::Canvas<'t> for render::Canvas<T> {
     }
 }
 
-impl<'t, T: RenderTarget> renderer::Renderer<'t> for render::Canvas<T> {
-    type Texture = SdlTexture<'t>;
+impl<'t, T: RenderTarget> renderer::Scene<render::Canvas<T>> for SdlTexture<'t> {
+    fn show(&self, renderer: &mut render::Canvas<T>) -> Result<()> {
+        renderer.copy(self, None, None).map_err(Into::into)
+    }
+}
 
+impl<'t, T: RenderTarget> renderer::Asset<render::Canvas<T>> for SdlTexture<'t> {
+    fn draw(&self, options: renderer::Options, renderer: &mut render::Canvas<T>) -> Result<()> {
+        let src = options
+            .src
+            .map(|r| rect::Rect::new(r.x as i32, r.y as i32, r.z, r.w));
+        let dst = options.dst.map(|d| {
+            let rect = d.rect();
+            rect::Rect::new(rect.x, rect.y, rect.z as u32, rect.w as u32)
+        });
+        match (options.rotation, options.flip) {
+            (None, None) => renderer.copy(self, src, dst).map_err(Into::into),
+            (r, f) => {
+                let (angle, center) = match r {
+                    None => (0., None),
+                    Some(r) => (r.angle, Some(rect::Point::new(r.center.x, r.center.y))),
+                };
+                let (hflip, vflip) = match f {
+                    None => (false, false),
+                    Some(options::Flip::Horizontal) => (true, false),
+                    Some(options::Flip::Vertical) => (false, true),
+                    Some(options::Flip::Both) => (true, true),
+                };
+                renderer
+                    .copy_ex(self, src, dst, angle, center, hflip, vflip)
+                    .map_err(Into::into)
+            }
+        }
+    }
+}
+
+
+impl<T: RenderTarget> renderer::Renderer for render::Canvas<T> {
     fn set_draw_color(&mut self, color: renderer::ColorRGBA) {
         let renderer::ColorRGBA(r, g, b, a) = color;
         let color = pixels::Color::RGBA(r, g, b, a);
@@ -55,33 +90,6 @@ impl<'t, T: RenderTarget> renderer::Renderer<'t> for render::Canvas<T> {
 
     fn draw_rects(&mut self, rects: &[rect::Rect]) -> Result<()> {
         self.draw_rects(rects).map_err(Into::into)
-    }
-
-    fn copy(&mut self, texture: &Self::Texture, options: renderer::Options) -> Result<()> {
-        let src = options
-            .src
-            .map(|r| rect::Rect::new(r.x as i32, r.y as i32, r.z, r.w));
-        let dst = options.dst.map(|d| {
-            let rect = d.rect();
-            rect::Rect::new(rect.x, rect.y, rect.z as u32, rect.w as u32)
-        });
-        match (options.rotation, options.flip) {
-            (None, None) => self.copy(texture, src, dst).map_err(Into::into),
-            (r, f) => {
-                let (angle, center) = match r {
-                    None => (0., None),
-                    Some(r) => (r.angle, Some(rect::Point::new(r.center.x, r.center.y))),
-                };
-                let (hflip, vflip) = match f {
-                    None => (false, false),
-                    Some(options::Flip::Horizontal) => (true, false),
-                    Some(options::Flip::Vertical) => (false, true),
-                    Some(options::Flip::Both) => (true, true),
-                };
-                self.copy_ex(texture, src, dst, angle, center, hflip, vflip)
-                    .map_err(Into::into)
-            }
-        }
     }
 }
 

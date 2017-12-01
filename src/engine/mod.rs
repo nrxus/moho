@@ -54,10 +54,10 @@ impl<'a, S, H, R, E> App<'a, S, H, R, E> {
     }
 }
 
-impl<'a, 't, W, S, H, C, E, D> Runner<W, S> for App<'a, D, H, C, E>
+impl<'a, W, S, H, C, E, D> Runner<W, S> for App<'a, D, H, C, E>
 where
     W: World<Quit = ()>,
-    C: Canvas<'t>,
+    C: Canvas,
     E: input::EventPump,
     D: Scene<C> + NextScene<W, S, H>,
 {
@@ -101,11 +101,11 @@ pub struct Engine<E, C, S> {
     step: S,
 }
 
-impl<'t, E, C, S> Engine<E, C, S>
+impl<E, C, S> Engine<E, C, S>
 where
     E: input::EventPump,
     S: Step,
-    C: Canvas<'t>,
+    C: Canvas,
 {
     pub fn new(event_pump: E, canvas: C, step: S) -> Self {
         Engine {

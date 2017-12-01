@@ -23,10 +23,10 @@ impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
 where
     E: input::EventPump,
     TL: TextureLoader<'t>,
-    TL::Texture: Texture,
+    TL::Texture: Texture + Asset<R>,
     FL: FontLoader<'f>,
     FL::Font: Font<Texture = TL::Texture>,
-    R: Canvas<'t, Texture = <TL as TextureLoader<'t>>::Texture>,
+    R: Canvas,
 {
     pub fn new(renderer: R, event_pump: E, font_loader: &'f FL, texture_loader: &'t TL) -> Self {
         let texture_manager = TextureManager::new(texture_loader);
@@ -98,10 +98,10 @@ where
         let font_texture = font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))?;
         let font_dst = align::top(0).right(1280).dims(font_texture.dims());
         renderer.clear();
-        renderer.copy(image, options::flip(options::Flip::Both))?;
-        renderer.copy(image, options::none())?;
-        renderer.copy(&font_texture, options::at(font_dst))?;
-        renderer.copy(
+        renderer.draw(image, options::flip(options::Flip::Both))?;
+        renderer.draw(image, options::none())?;
+        renderer.draw(&font_texture, options::at(font_dst))?;
+        renderer.draw(
             &button_texture,
             options::at(button_dst).flip(options::Flip::Horizontal),
         )?;
