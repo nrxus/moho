@@ -1,10 +1,10 @@
 use errors::*;
-use renderer::resource_manager::ResourceManager;
+use resource;
 use super::ColorRGBA;
 
 use glm;
 
-pub type Manager<'l, L: Loader<'l>> = ResourceManager<'l, Details, L::Font, L>;
+pub type Manager<'l, L: Loader<'l>> = resource::Manager<'l, Details, L::Font, L>;
 
 pub trait Font {
     type Texture;
@@ -14,7 +14,7 @@ pub trait Font {
 }
 
 pub trait Loader<'a>
-    : super::Loader<'a, <Self as Loader<'a>>::Font, Args = Details> {
+    : resource::Loader<'a, <Self as Loader<'a>>::Font, Args = Details> {
     type Font: Font;
 }
 

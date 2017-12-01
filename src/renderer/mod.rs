@@ -3,10 +3,8 @@ pub mod align;
 pub mod options;
 pub mod font;
 pub mod texture;
-mod resource_manager;
 
 pub use self::options::Options;
-pub use self::resource_manager::ResourceManager;
 
 use errors::*;
 
@@ -15,11 +13,6 @@ use sdl2::rect;
 
 #[derive(Clone, Copy, Debug)]
 pub struct ColorRGBA(pub u8, pub u8, pub u8, pub u8);
-
-pub trait Loader<'a, T> {
-    type Args: ?Sized;
-    fn load(&'a self, data: &Self::Args) -> Result<T>;
-}
 
 pub trait Window {
     fn output_size(&self) -> Result<glm::UVec2>;

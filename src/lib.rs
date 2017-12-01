@@ -13,6 +13,7 @@ pub mod renderer;
 pub mod timer;
 pub mod window_wrapper;
 pub mod engine;
+pub mod resource;
 
 pub use state::{Never, RunState, State};
 

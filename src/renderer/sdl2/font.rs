@@ -1,6 +1,6 @@
 use errors::*;
-use renderer;
-use renderer::font;
+use renderer::{self, font};
+use resource;
 
 use glm;
 use sdl2::pixels::Color;
@@ -54,7 +54,7 @@ impl<'f, 't, T> renderer::font::Loader<'f> for Loader<'t, T> {
     type Font = Font<'t, 'f, T>;
 }
 
-impl<'f, 't, T> renderer::Loader<'f, Font<'t, 'f, T>> for Loader<'t, T> {
+impl<'f, 't, T> resource::Loader<'f, Font<'t, 'f, T>> for Loader<'t, T> {
     type Args = font::Details;
     fn load(&'f self, data: &font::Details) -> Result<Font<'t, 'f, T>> {
         self.inner

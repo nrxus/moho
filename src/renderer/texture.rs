@@ -1,10 +1,10 @@
 use super::options::{Destination, Position};
-use super::ResourceManager;
+use resource;
 
 use glm;
 use std::rc::Rc;
 
-pub type Manager<'l, L: Loader<'l>> = ResourceManager<'l, String, L::Texture, L>;
+pub type Manager<'l, L: Loader<'l>> = resource::Manager<'l, String, L::Texture, L>;
 
 pub struct Image<T> {
     pub texture: Rc<T>,
@@ -23,6 +23,6 @@ pub trait Texture: Sized {
 }
 
 pub trait Loader<'a>
-    : super::Loader<'a, <Self as Loader<'a>>::Texture, Args = str> {
+    : resource::Loader<'a, <Self as Loader<'a>>::Texture, Args = str> {
     type Texture;
 }

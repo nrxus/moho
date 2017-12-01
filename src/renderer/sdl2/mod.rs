@@ -2,6 +2,7 @@ pub mod font;
 pub use self::font::Font;
 
 use errors::*;
+use resource;
 use renderer::texture;
 use renderer::texture::Texture as MohoTexture;
 use renderer::{self, options};
@@ -23,7 +24,7 @@ impl<'c, T> texture::Loader<'c> for render::TextureCreator<T> {
     type Texture = render::Texture<'c>;
 }
 
-impl<'c, T> renderer::Loader<'c, render::Texture<'c>> for render::TextureCreator<T> {
+impl<'c, T> resource::Loader<'c, render::Texture<'c>> for render::TextureCreator<T> {
     type Args = str;
     fn load(&'c self, path: &str) -> Result<render::Texture<'c>> {
         self.load_texture(path).map_err(Into::into)
