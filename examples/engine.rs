@@ -7,7 +7,7 @@ use moho::errors::*;
 use moho::{input, timer};
 use moho::engine::step::{self, fixed};
 use moho::renderer::font::{self, Font};
-use moho::renderer::texture::{self, Texture};
+use moho::renderer::texture::{self, Image, Texture};
 use moho::renderer::{self, align, options, ColorRGBA, Draw, Renderer};
 use moho::shape::{Rectangle, Shape};
 
@@ -40,8 +40,7 @@ struct HoverText {
 }
 
 struct HoverTextScene<T> {
-    texture: T,
-    dst: options::Destination,
+    image: Image<T>,
 }
 
 impl<T: Texture> HoverTextScene<T> {
@@ -55,18 +54,15 @@ impl<T: Texture> HoverTextScene<T> {
             font.texturize(snapshot.world.text, &color)
         }?;
         let top_left = glm::to_ivec2(snapshot.world.body.top_left);
-        let dst = options::Position::from(top_left).dims(texture.dims());
+        let image = texture.at(options::Position::from(top_left));
 
-        Ok(HoverTextScene { texture, dst })
+        Ok(HoverTextScene { image })
     }
 }
 
 impl<R: Renderer, T: Draw<R>> renderer::Show<R> for HoverTextScene<T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
-        renderer.draw(
-            &self.texture,
-            options::at(self.dst).flip(options::Flip::Horizontal),
-        )
+        renderer.draw(&self.image, options::flip(options::Flip::Horizontal))
     }
 }
 
@@ -124,8 +120,7 @@ impl<T: Texture, F: Font<Texture = T>> NextScene<World, fixed::State, Helper<F>>
 
 struct Scene<T> {
     background: T,
-    fps: T,
-    fps_dst: options::Destination,
+    fps: Image<T>,
     text: HoverTextScene<T>,
 }
 
@@ -152,14 +147,13 @@ impl<T: Texture> Scene<T> {
             let fps: f64 = snapshot.world.times.iter().sum();
             let fps = fps / snapshot.world.times.len() as f64;
             let fps = format!("{:.1}", fps);
-            font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))
-        }?;
-        let fps_dst = align::top(0).right(1280).dims(fps.dims());
+            font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))?
+                .at(align::top(0).right(1280))
+        };
         let text = snapshot.split(|w| &w.text);
         let text = HoverTextScene::load(text, font)?;
         Ok(Scene {
             fps,
-            fps_dst,
             text,
             background,
         })
@@ -169,8 +163,8 @@ impl<T: Texture> Scene<T> {
 impl<R: Renderer, T: Draw<R>> renderer::Show<R> for Scene<T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
         renderer.draw(&self.background, options::flip(options::Flip::Both))?;
-        renderer.draw(&self.background, options::none())?;
-        renderer.draw(&self.fps, options::at(self.fps_dst))?;
+        renderer.show(&self.background)?;
+        renderer.show(&self.fps)?;
         renderer.show(&self.text)
     }
 }

@@ -1,4 +1,6 @@
-use super::options::{Destination, Position};
+use errors::*;
+use renderer::options::{self, Destination, Options, Position};
+use renderer::{Draw, Renderer, Show};
 use resource;
 
 use glm;
@@ -25,4 +27,16 @@ pub trait Texture: Sized {
 pub trait Loader<'a>
     : resource::Loader<'a, <Self as Loader<'a>>::Texture, Args = str> {
     type Texture;
+}
+
+impl<R: Renderer, T: Draw<R>> Show<R> for Image<T> {
+    fn show(&self, renderer: &mut R) -> Result<()> {
+        renderer.draw(&*self.texture, options::at(self.dst))
+    }
+}
+
+impl<R: Renderer, T: Draw<R>> Draw<R> for Image<T> {
+    fn draw(&self, options: Options, renderer: &mut R) -> Result<()> {
+        renderer.draw(&*self.texture, options.at(self.dst))
+    }
 }
