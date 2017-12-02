@@ -24,9 +24,9 @@ where
 impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
 where
     E: input::EventPump,
-    TL: texture::Loader<'t>,
+    TL: texture::Loader<'t, Error = Error>,
     TL::Texture: Texture + Draw<R>,
-    FL: font::Loader<'f>,
+    FL: font::Loader<'f, Error = Error>,
     FL::Font: Font<Texture = TL::Texture>,
     R: Canvas,
 {

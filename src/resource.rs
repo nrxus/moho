@@ -1,13 +1,14 @@
-use errors::*;
-
 use std::borrow::Borrow;
-use std::hash::Hash;
 use std::collections::HashMap;
+use std::error::Error;
+use std::hash::Hash;
 use std::rc::Rc;
 
 pub trait Loader<'a, T> {
     type Args: ?Sized;
-    fn load(&'a self, data: &Self::Args) -> Result<T>;
+    type Error: Error;
+
+    fn load(&'a self, data: &Self::Args) -> Result<T, Self::Error>;
 }
 
 pub struct Manager<'l, K, R, L>
@@ -30,7 +31,7 @@ where
         }
     }
 
-    pub fn load<D>(&mut self, details: &D) -> Result<Rc<R>>
+    pub fn load<D>(&mut self, details: &D) -> Result<Rc<R>, L::Error>
     where
         K: Borrow<D> + for<'b> From<&'b D>,
         L: Loader<'l, R, Args = D>,
@@ -114,7 +115,9 @@ mod tests {
 
     impl<'a> Loader<'a, MockResource> for MockLoader {
         type Args = str;
-        fn load(&self, data: &str) -> Result<MockResource> {
+        type Error = ::errors::Error;
+
+        fn load(&self, data: &str) -> ::errors::Result<MockResource> {
             let mut counter = self.tracker.get();
             counter.increase();
             self.tracker.set(counter);

@@ -57,6 +57,8 @@ impl<'f, 't, T> moho::Loader<'f> for Loader<'t, T> {
 
 impl<'f, 't, T> resource::Loader<'f, Font<'t, 'f, T>> for Loader<'t, T> {
     type Args = moho::Details;
+    type Error = Error;
+
     fn load(&'f self, data: &moho::Details) -> Result<Font<'t, 'f, T>> {
         self.inner
             .load_font(data.path, data.size)

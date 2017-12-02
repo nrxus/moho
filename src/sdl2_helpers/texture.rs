@@ -21,6 +21,8 @@ impl<'c, T> moho::Loader<'c> for TextureCreator<T> {
 
 impl<'c, T> resource::Loader<'c, Texture<'c>> for TextureCreator<T> {
     type Args = str;
+    type Error = Error;
+
     fn load(&'c self, path: &str) -> Result<Texture<'c>> {
         self.load_texture(path).map_err(Into::into)
     }

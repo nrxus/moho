@@ -23,7 +23,7 @@ struct Helper<F> {
 impl<F: Font> Helper<F> {
     fn load<'f, FL>(font_loader: &'f FL) -> Result<Self>
     where
-        FL: font::Loader<'f, Font = F>,
+        FL: font::Loader<'f, Font = F, Error = Error>,
     {
         let font_details = font::Details {
             path: "examples/fonts/kenpixel_mini.ttf",
@@ -127,7 +127,7 @@ struct Scene<T> {
 impl<T: Texture> Scene<T> {
     fn load<'t, F, TL>(world: &World, font: &F, loader: &'t TL) -> Result<Self>
     where
-        TL: texture::Loader<'t, Texture = T>,
+        TL: texture::Loader<'t, Texture = T, Error = Error>,
         F: Font<Texture = T>,
     {
         let background = loader.load("examples/background.png")?;
