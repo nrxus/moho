@@ -7,56 +7,61 @@ use std::time::Duration;
 pub mod fixed;
 pub use self::fixed::FixedUpdate;
 
-type GameState<W, S> = Result<State<Snapshot<W, S>, ()>>;
+type GameState<W, A, S> = Result<State<Snapshot<W, A, S>, ()>>;
 
-pub trait Runner<W, S> {
+pub trait Runner<W, A, S> {
     fn tick(&mut self, world: W, time: &timer::GameTime) -> W;
     fn update(&mut self, world: W, elapsed: Duration) -> State<W, ()>;
-    fn draw(&mut self, snapshot: Snapshot<&W, &S>) -> Result<()>;
+    fn advance(&mut self, assets: A, world: &W, step: &S) -> Result<A>;
     fn time(&mut self) -> timer::GameTime;
 }
 
 #[derive(Clone, Debug)]
-pub struct Snapshot<W, S> {
+pub struct Snapshot<W, A, S> {
     pub world: W,
+    pub assets: A,
     pub step_state: S,
 }
 
-impl<W, S: Default> Snapshot<W, S> {
-    pub fn new<T>(world: W) -> Self
+impl<W, A, S: Default> Snapshot<W, A, S> {
+    pub fn new<T>(world: W, assets: A) -> Self
     where
         T: Step<State = S>,
     {
         Snapshot {
             world,
+            assets,
             step_state: S::default(),
         }
     }
 }
 
-impl<W, S> Snapshot<W, S> {
-    pub fn as_ref<'s>(&'s self) -> Snapshot<&'s W, &'s S> {
+impl<W, A, S> Snapshot<W, A, S> {
+    pub fn as_ref<'s>(&'s self) -> Snapshot<&'s W, &'s A, &'s S> {
         Snapshot {
             world: &self.world,
+            assets: &self.assets,
             step_state: &self.step_state,
         }
     }
 
-    pub fn split<T, F>(self, f: F) -> Snapshot<T, S>
+    pub fn split<T, F>(self, f: F) -> Snapshot<T, A, S>
     where
         F: FnOnce(W) -> T,
     {
         Snapshot {
             world: f(self.world),
+            assets: self.assets,
             step_state: self.step_state,
         }
     }
 }
 
-impl<'a, W: Clone, S: Clone> Snapshot<&'a W, &'a S> {
-    pub fn cloned(&self) -> Snapshot<W, S> {
+impl<'a, W: Clone, A: Clone, S: Clone> Snapshot<&'a W, &'a A, &'a S> {
+    pub fn cloned(&self) -> Snapshot<W, A, S> {
         Snapshot {
             world: W::clone(self.world),
+            assets: A::clone(self.assets),
             step_state: S::clone(self.step_state),
         }
     }
@@ -65,11 +70,11 @@ impl<'a, W: Clone, S: Clone> Snapshot<&'a W, &'a S> {
 pub trait Step {
     type State: Default;
 
-    fn step<W, R: Runner<W, Self::State>>(
+    fn step<W, A, R: Runner<W, A, Self::State>>(
         &self,
-        snapshot: Snapshot<W, Self::State>,
+        snapshot: Snapshot<W, A, Self::State>,
         runner: &mut R,
-    ) -> GameState<W, Self::State>;
+    ) -> GameState<W, A, Self::State>;
 }
 
 #[cfg(test)]
@@ -82,19 +87,21 @@ pub mod mock {
         pub ticks: Vec<timer::GameTime>,
     }
 
+    #[derive(Default, Clone, Debug, PartialEq)]
+    pub struct Assets<S> {
+        pub world: World,
+        pub step: S,
+    }
+
     #[derive(Default)]
-    pub struct MockRunner<S> {
+    pub struct MockRunner {
         time_count: usize,
         pub time_stubs: Vec<timer::GameTime>,
         pub quit_on_update: bool,
-        pub errors_on_draw: bool,
-        pub drawn: Vec<Snapshot<World, S>>,
+        pub errors_on_advance: bool,
     }
 
-    impl<S> Runner<World, S> for MockRunner<S>
-    where
-        S: Clone,
-    {
+    impl<S: Clone> Runner<World, Assets<S>, S> for MockRunner {
         fn update(&mut self, mut world: World, elapsed: Duration) -> State<World, ()> {
             if self.quit_on_update {
                 State::Quit(())
@@ -104,12 +111,14 @@ pub mod mock {
             }
         }
 
-        fn draw(&mut self, snapshot: Snapshot<&World, &S>) -> Result<()> {
-            if self.errors_on_draw {
-                Err("failed to draw".into())
+        fn advance(&mut self, _: Assets<S>, world: &World, step: &S) -> Result<Assets<S>> {
+            if self.errors_on_advance {
+                Err("failed to advance assets".into())
             } else {
-                self.drawn.push(snapshot.cloned());
-                Ok(())
+                Ok(Assets {
+                    world: world.clone(),
+                    step: step.clone(),
+                })
             }
         }
 
@@ -124,13 +133,13 @@ pub mod mock {
         }
     }
 
-    pub trait GameStateHelper<W, S> {
-        fn expect_snapshot(self) -> Snapshot<W, S>;
+    pub trait GameStateHelper<W, A, S> {
+        fn expect_snapshot(self) -> Snapshot<W, A, S>;
         fn expect_quit(self);
     }
 
-    impl<W, S> GameStateHelper<W, S> for GameState<W, S> {
-        fn expect_snapshot(self) -> Snapshot<W, S> {
+    impl<W, A, S> GameStateHelper<W, A, S> for GameState<W, A, S> {
+        fn expect_snapshot(self) -> Snapshot<W, A, S> {
             match self.expect("game state in unexpected error state") {
                 State::Quit(_) => panic!("game state in unexpected quit state"),
                 State::Running(s) => s,

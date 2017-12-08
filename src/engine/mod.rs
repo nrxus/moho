@@ -8,8 +8,6 @@ use state::State;
 use renderer::{Canvas, Show};
 use timer::{self, Timer};
 
-use take_mut;
-
 use std::time::Duration;
 
 pub trait World: Sized {
@@ -22,44 +20,30 @@ pub trait World: Sized {
 }
 
 pub trait NextScene<W, S, H>: Sized {
-    fn next(self, snapshot: step::Snapshot<&W, &S>, helpers: &mut H) -> Result<Self>;
+    fn next(self, world: &W, step: &S, helpers: &mut H) -> Result<Self>;
 }
 
-pub struct App<'a, S, H, R, E>
-where
-    R: 'a,
-    E: 'a,
-{
-    timer: Timer,
-    scene: Result<S>,
-    helpers: H,
-    canvas: &'a mut R,
+pub struct App<'a, E: 'a, H> {
     input_manager: &'a mut input::Manager<E>,
+    helpers: H,
+    timer: Timer,
 }
 
-impl<'a, S, H, R, E> App<'a, S, H, R, E> {
-    pub fn new(
-        scene: S,
-        helpers: H,
-        canvas: &'a mut R,
-        input_manager: &'a mut input::Manager<E>,
-    ) -> Self {
+impl<'a, E, H> App<'a, E, H> {
+    pub fn new(helpers: H, input_manager: &'a mut input::Manager<E>) -> Self {
         App {
-            helpers,
-            canvas,
             input_manager,
-            scene: Ok(scene),
+            helpers,
             timer: Timer::new(),
         }
     }
 }
 
-impl<'a, W, S, H, C, E, D> Runner<W, S> for App<'a, D, H, C, E>
+impl<'a, W, A, S, E, H> Runner<W, A, S> for App<'a, E, H>
 where
     W: World<Quit = ()>,
-    C: Canvas,
+    A: NextScene<W, S, H>,
     E: input::EventPump,
-    D: Show<C> + NextScene<W, S, H>,
 {
     fn tick(&mut self, world: W, time: &timer::GameTime) -> W {
         world.tick(time)
@@ -71,23 +55,8 @@ where
             .flat_map(|input| world.update(input, elapsed))
     }
 
-    fn draw(&mut self, snapshot: step::Snapshot<&W, &S>) -> Result<()> {
-        {
-            let helpers = &mut self.helpers;
-            take_mut::take(&mut self.scene, |scene| {
-                let scene = scene?;
-                scene.next(snapshot, helpers)
-            });
-        }
-        match self.scene {
-            Ok(ref scene) => {
-                self.canvas.clear();
-                self.canvas.show(scene)?;
-                self.canvas.present();
-                Ok(())
-            }
-            Err(ref e) => Err(e.description().into()),
-        }
+    fn advance(&mut self, assets: A, world: &W, step: &S) -> Result<A> {
+        assets.next(world, step, &mut self.helpers)
     }
 
     fn time(&mut self) -> timer::GameTime {
@@ -115,20 +84,24 @@ where
         }
     }
 
-    pub fn run<D, W, H>(&mut self, world: W, scene: D, helpers: H) -> Result<()>
+    pub fn run<A, W, H>(&mut self, world: W, assets: A, helpers: H) -> Result<()>
     where
         W: World<Quit = ()>,
-        D: Show<C> + NextScene<W, S::State, H>,
+        A: Show<C> + NextScene<W, S::State, H>,
     {
-        let mut app: App<D, _, _, _> =
-            App::new(scene, helpers, &mut self.canvas, &mut self.input_manager);
-        let mut snapshot = step::Snapshot::new::<S>(world);
+        let mut app = App::new(helpers, &mut self.input_manager);
+        let mut snapshot = step::Snapshot::new::<S>(world, assets);
         loop {
             match self.step.step(snapshot, &mut app)? {
                 State::Quit(_) => {
                     break;
                 }
-                State::Running(s) => snapshot = s,
+                State::Running(s) => {
+                    self.canvas.clear();
+                    self.canvas.show(&s.assets)?;
+                    self.canvas.present();
+                    snapshot = s;
+                }
             }
         }
         Ok(())

@@ -14,8 +14,6 @@ use moho::shape::{Rectangle, Shape};
 use std::iter;
 use std::time::Duration;
 
-type RefSnapshot<'a, W> = step::Snapshot<&'a W, &'a fixed::State>;
-
 struct Helper<F> {
     font: F,
 }
@@ -44,16 +42,16 @@ struct HoverTextScene<T> {
 }
 
 impl<T: Texture> HoverTextScene<T> {
-    fn load<F: Font<Texture = T>>(snapshot: RefSnapshot<HoverText>, font: &F) -> Result<Self> {
+    fn load<F: Font<Texture = T>>(world: &HoverText, font: &F) -> Result<Self> {
         let texture = {
-            let color = if snapshot.world.is_hovering {
+            let color = if world.is_hovering {
                 ColorRGBA(255, 0, 0, 255)
             } else {
                 ColorRGBA(255, 255, 0, 255)
             };
-            font.texturize(snapshot.world.text, &color)
+            font.texturize(world.text, &color)
         }?;
-        let top_left = glm::to_ivec2(snapshot.world.body.top_left);
+        let top_left = glm::to_ivec2(world.body.top_left);
         let image = texture.at(options::Position::from(top_left));
 
         Ok(HoverTextScene { image })
@@ -113,8 +111,8 @@ impl engine::World for World {
 }
 
 impl<T: Texture, F: Font<Texture = T>> NextScene<World, fixed::State, Helper<F>> for Scene<T> {
-    fn next(self, snapshot: RefSnapshot<World>, helpers: &mut Helper<F>) -> Result<Self> {
-        Self::load_snapshot(snapshot, &helpers.font, self.background)
+    fn next(self, world: &World, _: &fixed::State, helpers: &mut Helper<F>) -> Result<Self> {
+        Self::load_dynamic(world, &helpers.font, self.background)
     }
 }
 
@@ -131,27 +129,21 @@ impl<T: Texture> Scene<T> {
         F: Font<Texture = T>,
     {
         let background = loader.load("examples/background.png")?;
-        let step_state = fixed::State::default();
-        let snapshot = RefSnapshot {
-            world: world,
-            step_state: &step_state,
-        };
-        Self::load_snapshot(snapshot, font, background)
+        Self::load_dynamic(world, font, background)
     }
 
-    fn load_snapshot<F>(snapshot: RefSnapshot<World>, font: &F, background: T) -> Result<Self>
+    fn load_dynamic<F>(world: &World, font: &F, background: T) -> Result<Self>
     where
         F: Font<Texture = T>,
     {
         let fps = {
-            let fps: f64 = snapshot.world.times.iter().sum();
-            let fps = fps / snapshot.world.times.len() as f64;
+            let fps: f64 = world.times.iter().sum();
+            let fps = fps / world.times.len() as f64;
             let fps = format!("{:.1}", fps);
             font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))?
                 .at(align::top(0).right(1280))
         };
-        let text = snapshot.split(|w| &w.text);
-        let text = HoverTextScene::load(text, font)?;
+        let text = HoverTextScene::load(&world.text, font)?;
         Ok(Scene {
             fps,
             text,
