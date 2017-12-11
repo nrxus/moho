@@ -1,18 +1,20 @@
-use super::data::{Data, Frame};
+use super::data::Frame;
 
 use std::time::Duration;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct LimitRun {
-    data: Data,
+    max: u32,
+    duration: Duration,
     frame: Frame,
     remaining_loops: u32,
 }
 
 impl LimitRun {
-    pub fn new(data: Data, loops: u32) -> LimitRun {
+    pub fn new(max: u32, duration: Duration, loops: u32) -> LimitRun {
         LimitRun {
-            data: data,
+            max,
+            duration,
             remaining_loops: loops,
             frame: Frame::default(),
         }
@@ -27,18 +29,18 @@ impl LimitRun {
     }
 
     pub fn num_frames(&self) -> u32 {
-        self.data.max
+        self.max
     }
 
     pub fn animate(&mut self, delta: Duration) -> Option<u32> {
         if self.remaining_loops > 0 {
-            self.frame.advance(delta, self.data.duration);
-            let elapsed_loops = self.frame.index / self.data.max;
+            self.frame.advance(delta, self.duration);
+            let elapsed_loops = self.frame.index / self.max;
             if elapsed_loops >= self.remaining_loops {
                 self.remaining_loops = 0;
                 None
             } else {
-                self.frame.index %= self.data.max;
+                self.frame.index %= self.max;
                 self.remaining_loops -= elapsed_loops;
                 Some(self.frame.index)
             }
@@ -56,6 +58,7 @@ impl LimitRun {
 #[cfg(test)]
 mod test {
     use super::*;
+    use animation::animator::Data;
 
     #[test]
     fn limit_run_start() {

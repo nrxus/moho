@@ -18,7 +18,7 @@ impl Data {
     }
 
     pub fn limit_run_start(self, loops: u32) -> LimitRun {
-        LimitRun::new(self, loops)
+        LimitRun::new(self.max, self.duration, loops)
     }
 }
 
