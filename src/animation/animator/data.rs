@@ -10,14 +10,11 @@ pub struct Data {
 
 impl Data {
     pub fn new(max: u32, duration: Duration) -> Self {
-        Data {
-            max: max,
-            duration: duration,
-        }
+        Data { max, duration }
     }
 
     pub fn start(self) -> Animator {
-        Animator::new(self)
+        Animator::new(self.max, self.duration)
     }
 
     pub fn limit_run_start(self, loops: u32) -> LimitRun {
@@ -25,7 +22,7 @@ impl Data {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct Frame {
     pub index: u32,
     elapsed: Duration,

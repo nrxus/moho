@@ -7,16 +7,18 @@ use self::data::Frame;
 
 use std::time::Duration;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Animator {
-    data: Data,
+    max: u32,
+    duration: Duration,
     frame: Frame,
 }
 
 impl Animator {
-    pub fn new(data: Data) -> Animator {
+    pub fn new(max: u32, duration: Duration) -> Animator {
         Animator {
-            data: data,
+            max,
+            duration,
             frame: Frame::default(),
         }
     }
@@ -26,12 +28,12 @@ impl Animator {
     }
 
     pub fn num_frames(&self) -> u32 {
-        self.data.max
+        self.max
     }
 
     pub fn animate(&mut self, delta: Duration) -> u32 {
-        self.frame.advance(delta, self.data.duration);
-        self.frame.index %= self.data.max;
+        self.frame.advance(delta, self.duration);
+        self.frame.index %= self.max;
         self.frame.index
     }
 
