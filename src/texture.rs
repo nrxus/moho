@@ -13,6 +13,13 @@ pub struct Image<T> {
     pub dst: Destination,
 }
 
+impl<T> Image<T> {
+    pub fn scale(mut self, scale: u32) -> Self {
+        self.dst = self.dst.scale(scale);
+        self
+    }
+}
+
 pub trait Texture: Sized {
     fn dims(&self) -> glm::UVec2;
 
