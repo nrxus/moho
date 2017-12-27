@@ -57,4 +57,14 @@ impl<S, Q> State<S, Q> {
             State::Running(s) => State::Running(s),
         }
     }
+
+    pub fn catch_quit<F>(self, f: F) -> S
+    where
+        F: FnOnce(Q) -> S,
+    {
+        match self {
+            State::Quit(q) => f(q),
+            State::Running(s) => s,
+        }
+    }
 }
