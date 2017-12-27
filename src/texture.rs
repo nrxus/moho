@@ -6,7 +6,7 @@ use resource;
 use glm;
 use std::rc::Rc;
 
-pub type Manager<'l, L: Loader<'l>> = resource::Manager<'l, String, L::Texture, L>;
+pub type Manager<'l, L> = resource::Manager<'l, String, <L as Loader<'l>>::Texture, L>;
 
 pub struct Image<T> {
     pub texture: Rc<T>,

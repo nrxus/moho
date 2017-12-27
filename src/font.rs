@@ -4,7 +4,7 @@ use resource;
 
 use glm;
 
-pub type Manager<'l, L: Loader<'l>> = resource::Manager<'l, Details, L::Font, L>;
+pub type Manager<'l, L> = resource::Manager<'l, Details, <L as Loader<'l>>::Font, L>;
 
 pub trait Font {
     type Texture;
