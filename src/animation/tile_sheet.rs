@@ -1,6 +1,6 @@
-use errors::*;
 use texture::Texture;
 use renderer::{options, Draw, Options, Renderer, Show};
+use Result;
 
 use glm;
 

@@ -1,8 +1,7 @@
-use errors::*;
 use font as moho;
-use renderer;
-use resource;
+use {renderer, resource, Result};
 
+use failure;
 use glm;
 use sdl2::pixels::Color;
 use sdl2::render;
@@ -21,20 +20,16 @@ impl<'t, 'f, T> moho::Font for Font<'t, 'f, T> {
         self.inner
             .size_of(text)
             .map(|(x, y)| glm::uvec2(x, y))
-            .chain_err(|| "error measuring font")
+            .map_err(failure::err_msg)
     }
 
     fn texturize(&self, text: &str, color: &renderer::ColorRGBA) -> Result<Self::Texture> {
         let &renderer::ColorRGBA(red, green, blue, alpha) = color;
         let color = Color::RGBA(red, green, blue, alpha);
-        let surface = self.inner
-            .render(text)
-            .blended(color)
-            .chain_err(|| "error when creating a blended SDL font surface")?;
-
+        let surface = self.inner.render(text).blended(color)?;
         self.creator
             .create_texture_from_surface(&surface)
-            .chain_err(|| "error creating a SDL texture from a font surface")
+            .map_err(Into::into)
     }
 }
 
@@ -47,7 +42,7 @@ impl<'t, T> Loader<'t, T> {
     pub fn load(creator: &'t render::TextureCreator<T>) -> Result<Self> {
         ttf::init()
             .map(|inner| Loader { inner, creator })
-            .chain_err(|| "could not load SDL TTF")
+            .map_err(Into::into)
     }
 }
 
@@ -57,7 +52,6 @@ impl<'f, 't, T> moho::Loader<'f> for Loader<'t, T> {
 
 impl<'f, 't, T> resource::Loader<'f, Font<'t, 'f, T>> for Loader<'t, T> {
     type Args = moho::Details;
-    type Error = Error;
 
     fn load(&'f self, data: &moho::Details) -> Result<Font<'t, 'f, T>> {
         self.inner
@@ -68,6 +62,6 @@ impl<'f, 't, T> resource::Loader<'f, Font<'t, 'f, T>> for Loader<'t, T> {
                     creator: self.creator,
                 }
             })
-            .map_err(Into::into)
+            .map_err(failure::err_msg)
     }
 }

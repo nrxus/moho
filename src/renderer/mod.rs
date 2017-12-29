@@ -2,8 +2,7 @@ pub mod align;
 pub mod options;
 
 pub use self::options::Options;
-
-use errors::*;
+use Result;
 
 use glm;
 use sdl2::rect;

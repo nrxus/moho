@@ -6,10 +6,9 @@ description = "Barebones Rust Game Library"
 license = "MIT"
 
 [dependencies]
-glm = ">=0.2.2"
-num-traits = ">=0.1.36"
-error-chain = ">=0.9"
-take_mut = ">=0.2.0"
+glm = ">=0.2.3"
+num-traits = ">=0.1.41"
+failure = ">=0.1.1"
 
 [dependencies.sdl2]
 version = ">=0.31.0"

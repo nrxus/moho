@@ -1,7 +1,6 @@
-use errors::*;
 use renderer::options::{self, Destination, Options, Position};
 use renderer::{Draw, Renderer, Show};
-use resource;
+use {resource, Result};
 
 use glm;
 use std::rc::Rc;

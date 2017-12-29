@@ -1,9 +1,7 @@
-#[macro_use]
-extern crate error_chain;
+extern crate failure;
 extern crate glm;
 extern crate num_traits;
 extern crate sdl2;
-extern crate take_mut;
 
 mod state;
 pub mod sdl2_helpers;
@@ -18,8 +16,8 @@ pub mod resource;
 pub mod texture;
 pub mod font;
 
+use failure::Error;
+
 pub use state::{Never, RunState, State};
 
-pub mod errors {
-    error_chain!{}
-}
+type Result<T> = std::result::Result<T, Error>;

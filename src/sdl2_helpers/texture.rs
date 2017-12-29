@@ -1,8 +1,8 @@
-use errors::*;
-use resource;
+use {resource, Result};
 use renderer::{self, options};
 use texture as moho;
 
+use failure;
 use glm;
 use sdl2::image::LoadTexture;
 use sdl2::rect::{Point, Rect};
@@ -21,16 +21,15 @@ impl<'c, T> moho::Loader<'c> for TextureCreator<T> {
 
 impl<'c, T> resource::Loader<'c, Texture<'c>> for TextureCreator<T> {
     type Args = str;
-    type Error = Error;
 
     fn load(&'c self, path: &str) -> Result<Texture<'c>> {
-        self.load_texture(path).map_err(Into::into)
+        self.load_texture(path).map_err(failure::err_msg)
     }
 }
 
 impl<'t, T: RenderTarget> renderer::Show<Canvas<T>> for Texture<'t> {
     fn show(&self, renderer: &mut Canvas<T>) -> Result<()> {
-        renderer.copy(self, None, None).map_err(Into::into)
+        renderer.copy(self, None, None).map_err(failure::err_msg)
     }
 }
 
@@ -44,7 +43,7 @@ impl<'t, T: RenderTarget> renderer::Draw<Canvas<T>> for Texture<'t> {
             Rect::new(rect.x, rect.y, rect.z as u32, rect.w as u32)
         });
         match (options.rotation, options.flip) {
-            (None, None) => renderer.copy(self, src, dst).map_err(Into::into),
+            (None, None) => renderer.copy(self, src, dst).map_err(failure::err_msg),
             (r, f) => {
                 let (angle, center) = match r {
                     None => (0., None),
@@ -58,7 +57,7 @@ impl<'t, T: RenderTarget> renderer::Draw<Canvas<T>> for Texture<'t> {
                 };
                 renderer
                     .copy_ex(self, src, dst, angle, center, hflip, vflip)
-                    .map_err(Into::into)
+                    .map_err(failure::err_msg)
             }
         }
     }

@@ -1,6 +1,4 @@
-use errors::*;
-use timer;
-use state::State;
+use {timer, Result, State};
 
 use std::time::Duration;
 

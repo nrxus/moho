@@ -1,14 +1,14 @@
+use Result;
+
 use std::borrow::Borrow;
 use std::collections::HashMap;
-use std::error::Error;
 use std::hash::Hash;
 use std::rc::Rc;
 
 pub trait Loader<'a, T> {
     type Args: ?Sized;
-    type Error: Error;
 
-    fn load(&'a self, data: &Self::Args) -> Result<T, Self::Error>;
+    fn load(&'a self, data: &Self::Args) -> Result<T>;
 }
 
 pub struct Manager<'l, K, R, L>
@@ -31,7 +31,7 @@ where
         }
     }
 
-    pub fn load<D>(&mut self, details: &D) -> Result<Rc<R>, L::Error>
+    pub fn load<D>(&mut self, details: &D) -> Result<Rc<R>>
     where
         K: Borrow<D> + for<'b> From<&'b D>,
         L: Loader<'l, R, Args = D>,

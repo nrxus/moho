@@ -2,9 +2,7 @@ pub mod step;
 
 pub use self::step::Step;
 use self::step::Runner;
-use errors::*;
-use input;
-use state::State;
+use {input, Result, State};
 use renderer::{Canvas, Show};
 use timer::{self, Timer};
 
