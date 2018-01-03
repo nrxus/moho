@@ -62,19 +62,19 @@ mod test {
 
     #[test]
     fn limit_run_start() {
-        let animator = Data::new(2, Duration::from_secs(2)).limit_run_start(2);
+        let animator = Data::new(2, Duration::from_secs(2)).start().limit(2);
         assert_eq!(animator.frame(), Some(0));
     }
 
     #[test]
     fn start_no_loops() {
-        let animator = Data::new(2, Duration::from_secs(2)).limit_run_start(0);
+        let animator = Data::new(2, Duration::from_secs(2)).start().limit(0);
         assert_eq!(animator.frame(), None);
     }
 
     #[test]
     fn limit_stops() {
-        let mut animator = Data::new(2, Duration::from_secs(2)).limit_run_start(2);
+        let mut animator = Data::new(2, Duration::from_secs(2)).start().limit(2);
 
         let frame = animator.animate(Duration::from_secs(2));
         assert_eq!(frame, Some(1));
@@ -94,7 +94,7 @@ mod test {
 
     #[test]
     fn restart() {
-        let mut animator = Data::new(2, Duration::from_secs(2)).limit_run_start(1);
+        let mut animator = Data::new(2, Duration::from_secs(2)).start().limit(1);
 
         let frame = animator.animate(Duration::from_secs(5));
         assert_eq!(frame, None);

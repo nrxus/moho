@@ -45,7 +45,7 @@ pub struct LimitRun<T> {
 
 impl<T> LimitRun<T> {
     pub fn from_data(data: Data<T>, loops: u32) -> Self {
-        Self::new(data.animator.limit_run_start(loops), data.sheet)
+        Self::new(data.animator.start().limit(loops), data.sheet)
     }
 
     pub fn new(animator: animator::LimitRun, sheet: TileSheet<T>) -> Self {

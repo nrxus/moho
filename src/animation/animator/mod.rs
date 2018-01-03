@@ -40,6 +40,17 @@ impl Animator {
     pub fn restart(&mut self) {
         self.frame = Frame::default();
     }
+
+    pub fn limit(self, loops: u32) -> LimitRun {
+        LimitRun::new(self.max, self.duration, loops)
+    }
+
+    pub fn stop(self) -> Data {
+        Data {
+            max: self.max,
+            duration: self.duration,
+        }
+    }
 }
 
 #[cfg(test)]

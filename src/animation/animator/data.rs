@@ -1,4 +1,4 @@
-use super::{Animator, LimitRun};
+use super::Animator;
 
 use std::time::Duration;
 
@@ -15,10 +15,6 @@ impl Data {
 
     pub fn start(self) -> Animator {
         Animator::new(self.max, self.duration)
-    }
-
-    pub fn limit_run_start(self, loops: u32) -> LimitRun {
-        LimitRun::new(self.max, self.duration, loops)
     }
 }
 

@@ -51,6 +51,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use failure;
+
     type LoadTracker = Rc<Cell<Counter>>;
 
     #[test]
@@ -115,15 +118,14 @@ mod tests {
 
     impl<'a> Loader<'a, MockResource> for MockLoader {
         type Args = str;
-        type Error = ::errors::Error;
 
-        fn load(&self, data: &str) -> ::errors::Result<MockResource> {
+        fn load(&self, data: &str) -> Result<MockResource> {
             let mut counter = self.tracker.get();
             counter.increase();
             self.tracker.set(counter);
             match self.error {
                 None => Ok(MockResource { path: data.into() }),
-                Some(ref e) => Err(e.clone().into()),
+                Some(ref e) => Err(failure::err_msg(e.clone())),
             }
         }
     }

@@ -1,8 +1,8 @@
+extern crate failure;
 extern crate glm;
 extern crate moho;
 extern crate sdl2;
 
-use moho::errors::*;
 use moho::input;
 use moho::font::{self, Font};
 use moho::texture::{self, Texture};
@@ -24,9 +24,9 @@ where
 impl<'f, 't, TL, FL, R, E> MainGame<'f, 't, TL, FL, R, E>
 where
     E: input::EventPump,
-    TL: texture::Loader<'t, Error = Error>,
+    TL: texture::Loader<'t>,
     TL::Texture: Texture + Draw<R>,
-    FL: font::Loader<'f, Error = Error>,
+    FL: font::Loader<'f>,
     FL::Font: Font<Texture = TL::Texture>,
     R: Canvas,
 {
@@ -42,7 +42,7 @@ where
         }
     }
 
-    pub fn run(&mut self) -> Result<()> {
+    pub fn run(&mut self) -> Result<(), failure::Error> {
         let image = self.texture_manager.load("examples/background.png")?;
         let font_details = font::Details {
             path: "examples/fonts/kenpixel_mini.ttf",
@@ -85,7 +85,7 @@ where
         button_text: &str,
         image: &TL::Texture,
         renderer: &mut R,
-    ) -> Result<()> {
+    ) -> Result<(), failure::Error> {
         let game_time = timer.update();
         let cursor_position = input.mouse_coords();
         let color = if rect.contains(&glm::to_dvec2(cursor_position)) {

@@ -1,9 +1,9 @@
+extern crate failure;
 extern crate glm;
 extern crate moho;
 extern crate sdl2;
 
 use moho::engine::{self, Engine, NextScene};
-use moho::errors::*;
 use moho::{input, timer};
 use moho::engine::step::{self, fixed};
 use moho::font::{self, Font};
@@ -14,6 +14,8 @@ use moho::shape::{Rectangle, Shape};
 use std::iter;
 use std::time::Duration;
 
+type Result<T> = std::result::Result<T, failure::Error>;
+
 struct Helper<F> {
     font: F,
 }
@@ -21,7 +23,7 @@ struct Helper<F> {
 impl<F: Font> Helper<F> {
     fn load<'f, FL>(font_loader: &'f FL) -> Result<Self>
     where
-        FL: font::Loader<'f, Font = F, Error = Error>,
+        FL: font::Loader<'f, Font = F>,
     {
         let font_details = font::Details {
             path: "examples/fonts/kenpixel_mini.ttf",
@@ -125,7 +127,7 @@ struct Scene<T> {
 impl<T: Texture> Scene<T> {
     fn load<'t, F, TL>(world: &World, font: &F, loader: &'t TL) -> Result<Self>
     where
-        TL: texture::Loader<'t, Texture = T, Error = Error>,
+        TL: texture::Loader<'t, Texture = T>,
         F: Font<Texture = T>,
     {
         let background = loader.load("examples/background.png")?;

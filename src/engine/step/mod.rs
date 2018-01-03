@@ -34,37 +34,6 @@ impl<W, A, S: Default> Snapshot<W, A, S> {
     }
 }
 
-impl<W, A, S> Snapshot<W, A, S> {
-    pub fn as_ref<'s>(&'s self) -> Snapshot<&'s W, &'s A, &'s S> {
-        Snapshot {
-            world: &self.world,
-            assets: &self.assets,
-            step_state: &self.step_state,
-        }
-    }
-
-    pub fn split<T, F>(self, f: F) -> Snapshot<T, A, S>
-    where
-        F: FnOnce(W) -> T,
-    {
-        Snapshot {
-            world: f(self.world),
-            assets: self.assets,
-            step_state: self.step_state,
-        }
-    }
-}
-
-impl<'a, W: Clone, A: Clone, S: Clone> Snapshot<&'a W, &'a A, &'a S> {
-    pub fn cloned(&self) -> Snapshot<W, A, S> {
-        Snapshot {
-            world: W::clone(self.world),
-            assets: A::clone(self.assets),
-            step_state: S::clone(self.step_state),
-        }
-    }
-}
-
 pub trait Step {
     type State: Default;
 
@@ -78,6 +47,8 @@ pub trait Step {
 #[cfg(test)]
 pub mod mock {
     use super::*;
+
+    use failure;
 
     #[derive(Default, Clone, Debug, PartialEq)]
     pub struct World {
@@ -111,7 +82,7 @@ pub mod mock {
 
         fn advance(&mut self, _: Assets<S>, world: &World, step: &S) -> Result<Assets<S>> {
             if self.errors_on_advance {
-                Err("failed to advance assets".into())
+                Err(failure::err_msg("failed to advance assets"))
             } else {
                 Ok(Assets {
                     world: world.clone(),
