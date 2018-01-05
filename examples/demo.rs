@@ -112,7 +112,6 @@ where
     }
 }
 
-
 fn main() {
     const WINDOW_WIDTH: u32 = 1280;
     const WINDOW_HEIGHT: u32 = 720;

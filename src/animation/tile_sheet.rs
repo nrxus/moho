@@ -13,7 +13,6 @@ pub struct TileSheet<T> {
     pub dimensions: glm::UVec2,
 }
 
-
 // https://github.com/rust-lang/rust/issues/40754
 // Generics whose type params do not implement Clone, cannot derive Clone
 // Manual implementation of it

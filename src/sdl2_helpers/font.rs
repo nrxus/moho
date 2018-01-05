@@ -56,11 +56,9 @@ impl<'f, 't, T> resource::Loader<'f, Font<'t, 'f, T>> for Loader<'t, T> {
     fn load(&'f self, data: &moho::Details) -> Result<Font<'t, 'f, T>> {
         self.inner
             .load_font(data.path, data.size)
-            .map(|inner| {
-                Font {
-                    inner,
-                    creator: self.creator,
-                }
+            .map(|inner| Font {
+                inner,
+                creator: self.creator,
             })
             .map_err(failure::err_msg)
     }

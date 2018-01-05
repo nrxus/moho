@@ -213,7 +213,6 @@ fn mouse_releases() {
         assert_eq!(state.did_release_mouse(MouseButton::Left), true);
     }
 
-
     {
         // Right button is clicked; left button is not clicked and not released recently
         let state = subject.update().expect();

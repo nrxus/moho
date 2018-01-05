@@ -89,9 +89,7 @@ where
         fn pick_min(projections: &[glm::DVec2]) -> glm::DVec2 {
             projections
                 .iter()
-                .min_by(|&&x, &&y| {
-                    glm::length(x).partial_cmp(&glm::length(y)).unwrap()
-                })
+                .min_by(|&&x, &&y| glm::length(x).partial_cmp(&glm::length(y)).unwrap())
                 .cloned()
                 .unwrap()
         }
