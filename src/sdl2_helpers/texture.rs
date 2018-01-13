@@ -33,15 +33,18 @@ impl<'t, T: RenderTarget> renderer::Show<Canvas<T>> for Texture<'t> {
     }
 }
 
+impl From<renderer::options::Destination> for Rect {
+    fn from(dst: renderer::options::Destination) -> Rect {
+        Rect::new(dst.tl.x, dst.tl.y, dst.dims.x, dst.dims.y)
+    }
+}
+
 impl<'t, T: RenderTarget> renderer::Draw<Canvas<T>> for Texture<'t> {
     fn draw(&self, options: renderer::Options, renderer: &mut Canvas<T>) -> Result<()> {
         let src = options
             .src
             .map(|r| Rect::new(r.x as i32, r.y as i32, r.z, r.w));
-        let dst = options.dst.map(|d| {
-            let rect = d.rect();
-            Rect::new(rect.x, rect.y, rect.z as u32, rect.w as u32)
-        });
+        let dst = options.dst.map(Into::into);
         match (options.rotation, options.flip) {
             (None, None) => renderer.copy(self, src, dst).map_err(failure::err_msg),
             (r, f) => {

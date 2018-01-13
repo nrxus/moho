@@ -22,9 +22,25 @@ pub struct Position {
 
 impl Position {
     pub fn dims(self, dims: glm::UVec2) -> Destination {
+        let top = {
+            let align::Alignment { align, pos } = self.vertical;
+            match align {
+                align::Vertical::Top => pos,
+                align::Vertical::Middle => pos - (dims.y / 2) as i32,
+                align::Vertical::Bottom => pos - dims.y as i32,
+            }
+        };
+        let left = {
+            let align::Alignment { align, pos } = self.horizontal;
+            match align {
+                align::Horizontal::Left => pos,
+                align::Horizontal::Center => pos - (dims.x / 2) as i32,
+                align::Horizontal::Right => pos - dims.x as i32,
+            }
+        };
         Destination {
-            pos: self,
-            dims: dims,
+            tl: glm::ivec2(top, left),
+            dims,
         }
     }
 
@@ -37,30 +53,14 @@ impl Position {
 
 #[derive(Debug, Clone, Copy)]
 pub struct Destination {
-    pub pos: Position,
+    pub tl: glm::IVec2,
     pub dims: glm::UVec2,
 }
 
 impl Destination {
-    pub fn rect(&self) -> glm::IVec4 {
-        let dims = glm::to_ivec2(self.dims);
-        let top = {
-            let align::Alignment { align, pos } = self.pos.vertical;
-            match align {
-                align::Vertical::Top => pos,
-                align::Vertical::Middle => pos - dims.y / 2,
-                align::Vertical::Bottom => pos - dims.y,
-            }
-        };
-        let left = {
-            let align::Alignment { align, pos } = self.pos.horizontal;
-            match align {
-                align::Horizontal::Left => pos,
-                align::Horizontal::Center => pos - dims.x / 2,
-                align::Horizontal::Right => pos - dims.x,
-            }
-        };
-        glm::ivec4(left, top, dims.x, dims.y)
+    pub fn nudge(self, nudge: glm::IVec2) -> Self {
+        let tl = self.tl + nudge;
+        Destination { tl, ..self }
     }
 
     pub fn scale(self, scale: u32) -> Destination {
@@ -71,8 +71,10 @@ impl Destination {
 
 impl From<glm::IVec4> for Destination {
     fn from(rect: glm::IVec4) -> Destination {
-        let dims = glm::uvec2(rect.z as u32, rect.w as u32);
-        align::left(rect.x).top(rect.y).dims(dims)
+        Destination {
+            tl: glm::ivec2(rect.x, rect.y),
+            dims: glm::uvec2(rect.z as u32, rect.w as u32),
+        }
     }
 }
 
