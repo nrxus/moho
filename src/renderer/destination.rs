@@ -27,7 +27,7 @@ impl Position {
             }
         };
         Destination {
-            tl: glm::ivec2(top, left),
+            tl: glm::ivec2(left, top),
             dims,
         }
     }
