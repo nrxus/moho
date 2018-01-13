@@ -33,8 +33,8 @@ impl<'t, T: RenderTarget> renderer::Show<Canvas<T>> for Texture<'t> {
     }
 }
 
-impl From<renderer::options::Destination> for Rect {
-    fn from(dst: renderer::options::Destination) -> Rect {
+impl From<renderer::Destination> for Rect {
+    fn from(dst: renderer::Destination) -> Rect {
         Rect::new(dst.tl.x, dst.tl.y, dst.dims.x, dst.dims.y)
     }
 }

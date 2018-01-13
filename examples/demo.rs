@@ -6,7 +6,7 @@ extern crate sdl2;
 use moho::input;
 use moho::font::{self, Font};
 use moho::texture::{self, Texture};
-use moho::renderer::{align, options, Canvas, ColorRGBA, Draw};
+use moho::renderer::{align, options, Canvas, ColorRGBA, Draw, Position};
 use moho::shape::*;
 use moho::timer::*;
 
@@ -94,8 +94,7 @@ where
             ColorRGBA(255, 255, 0, 255)
         };
         let button_texture = font.texturize(button_text, &color)?;
-        let button_dst =
-            options::Position::from(glm::to_ivec2(rect.top_left)).dims(button_texture.dims());
+        let button_dst = Position::from(glm::to_ivec2(rect.top_left)).dims(button_texture.dims());
         let fps = format!("{}", game_time.fps() as u32);
         let font_texture = font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))?;
         let font_dst = align::top(0).right(1280).dims(font_texture.dims());

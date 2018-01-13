@@ -1,11 +1,12 @@
 pub mod align;
 pub mod options;
+mod destination;
 
+pub use self::destination::{Destination, Position};
 pub use self::options::Options;
 use Result;
 
 use glm;
-use sdl2::rect;
 
 #[derive(Clone, Copy, Debug)]
 pub struct ColorRGBA(pub u8, pub u8, pub u8, pub u8);
@@ -29,8 +30,8 @@ pub trait Canvas: Renderer {
 
 pub trait Renderer {
     fn set_draw_color(&mut self, color: ColorRGBA);
-    fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
-    fn draw_rects(&mut self, rects: &[rect::Rect]) -> Result<()>;
+    fn fill_rects(&mut self, rects: &[Destination]) -> Result<()>;
+    fn draw_rects(&mut self, rects: &[Destination]) -> Result<()>;
 
     /// Default implemenations for drawing assets
     fn draw<A: Draw<Self>>(&mut self, asset: &A, options: Options) -> Result<()> {

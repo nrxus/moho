@@ -54,7 +54,7 @@ impl<T: Texture> HoverTextScene<T> {
             font.texturize(world.text, &color)
         }?;
         let top_left = glm::to_ivec2(world.body.top_left);
-        let image = texture.at(options::Position::from(top_left));
+        let image = texture.at(renderer::Position::from(top_left));
 
         Ok(HoverTextScene { image })
     }

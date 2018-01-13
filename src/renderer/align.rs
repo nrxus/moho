@@ -1,4 +1,4 @@
-use super::options::Position;
+use renderer::Position;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Vertical {

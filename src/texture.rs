@@ -1,5 +1,5 @@
-use renderer::options::{self, Destination, Options, Position};
-use renderer::{Draw, Renderer, Show};
+use renderer::options::{self, Options};
+use renderer::{Destination, Draw, Position, Renderer, Show};
 use {resource, Result};
 
 use glm;

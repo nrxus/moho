@@ -5,7 +5,7 @@ use {renderer, Result};
 
 use failure;
 use glm;
-use sdl2::{pixels, rect, render};
+use sdl2::{pixels, render};
 use sdl2::render::RenderTarget;
 
 impl<T: RenderTarget> renderer::Canvas for render::Canvas<T> {
@@ -25,12 +25,14 @@ impl<T: RenderTarget> renderer::Renderer for render::Canvas<T> {
         self.set_draw_color(color)
     }
 
-    fn fill_rects(&mut self, rects: &[rect::Rect]) -> Result<()> {
-        self.fill_rects(rects).map_err(failure::err_msg)
+    fn fill_rects(&mut self, rects: &[renderer::Destination]) -> Result<()> {
+        self.fill_rects(&rects.iter().cloned().map(Into::into).collect::<Vec<_>>())
+            .map_err(failure::err_msg)
     }
 
-    fn draw_rects(&mut self, rects: &[rect::Rect]) -> Result<()> {
-        self.draw_rects(rects).map_err(failure::err_msg)
+    fn draw_rects(&mut self, rects: &[renderer::Destination]) -> Result<()> {
+        self.draw_rects(&rects.iter().cloned().map(Into::into).collect::<Vec<_>>())
+            .map_err(failure::err_msg)
     }
 }
 
