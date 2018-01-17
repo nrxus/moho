@@ -48,7 +48,7 @@ impl Destination {
                 align::Horizontal::Right => pos - dims.x,
             }
         };
-        glm::ivec2(top, left)
+        glm::ivec2(left, top)
     }
 
     pub fn nudge(self, nudge: glm::IVec2) -> Self {
