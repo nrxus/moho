@@ -35,8 +35,7 @@ impl<'t, T: RenderTarget> renderer::Show<Canvas<T>> for Texture<'t> {
 
 impl From<renderer::Destination> for Rect {
     fn from(dst: renderer::Destination) -> Rect {
-        let tl = dst.tl();
-        Rect::new(tl.x, tl.y, dst.dims.x, dst.dims.y)
+        Rect::new(dst.left(), dst.top(), dst.dims.x, dst.dims.y)
     }
 }
 

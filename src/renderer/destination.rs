@@ -30,25 +30,64 @@ pub struct Destination {
 }
 
 impl Destination {
-    pub fn tl(&self) -> glm::IVec2 {
-        let dims = glm::to_ivec2(self.dims);
-        let top = {
-            let align::Alignment { align, pos } = self.pos.vertical;
-            match align {
-                align::Vertical::Top => pos,
-                align::Vertical::Middle => pos - dims.y / 2,
-                align::Vertical::Bottom => pos - dims.y,
-            }
-        };
-        let left = {
-            let align::Alignment { align, pos } = self.pos.horizontal;
-            match align {
-                align::Horizontal::Left => pos,
-                align::Horizontal::Center => pos - dims.x / 2,
-                align::Horizontal::Right => pos - dims.x,
-            }
-        };
-        glm::ivec2(left, top)
+    pub fn top(&self) -> i32 {
+        let height = self.dims.y as i32;
+        let align::Alignment { align, pos } = self.pos.vertical;
+        match align {
+            align::Vertical::Top => pos,
+            align::Vertical::Middle => pos - height / 2,
+            align::Vertical::Bottom => pos - height,
+        }
+    }
+
+    pub fn middle(&self) -> i32 {
+        let height = self.dims.y as i32;
+        let align::Alignment { align, pos } = self.pos.vertical;
+        match align {
+            align::Vertical::Top => pos + height / 2,
+            align::Vertical::Middle => pos,
+            align::Vertical::Bottom => pos - height / 2,
+        }
+    }
+
+    pub fn bottom(&self) -> i32 {
+        let height = self.dims.y as i32;
+        let align::Alignment { align, pos } = self.pos.vertical;
+        match align {
+            align::Vertical::Top => pos + height,
+            align::Vertical::Middle => pos + height / 2,
+            align::Vertical::Bottom => pos,
+        }
+    }
+
+    pub fn left(&self) -> i32 {
+        let width = self.dims.x as i32;
+        let align::Alignment { align, pos } = self.pos.horizontal;
+        match align {
+            align::Horizontal::Left => pos,
+            align::Horizontal::Center => pos - width / 2,
+            align::Horizontal::Right => pos - width,
+        }
+    }
+
+    pub fn center(&self) -> i32 {
+        let width = self.dims.x as i32;
+        let align::Alignment { align, pos } = self.pos.horizontal;
+        match align {
+            align::Horizontal::Left => pos + width / 2,
+            align::Horizontal::Center => pos,
+            align::Horizontal::Right => pos - width / 2,
+        }
+    }
+
+    pub fn right(&self) -> i32 {
+        let width = self.dims.x as i32;
+        let align::Alignment { align, pos } = self.pos.horizontal;
+        match align {
+            align::Horizontal::Left => pos + width,
+            align::Horizontal::Center => pos + width / 2,
+            align::Horizontal::Right => pos,
+        }
     }
 
     pub fn nudge(self, nudge: glm::IVec2) -> Self {
