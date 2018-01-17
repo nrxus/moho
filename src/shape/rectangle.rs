@@ -2,7 +2,7 @@ use super::{Axis, Circle, FindMtv, Intersect, Line, Shape};
 
 use glm;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Rectangle {
     pub dims: glm::DVec2,
     pub top_left: glm::DVec2,
@@ -42,16 +42,18 @@ impl Shape for Rectangle {
             && !(self.top_left.y > point.y) && !(self.top_left.y + self.dims.y < point.y)
     }
 
-    fn nudge(&self, nudge: glm::DVec2) -> Rectangle {
-        let &Rectangle { top_left, dims } = self;
-        let top_left = top_left + nudge;
-        Rectangle { top_left, dims }
+    fn nudge(self, nudge: glm::DVec2) -> Rectangle {
+        Rectangle {
+            top_left: self.top_left + nudge,
+            ..self
+        }
     }
 
-    fn center_at(&self, center: glm::DVec2) -> Rectangle {
-        let &Rectangle { dims, .. } = self;
-        let top_left = center - dims / 2.;
-        Rectangle { top_left, dims }
+    fn center_at(self, center: glm::DVec2) -> Rectangle {
+        Rectangle {
+            top_left: center - self.dims / 2.,
+            ..self
+        }
     }
 }
 

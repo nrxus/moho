@@ -2,6 +2,8 @@ use super::{Axis, FindMtv, Intersect, Line, Rectangle, Shape};
 
 use glm;
 
+use std::iter;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Circle {
     pub radius: f64,
@@ -18,15 +20,15 @@ impl Shape for Circle {
         distance < self.radius
     }
 
-    fn nudge(&self, nudge: glm::DVec2) -> Circle {
-        let &Circle { center, radius } = self;
-        let center = center + nudge;
-        Circle { center, radius }
+    fn nudge(self, nudge: glm::DVec2) -> Circle {
+        Circle {
+            center: self.center + nudge,
+            ..self
+        }
     }
 
-    fn center_at(&self, center: glm::DVec2) -> Circle {
-        let &Circle { radius, .. } = self;
-        Circle { center, radius }
+    fn center_at(self, center: glm::DVec2) -> Circle {
+        Circle { center, ..self }
     }
 }
 
@@ -47,7 +49,7 @@ impl Intersect<Rectangle> for Circle {
         fixed
             .axes()
             .iter()
-            .chain([circle_axis].iter())
+            .chain(iter::once(&circle_axis))
             .map(|a| a.mtv_circle(&verts, self))
             .find_mtv(self, fixed)
     }

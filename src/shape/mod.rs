@@ -16,8 +16,8 @@ pub trait Intersect<S> {
 pub trait Shape {
     fn center(&self) -> glm::DVec2;
     fn contains(&self, point: &glm::DVec2) -> bool;
-    fn nudge(&self, nudge: glm::DVec2) -> Self;
-    fn center_at(&self, center: glm::DVec2) -> Self;
+    fn nudge(self, nudge: glm::DVec2) -> Self;
+    fn center_at(self, center: glm::DVec2) -> Self;
 
     fn distance<S: Shape>(&self, other: &S) -> f64 {
         glm::distance(self.center(), other.center())
@@ -56,7 +56,7 @@ impl Axis {
         let &Axis(axis) = self;
         let min = verts
             .iter()
-            .map(|v| glm::dot(axis, *v))
+            .map(|&v| glm::dot(axis, v))
             .min_by(|x, y| x.partial_cmp(y).unwrap())
             .unwrap();
 
@@ -86,23 +86,10 @@ where
         S1: Shape,
         S2: Shape,
     {
-        fn pick_min(projections: &[glm::DVec2]) -> glm::DVec2 {
-            projections
-                .iter()
-                .min_by(|&&x, &&y| glm::length(x).partial_cmp(&glm::length(y)).unwrap())
-                .cloned()
-                .unwrap()
-        }
-
-        self.collect::<Option<Vec<_>>>()
-            .map(|p| pick_min(&p))
-            .map(|v| {
-                let p = glm::dot(object.center() - fixed.center(), v);
-                if p < 0. {
-                    v * -1.
-                } else {
-                    v
-                }
-            })
+        let mtvs: Vec<_> = self.collect::<Option<_>>()?;
+        let min = *mtvs.iter()
+            .min_by(|&&x, &&y| glm::length(x).partial_cmp(&glm::length(y)).unwrap())?;
+        let reversed = glm::dot(object.center() - fixed.center(), min) < 0.;
+        Some(if reversed { min * -1. } else { min })
     }
 }
