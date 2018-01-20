@@ -20,8 +20,7 @@ impl<T> Clone for TileSheet<T> {
     fn clone(&self) -> TileSheet<T> {
         TileSheet {
             texture: Rc::clone(&self.texture),
-            tiles: self.tiles,
-            dimensions: self.dimensions,
+            ..*self
         }
     }
 }
@@ -39,18 +38,17 @@ impl<T> Clone for Tile<T> {
     fn clone(&self) -> Tile<T> {
         Tile {
             texture: Rc::clone(&self.texture),
-            src: self.src,
+            ..*self
         }
     }
 }
 
 impl<T: Texture> TileSheet<T> {
     pub fn new(tiles: glm::UVec2, texture: Rc<T>) -> Self {
-        let dimensions = texture.dims() / tiles;
         TileSheet {
-            texture: texture,
-            dimensions: dimensions,
-            tiles: tiles,
+            dimensions: texture.dims() / tiles,
+            texture,
+            tiles,
         }
     }
 }
@@ -63,7 +61,7 @@ impl<T> TileSheet<T> {
 
         Tile {
             texture: Rc::clone(&self.texture),
-            src: src,
+            src,
         }
     }
 }

@@ -20,10 +20,7 @@ impl<T> Animation<T> {
     }
 
     pub fn new(animator: Animator, sheet: TileSheet<T>) -> Self {
-        Animation {
-            animator: animator,
-            sheet: sheet,
-        }
+        Animation { animator, sheet }
     }
 
     pub fn animate(&mut self, delta: Duration) -> Tile<T> {
@@ -49,10 +46,7 @@ impl<T> LimitRun<T> {
     }
 
     pub fn new(animator: animator::LimitRun, sheet: TileSheet<T>) -> Self {
-        LimitRun {
-            animator: animator,
-            sheet: sheet,
-        }
+        LimitRun { animator, sheet }
     }
 
     pub fn animate(&mut self, delta: Duration) -> Option<Tile<T>> {

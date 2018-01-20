@@ -13,18 +13,15 @@ pub struct Data<T> {
 impl<T> Clone for Data<T> {
     fn clone(&self) -> Data<T> {
         Data {
-            animator: self.animator,
             sheet: self.sheet.clone(),
+            ..*self
         }
     }
 }
 
 impl<T> Data<T> {
-    pub fn new(data: animator::Data, sheet: TileSheet<T>) -> Data<T> {
-        Data {
-            animator: data,
-            sheet: sheet,
-        }
+    pub fn new(animator: animator::Data, sheet: TileSheet<T>) -> Data<T> {
+        Data { animator, sheet }
     }
 
     pub fn start(self) -> Animation<T> {

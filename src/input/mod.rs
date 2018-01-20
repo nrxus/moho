@@ -12,9 +12,7 @@ struct EventGenerator<E> {
 
 impl<E> EventGenerator<E> {
     fn new(event_pump: E) -> Self {
-        EventGenerator {
-            event_pump: event_pump,
-        }
+        EventGenerator { event_pump }
     }
 
     fn iter(&mut self) -> EventIterator<E> {

@@ -27,7 +27,7 @@ where
     pub fn new(loader: &'l L) -> Self {
         Manager {
             cache: HashMap::new(),
-            loader: loader,
+            loader,
         }
     }
 
@@ -39,7 +39,7 @@ where
     {
         self.cache.get(details).cloned().map_or_else(
             || {
-                let resource = Rc::new(self.loader.load(details)?);
+                let resource = self.loader.load(details).map(Rc::new)?;
                 self.cache.insert(details.into(), Rc::clone(&resource));
                 Ok(resource)
             },
