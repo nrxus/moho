@@ -1,6 +1,8 @@
 extern crate failure;
 extern crate glm;
 extern crate moho;
+#[macro_use]
+extern crate moho_derive;
 extern crate sdl2;
 
 use moho::engine::{self, Engine, NextScene};
@@ -39,6 +41,7 @@ struct HoverText {
     is_hovering: bool,
 }
 
+#[derive(Show)]
 struct HoverTextScene<T> {
     image: Image<T>,
 }
@@ -57,12 +60,6 @@ impl<T: Texture> HoverTextScene<T> {
         let image = texture.at(renderer::Position::from(top_left));
 
         Ok(HoverTextScene { image })
-    }
-}
-
-impl<R: Renderer, T: Draw<R>> renderer::Show<R> for HoverTextScene<T> {
-    fn show(&self, renderer: &mut R) -> Result<()> {
-        renderer.draw(&self.image, options::flip(options::Flip::Horizontal))
     }
 }
 

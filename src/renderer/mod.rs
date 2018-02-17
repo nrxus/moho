@@ -8,11 +8,25 @@ use Result;
 
 use glm;
 
+use std::rc::Rc;
+
 #[derive(Clone, Copy, Debug)]
 pub struct ColorRGBA(pub u8, pub u8, pub u8, pub u8);
 
 pub trait Window {
     fn output_size(&self) -> Result<glm::UVec2>;
+}
+
+impl<R: Renderer, T: Draw<R>> Draw<R> for Rc<T> {
+    fn draw(&self, options: Options, renderer: &mut R) -> Result<()> {
+        renderer.draw(self.as_ref(), options)
+    }
+}
+
+impl<R: Renderer, T: Show<R>> Show<R> for Rc<T> {
+    fn show(&self, renderer: &mut R) -> Result<()> {
+        renderer.show(self.as_ref())
+    }
 }
 
 pub trait Draw<R: ?Sized>: Show<R> {

@@ -68,13 +68,13 @@ impl<T> TileSheet<T> {
 
 impl<R: Renderer, T: Draw<R>> Show<R> for Tile<T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
-        renderer.draw(&*self.texture, options::from(self.src))
+        renderer.draw(&self.texture, options::from(self.src))
     }
 }
 
 impl<R: Renderer, T: Draw<R>> Draw<R> for Tile<T> {
     fn draw(&self, options: Options, renderer: &mut R) -> Result<()> {
-        renderer.draw(&*self.texture, options.from(self.src))
+        renderer.draw(&self.texture, options.from(self.src))
     }
 }
 

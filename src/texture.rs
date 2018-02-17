@@ -37,12 +37,12 @@ pub trait Loader<'a>
 
 impl<R: Renderer, T: Draw<R>> Show<R> for Image<T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
-        renderer.draw(&*self.texture, options::at(self.dst))
+        renderer.draw(&self.texture, options::at(self.dst))
     }
 }
 
 impl<R: Renderer, T: Draw<R>> Draw<R> for Image<T> {
     fn draw(&self, options: Options, renderer: &mut R) -> Result<()> {
-        renderer.draw(&*self.texture, options.at(self.dst))
+        renderer.draw(&self.texture, options.at(self.dst))
     }
 }

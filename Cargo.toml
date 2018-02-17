@@ -9,6 +9,7 @@ license = "MIT"
 glm = ">=0.2.3"
 num-traits = ">=0.1.41"
 failure = ">=0.1.1"
+moho-derive = { path = "moho-derive" }
 
 [dependencies.sdl2]
 version = ">=0.31.0"
