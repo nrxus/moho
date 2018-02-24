@@ -6,7 +6,10 @@ authors = ["Andres <andresnrx@gmail.com>"]
 [dependencies]
 syn = ">=0.12"
 quote = ">=0.4"
-synstructure = ">=0.7"
+
+[dependencies.synstructure]
+git = "https://github.com/nrxus/synstructure"
+branch = "specific_bounds"
 
 [dev-dependencies.moho]
 git = "https://github.com/nrxus/moho"
