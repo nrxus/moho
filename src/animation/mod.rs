@@ -51,7 +51,8 @@ impl<T> LimitRun<T> {
 
     pub fn animate(&mut self, delta: Duration) -> Option<Tile<T>> {
         let frame = self.animator.animate(delta);
-        frame.map(|i| self.sheet.tile(i))
+        let sheet = &self.sheet;
+        frame.map(|i| sheet.tile(i))
     }
 
     pub fn tile(&self) -> Option<Tile<T>> {
@@ -94,9 +95,11 @@ mod tests {
         assert!(animation.tile().is_some());
         assert_eq!(animation.tile().unwrap().src, glm::uvec4(0, 0, 1, 10));
 
-        let tile = animation.animate(Duration::from_secs(6));
-        assert!(tile.is_some());
-        assert_eq!(tile.unwrap().src, glm::uvec4(1, 0, 1, 10));
+        {
+            let tile = animation.animate(Duration::from_secs(6));
+            assert!(tile.is_some());
+            assert_eq!(tile.unwrap().src, glm::uvec4(1, 0, 1, 10));
+        }
 
         let no_tile = animation.animate(Duration::from_secs(10));
         assert!(no_tile.is_none());

@@ -4,47 +4,33 @@ use Result;
 
 use glm;
 
-use std::rc::Rc;
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TileSheet<T> {
-    texture: Rc<T>,
+    texture: T,
     tiles: glm::UVec2,
     pub dimensions: glm::UVec2,
 }
 
-// https://github.com/rust-lang/rust/issues/40754
-// Generics whose type params do not implement Clone, cannot derive Clone
-// Manual implementation of it
-impl<T> Clone for TileSheet<T> {
-    fn clone(&self) -> TileSheet<T> {
-        TileSheet {
-            texture: Rc::clone(&self.texture),
-            ..*self
-        }
-    }
-}
-
 #[derive(Debug)]
-pub struct Tile<T: ?Sized> {
-    pub texture: Rc<T>,
+pub struct Tile<'a, T: 'a> {
+    pub texture: &'a T,
     pub src: glm::UVec4,
 }
 
 // https://github.com/rust-lang/rust/issues/40754
 // Generics whose type params do not implement Clone, cannot derive Clone
 // Manual implementation of it
-impl<T> Clone for Tile<T> {
-    fn clone(&self) -> Tile<T> {
+impl<'a, T> Clone for Tile<'a, T> {
+    fn clone(&self) -> Self {
         Tile {
-            texture: Rc::clone(&self.texture),
+            texture: self.texture,
             ..*self
         }
     }
 }
 
 impl<T: Texture> TileSheet<T> {
-    pub fn new(tiles: glm::UVec2, texture: Rc<T>) -> Self {
+    pub fn new(tiles: glm::UVec2, texture: T) -> Self {
         TileSheet {
             dimensions: texture.dims() / tiles,
             texture,
@@ -60,21 +46,21 @@ impl<T> TileSheet<T> {
         let src = glm::uvec4(position.x, position.y, self.dimensions.x, self.dimensions.y);
 
         Tile {
-            texture: Rc::clone(&self.texture),
+            texture: &self.texture,
             src,
         }
     }
 }
 
-impl<R: Renderer, T: Draw<R>> Show<R> for Tile<T> {
+impl<'a, R: Renderer, T: Draw<R>> Show<R> for Tile<'a, T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
-        renderer.draw(&self.texture, options::from(self.src))
+        renderer.draw(self.texture, options::from(self.src))
     }
 }
 
-impl<R: Renderer, T: Draw<R>> Draw<R> for Tile<T> {
+impl<'a, R: Renderer, T: Draw<R>> Draw<R> for Tile<'a, T> {
     fn draw(&self, options: Options, renderer: &mut R) -> Result<()> {
-        renderer.draw(&self.texture, options.from(self.src))
+        renderer.draw(self.texture, options.from(self.src))
     }
 }
 
@@ -87,10 +73,9 @@ mod tests {
         let texture = MockTexture {
             dims: glm::uvec2(10, 10),
         };
-        let rc_texture = Rc::new(texture);
-        let sheet = TileSheet::new(glm::uvec2(1, 1), Rc::clone(&rc_texture));
+        let sheet = TileSheet::new(glm::uvec2(1, 1), texture);
         let tile = sheet.tile(0);
-        assert_eq!(tile.texture, rc_texture);
+        assert_eq!(*tile.texture, texture);
         assert_eq!(tile.src, glm::uvec4(0, 0, 10, 10));
     }
 
@@ -99,10 +84,9 @@ mod tests {
         let texture = MockTexture {
             dims: glm::uvec2(10, 10),
         };
-        let rc_texture = Rc::new(texture);
-        let sheet = TileSheet::new(glm::uvec2(10, 1), Rc::clone(&rc_texture));
+        let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
         let tile = sheet.tile(4);
-        assert_eq!(tile.texture, rc_texture);
+        assert_eq!(*tile.texture, texture);
         assert_eq!(tile.src, glm::uvec4(4, 0, 1, 10));
     }
 
@@ -111,10 +95,9 @@ mod tests {
         let texture = MockTexture {
             dims: glm::uvec2(10, 10),
         };
-        let rc_texture = Rc::new(texture);
-        let sheet = TileSheet::new(glm::uvec2(1, 5), Rc::clone(&rc_texture));
+        let sheet = TileSheet::new(glm::uvec2(1, 5), texture);
         let tile = sheet.tile(4);
-        assert_eq!(tile.texture, rc_texture);
+        assert_eq!(*tile.texture, texture);
         assert_eq!(tile.src, glm::uvec4(0, 8, 10, 2));
     }
 
@@ -123,14 +106,13 @@ mod tests {
         let texture = MockTexture {
             dims: glm::uvec2(20, 10),
         };
-        let rc_texture = Rc::new(texture);
-        let sheet = TileSheet::new(glm::uvec2(4, 2), Rc::clone(&rc_texture));
+        let sheet = TileSheet::new(glm::uvec2(4, 2), texture);
         let tile = sheet.tile(5);
-        assert_eq!(tile.texture, rc_texture);
+        assert_eq!(*tile.texture, texture);
         assert_eq!(tile.src, glm::uvec4(5, 5, 5, 5));
     }
 
-    #[derive(Debug, PartialEq)]
+    #[derive(Debug, PartialEq, Clone, Copy)]
     struct MockTexture {
         dims: glm::UVec2,
     }
