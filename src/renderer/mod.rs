@@ -29,6 +29,12 @@ impl<R: Renderer, T: Show<R>> Show<R> for Rc<T> {
     }
 }
 
+impl<'a, R: Renderer, T: Show<R>> Show<R> for Vec<T> {
+    fn show(&self, renderer: &mut R) -> Result<()> {
+        self.iter().map(|t| renderer.show(t)).collect()
+    }
+}
+
 pub trait Draw<R: ?Sized>: Show<R> {
     fn draw(&self, options: Options, renderer: &mut R) -> Result<()>;
 }

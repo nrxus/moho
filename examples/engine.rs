@@ -14,6 +14,7 @@ use moho::renderer::{self, align, options, ColorRGBA, Draw, Renderer};
 use moho::shape::{Rectangle, Shape};
 
 use std::iter;
+use std::rc::Rc;
 use std::time::Duration;
 
 type Result<T> = std::result::Result<T, failure::Error>;
@@ -46,7 +47,7 @@ struct HoverTextScene<T> {
     image: Image<T>,
 }
 
-impl<T: Texture> HoverTextScene<T> {
+impl<T: Texture> HoverTextScene<Rc<T>> {
     fn load<F: Font<Texture = T>>(world: &HoverText, font: &F) -> Result<Self> {
         let texture = {
             let color = if world.is_hovering {
@@ -109,7 +110,7 @@ impl engine::World for World {
     }
 }
 
-impl<T: Texture, F: Font<Texture = T>> NextScene<World, fixed::State, Helper<F>> for Scene<T> {
+impl<T: Texture, F: Font<Texture = T>> NextScene<World, fixed::State, Helper<F>> for Scene<Rc<T>> {
     fn next(self, world: &World, _: &fixed::State, helpers: &mut Helper<F>) -> Result<Self> {
         Self::load_dynamic(world, &helpers.font, self.background)
     }
@@ -121,17 +122,17 @@ struct Scene<T> {
     text: HoverTextScene<T>,
 }
 
-impl<T: Texture> Scene<T> {
+impl<T: Texture> Scene<Rc<T>> {
     fn load<'t, F, TL>(world: &World, font: &F, loader: &'t TL) -> Result<Self>
     where
         TL: texture::Loader<'t, Texture = T>,
         F: Font<Texture = T>,
     {
         let background = loader.load("examples/background.png")?;
-        Self::load_dynamic(world, font, background)
+        Self::load_dynamic(world, font, Rc::new(background))
     }
 
-    fn load_dynamic<F>(world: &World, font: &F, background: T) -> Result<Self>
+    fn load_dynamic<F>(world: &World, font: &F, background: Rc<T>) -> Result<Self>
     where
         F: Font<Texture = T>,
     {

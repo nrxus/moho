@@ -8,7 +8,7 @@ use std::rc::Rc;
 pub type Manager<'l, L> = resource::Manager<'l, String, <L as Loader<'l>>::Texture, L>;
 
 pub struct Image<T> {
-    pub texture: Rc<T>,
+    pub texture: T,
     pub dst: Destination,
 }
 
@@ -23,7 +23,7 @@ pub trait Texture: Sized {
     fn dims(&self) -> glm::UVec2;
 
     /// Default implementation for converting to an image
-    fn at(self, position: Position) -> Image<Self> {
+    fn at(self, position: Position) -> Image<Rc<Self>> {
         let dst = position.dims(self.dims());
         let texture = Rc::new(self);
         Image { texture, dst }
