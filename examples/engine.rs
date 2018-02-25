@@ -58,7 +58,7 @@ impl<T: Texture> HoverTextScene<Rc<T>> {
             font.texturize(world.text, &color)
         }?;
         let top_left = glm::to_ivec2(world.body.top_left);
-        let image = texture.at(renderer::Position::from(top_left));
+        let image = Rc::new(texture).at(renderer::Position::from(top_left));
 
         Ok(HoverTextScene { image })
     }
@@ -140,7 +140,8 @@ impl<T: Texture> Scene<Rc<T>> {
             let fps: f64 = world.times.iter().sum();
             let fps = fps / world.times.len() as f64;
             let fps = format!("{:.1}", fps);
-            font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))?
+            font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))
+                .map(Rc::new)?
                 .at(align::top(0).right(1280))
         };
         let text = HoverTextScene::load(&world.text, font)?;

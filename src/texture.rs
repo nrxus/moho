@@ -3,6 +3,7 @@ use renderer::{Destination, Draw, Position, Renderer, Show};
 use {resource, Result};
 
 use glm;
+
 use std::rc::Rc;
 
 pub type Manager<'l, L> = resource::Manager<'l, String, <L as Loader<'l>>::Texture, L>;
@@ -23,10 +24,15 @@ pub trait Texture: Sized {
     fn dims(&self) -> glm::UVec2;
 
     /// Default implementation for converting to an image
-    fn at(self, position: Position) -> Image<Rc<Self>> {
+    fn at(self, position: Position) -> Image<Self> {
         let dst = position.dims(self.dims());
-        let texture = Rc::new(self);
-        Image { texture, dst }
+        Image { texture: self, dst }
+    }
+}
+
+impl<T: Texture> Texture for Rc<T> {
+    fn dims(&self) -> glm::UVec2 {
+        self.as_ref().dims()
     }
 }
 
