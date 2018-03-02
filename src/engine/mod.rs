@@ -77,8 +77,8 @@ where
     pub fn new(event_pump: E, canvas: C, step: S) -> Self {
         Engine {
             input_manager: input::Manager::new(event_pump),
-            canvas: canvas,
-            step: step,
+            canvas,
+            step,
         }
     }
 

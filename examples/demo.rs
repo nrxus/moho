@@ -35,10 +35,10 @@ where
         let font_manager = font::Manager::new(font_loader);
         let input_manager = input::Manager::new(event_pump);
         MainGame {
-            input_manager: input_manager,
-            texture_manager: texture_manager,
-            font_manager: font_manager,
-            renderer: renderer,
+            input_manager,
+            texture_manager,
+            font_manager,
+            renderer,
         }
     }
 

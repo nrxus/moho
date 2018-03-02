@@ -10,10 +10,7 @@ pub struct Position {
 
 impl Position {
     pub fn dims(self, dims: glm::UVec2) -> Destination {
-        Destination {
-            pos: self,
-            dims: dims,
-        }
+        Destination { pos: self, dims }
     }
 
     pub fn nudge(mut self, delta: glm::IVec2) -> Position {

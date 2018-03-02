@@ -41,7 +41,7 @@ impl Timer {
         self.last_update = now;
         GameTime {
             total: now - self.start,
-            since_update: since_update,
+            since_update,
         }
     }
 }

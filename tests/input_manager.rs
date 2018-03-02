@@ -56,7 +56,7 @@ fn press_keys() {
         Some(key_event!(KeyDown, Keycode::Down)),
     ];
 
-    let mut subject = Manager::new(MockEventPump { streams: streams });
+    let mut subject = Manager::new(MockEventPump { streams });
 
     // Nothing is set before
     assert_eq!(subject.current.is_key_down(Keycode::Down), false);
@@ -79,7 +79,7 @@ fn release_keys() {
         Some(key_event!(KeyDown, Keycode::Up)),
     ];
 
-    let mut subject = Manager::new(MockEventPump { streams: streams });
+    let mut subject = Manager::new(MockEventPump { streams });
     {
         let state = &subject.current;
         assert!(!state.did_release_key(Keycode::Down));
@@ -114,7 +114,7 @@ fn did_press_key() {
         Some(key_event!(KeyDown, Keycode::Down)),
     ];
 
-    let mut subject = Manager::new(MockEventPump { streams: streams });
+    let mut subject = Manager::new(MockEventPump { streams });
 
     // Nothing has been pressed
     assert_eq!(subject.current.did_press_key(Keycode::Down), false);
@@ -149,7 +149,7 @@ fn mouse_coords() {
         }),
     ];
 
-    let mut subject = Manager::new(MockEventPump { streams: streams });
+    let mut subject = Manager::new(MockEventPump { streams });
     let state = subject.update().expect();
     assert_eq!(state.mouse_coords(), glm::ivec2(50, 30));
 }
@@ -163,7 +163,7 @@ fn mouse_clicks() {
         Some(mouse_event!(MouseButtonDown, MouseButton::Left)),
     ];
 
-    let mut subject = Manager::new(MockEventPump { streams: streams });
+    let mut subject = Manager::new(MockEventPump { streams });
 
     // Nothing has been clicked
     assert_eq!(subject.current.did_click_mouse(MouseButton::Right), false);
@@ -193,7 +193,7 @@ fn mouse_releases() {
         Some(mouse_event!(MouseButtonDown, MouseButton::Left)),
     ];
 
-    let mut subject = Manager::new(MockEventPump { streams: streams });
+    let mut subject = Manager::new(MockEventPump { streams });
 
     // Nothing has been clicked
     assert_eq!(subject.current.did_release_mouse(MouseButton::Right), false);
