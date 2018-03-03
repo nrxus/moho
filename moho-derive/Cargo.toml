@@ -14,5 +14,8 @@ branch = "specific_bounds"
 [dev-dependencies.moho]
 git = "https://github.com/nrxus/moho"
 
+[dev-dependencies]
+glm = ">=0.2.3"
+
 [lib]
 proc-macro = true
