@@ -1,20 +1,20 @@
 use renderer::Position;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Vertical {
     Top,
     Middle,
     Bottom,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Horizontal {
     Left,
     Center,
     Right,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Alignment<T> {
     pub align: T,
     pub pos: i32,

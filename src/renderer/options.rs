@@ -2,20 +2,20 @@ use super::Destination;
 
 use glm;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Rotation {
     pub angle: f64,
     pub center: glm::IVec2,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Flip {
     Horizontal,
     Vertical,
     Both,
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct Options {
     pub dst: Option<Destination>,
     pub src: Option<glm::UVec4>,

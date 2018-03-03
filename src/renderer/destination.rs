@@ -2,7 +2,7 @@ use renderer::align;
 
 use glm;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Position {
     pub vertical: align::Alignment<align::Vertical>,
     pub horizontal: align::Alignment<align::Horizontal>,
@@ -20,7 +20,7 @@ impl Position {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Destination {
     pub pos: Position,
     pub dims: glm::UVec2,
