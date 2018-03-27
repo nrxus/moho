@@ -14,6 +14,8 @@ mod inner {
     pub struct Assets<T> {
         pub image: Image<T>,
         pub other: T,
+        #[moho(skip)]
+        pub ignored: i32,
     }
 }
 
@@ -71,6 +73,7 @@ fn test() {
         other: MockTexture {
             dims: glm::uvec2(45, 20),
         },
+        ignored: 2,
     };
 
     let mut renderer = MockRenderer::default();

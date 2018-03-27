@@ -5,9 +5,11 @@ extern crate syn;
 #[macro_use]
 extern crate synstructure;
 
-decl_derive!([Show] => show_derive);
+decl_derive!([Show, attributes(moho)] => show_derive);
 
 fn show_derive(mut structure: synstructure::Structure) -> quote::Tokens {
+    let moho_skip = parse_quote!(#[moho(skip)]);
+    structure.filter(|bi| !bi.ast().attrs.iter().any(|a| *a == moho_skip));
     let body = structure.each(|bi| {
         quote! {
             renderer.show(#bi)?;
