@@ -3,6 +3,8 @@ use {resource, Result};
 
 use glm;
 
+use std::rc::Rc;
+
 pub type Manager<'l, L> = resource::Manager<'l, Details, <L as Loader<'l>>::Font, L>;
 
 pub trait Font {
@@ -12,8 +14,19 @@ pub trait Font {
     fn texturize(&self, text: &str, color: &ColorRGBA) -> Result<Self::Texture>;
 }
 
-pub trait Loader<'a>
-    : resource::Loader<'a, <Self as Loader<'a>>::Font, Args = Details> {
+impl<F: Font> Font for Rc<F> {
+    type Texture = F::Texture;
+
+    fn measure(&self, text: &str) -> Result<glm::UVec2> {
+        self.as_ref().measure(text)
+    }
+
+    fn texturize(&self, text: &str, color: &ColorRGBA) -> Result<Self::Texture> {
+        self.as_ref().texturize(text, color)
+    }
+}
+
+pub trait Loader<'a>: resource::Loader<'a, <Self as Loader<'a>>::Font, Args = Details> {
     type Font: Font;
 }
 
