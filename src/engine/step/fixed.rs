@@ -46,10 +46,11 @@ impl Default for FixedUpdate {
 impl Step for FixedUpdate {
     type State = State;
 
-    fn step<W, A, R>(&self, snapshot: Snapshot<W, A>, runner: &mut R) -> GameState<W, A, State>
-    where
-        R: Runner<W, A, State>,
-    {
+    fn step<W, A>(
+        &self,
+        snapshot: Snapshot<W, A>,
+        runner: &mut impl Runner<W, A, State>,
+    ) -> GameState<W, A, State> {
         let time = runner.time();
         let mut current = AppState::Running(runner.tick(snapshot.world, &time));
         let mut leftover = time.since_update + snapshot.step_state.leftover;

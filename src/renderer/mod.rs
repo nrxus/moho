@@ -54,12 +54,12 @@ pub trait Renderer {
     fn draw_rects(&mut self, rects: &[Destination]) -> Result<()>;
 
     /// Default implemenations for drawing assets
-    fn draw<A: Draw<Self>>(&mut self, asset: &A, options: Options) -> Result<()> {
+    fn draw(&mut self, asset: &impl Draw<Self>, options: Options) -> Result<()> {
         asset.draw(options, self)
     }
 
     /// Default implementation for drawing scenes
-    fn show<S: Show<Self>>(&mut self, scene: &S) -> Result<()> {
+    fn show(&mut self, scene: &impl Show<Self>) -> Result<()> {
         scene.show(self)
     }
 }

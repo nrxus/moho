@@ -63,9 +63,9 @@ impl State {
         self.game_quit
     }
 
-    pub(super) fn update<P: EventPump>(
+    pub(super) fn update(
         &mut self,
-        event_generator: &mut EventGenerator<P>,
+        event_generator: &mut EventGenerator<impl EventPump>,
     ) -> AppState<(), ()> {
         self.prev_pressed_keys = self.pressed_keys.clone();
         self.prev_pressed_buttons = self.pressed_buttons.clone();

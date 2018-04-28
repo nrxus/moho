@@ -24,7 +24,7 @@ pub struct Options {
 }
 
 impl Options {
-    pub fn at<D: Into<Destination>>(mut self, dst: D) -> Self {
+    pub fn at(mut self, dst: impl Into<Destination>) -> Self {
         self.dst = Some(dst.into());
         self
     }
@@ -49,7 +49,7 @@ pub fn none() -> Options {
     Options::default()
 }
 
-pub fn at<D: Into<Destination>>(dst: D) -> Options {
+pub fn at(dst: impl Into<Destination>) -> Options {
     Options::default().at(dst)
 }
 

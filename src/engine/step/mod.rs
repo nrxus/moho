@@ -37,10 +37,10 @@ impl<W, A, S: Default> Snapshot<W, A, S> {
 pub trait Step {
     type State: Default;
 
-    fn step<W, A, R: Runner<W, A, Self::State>>(
+    fn step<W, A>(
         &self,
         snapshot: Snapshot<W, A, Self::State>,
-        runner: &mut R,
+        runner: &mut impl Runner<W, A, Self::State>,
     ) -> GameState<W, A, Self::State>;
 }
 

@@ -24,10 +24,7 @@ struct Helper<F> {
 }
 
 impl<F: Font> Helper<F> {
-    fn load<'f, FL>(font_loader: &'f FL) -> Result<Self>
-    where
-        FL: font::Loader<'f, Font = F>,
-    {
+    fn load<'f>(font_loader: &'f impl font::Loader<'f, Font = F>) -> Result<Self> {
         let font_details = font::Details {
             path: "examples/fonts/kenpixel_mini.ttf",
             size: 48,
@@ -48,7 +45,7 @@ struct HoverTextScene<T> {
 }
 
 impl<T: Texture> HoverTextScene<Rc<T>> {
-    fn load<F: Font<Texture = T>>(world: &HoverText, font: &F) -> Result<Self> {
+    fn load(world: &HoverText, font: &impl Font<Texture = T>) -> Result<Self> {
         let texture = {
             let color = if world.is_hovering {
                 ColorRGBA(255, 0, 0, 255)
@@ -70,7 +67,7 @@ struct World {
 }
 
 impl World {
-    fn load<F: Font>(font: &F) -> Result<Self> {
+    fn load(font: &impl Font) -> Result<Self> {
         let text = {
             let text = "HOVER ON ME";
             let dims = font.measure(text)?;
@@ -123,19 +120,20 @@ struct Scene<T> {
 }
 
 impl<T: Texture> Scene<Rc<T>> {
-    fn load<'t, F, TL>(world: &World, font: &F, loader: &'t TL) -> Result<Self>
-    where
-        TL: texture::Loader<'t, Texture = T>,
-        F: Font<Texture = T>,
-    {
+    fn load<'t>(
+        world: &World,
+        font: &impl Font<Texture = T>,
+        loader: &'t impl texture::Loader<'t, Texture = T>,
+    ) -> Result<Self> {
         let background = loader.load("examples/background.png")?;
         Self::load_dynamic(world, font, Rc::new(background))
     }
 
-    fn load_dynamic<F>(world: &World, font: &F, background: Rc<T>) -> Result<Self>
-    where
-        F: Font<Texture = T>,
-    {
+    fn load_dynamic(
+        world: &World,
+        font: &impl Font<Texture = T>,
+        background: Rc<T>,
+    ) -> Result<Self> {
         let fps = {
             let fps: f64 = world.times.iter().sum();
             let fps = fps / world.times.len() as f64;

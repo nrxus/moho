@@ -19,7 +19,7 @@ pub trait Shape {
     fn nudge(self, nudge: glm::DVec2) -> Self;
     fn center_at(self, center: glm::DVec2) -> Self;
 
-    fn distance<S: Shape>(&self, other: &S) -> f64 {
+    fn distance(&self, other: &impl Shape) -> f64 {
         glm::distance(self.center(), other.center())
     }
 }
@@ -71,21 +71,14 @@ impl Axis {
 }
 
 trait FindMtv {
-    fn find_mtv<S1, S2>(self, object: &S1, fixed: &S2) -> Option<glm::DVec2>
-    where
-        S1: Shape,
-        S2: Shape;
+    fn find_mtv(self, object: &impl Shape, fixed: &impl Shape) -> Option<glm::DVec2>;
 }
 
 impl<I> FindMtv for I
 where
     I: Iterator<Item = Option<glm::DVec2>>,
 {
-    fn find_mtv<S1, S2>(self, object: &S1, fixed: &S2) -> Option<glm::DVec2>
-    where
-        S1: Shape,
-        S2: Shape,
-    {
+    fn find_mtv(self, object: &impl Shape, fixed: &impl Shape) -> Option<glm::DVec2> {
         let mtvs: Vec<_> = self.collect::<Option<_>>()?;
         let min = *mtvs.iter()
             .min_by(|&&x, &&y| glm::length(x).partial_cmp(&glm::length(y)).unwrap())?;

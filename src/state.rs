@@ -18,50 +18,35 @@ impl<S> State<S, Never> {
 }
 
 impl<S, Q> State<S, Q> {
-    pub fn flat_map<F, T>(self, f: F) -> State<T, Q>
-    where
-        F: FnOnce(S) -> State<T, Q>,
-    {
+    pub fn flat_map<T>(self, f: impl FnOnce(S) -> State<T, Q>) -> State<T, Q> {
         match self {
             State::Quit(q) => State::Quit(q),
             State::Running(s) => f(s),
         }
     }
 
-    pub fn map<F, T>(self, f: F) -> State<T, Q>
-    where
-        F: FnOnce(S) -> T,
-    {
+    pub fn map<T>(self, f: impl FnOnce(S) -> T) -> State<T, Q> {
         match self {
             State::Quit(q) => State::Quit(q),
             State::Running(s) => State::Running(f(s)),
         }
     }
 
-    pub fn map_quit<F, T>(self, f: F) -> State<S, T>
-    where
-        F: FnOnce(Q) -> T,
-    {
+    pub fn map_quit<T>(self, f: impl FnOnce(Q) -> T) -> State<S, T> {
         match self {
             State::Quit(q) => State::Quit(f(q)),
             State::Running(s) => State::Running(s),
         }
     }
 
-    pub fn flat_map_quit<F, T>(self, f: F) -> State<S, T>
-    where
-        F: FnOnce(Q) -> State<S, T>,
-    {
+    pub fn flat_map_quit<T>(self, f: impl FnOnce(Q) -> State<S, T>) -> State<S, T> {
         match self {
             State::Quit(q) => f(q),
             State::Running(s) => State::Running(s),
         }
     }
 
-    pub fn catch_quit<F>(self, f: F) -> S
-    where
-        F: FnOnce(Q) -> S,
-    {
+    pub fn catch_quit(self, f: impl FnOnce(Q) -> S) -> S {
         match self {
             State::Quit(q) => f(q),
             State::Running(s) => s,

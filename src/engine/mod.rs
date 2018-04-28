@@ -82,10 +82,14 @@ where
         }
     }
 
-    pub fn run<A, W, H>(&mut self, world: W, assets: A, helpers: H) -> Result<()>
+    pub fn run<W, H>(
+        &mut self,
+        world: W,
+        assets: impl Show<C> + NextScene<W, S::State, H>,
+        helpers: H,
+    ) -> Result<()>
     where
         W: World<Quit = ()>,
-        A: Show<C> + NextScene<W, S::State, H>,
     {
         let mut app = App::new(helpers, &mut self.input_manager);
         let mut snapshot = step::Snapshot::new::<S>(world, assets);
