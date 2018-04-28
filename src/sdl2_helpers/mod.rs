@@ -1,12 +1,12 @@
-mod texture;
 pub mod font;
+mod texture;
 
 use {renderer, Result};
 
 use failure;
 use glm;
-use sdl2::{pixels, render};
 use sdl2::render::RenderTarget;
+use sdl2::{pixels, render};
 
 impl<T: RenderTarget> renderer::Canvas for render::Canvas<T> {
     fn clear(&mut self) {

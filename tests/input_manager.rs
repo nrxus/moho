@@ -3,8 +3,8 @@ extern crate moho;
 extern crate sdl2;
 
 use moho::input::*;
-use sdl2::keyboard::{Keycode, NOMOD};
 use sdl2::event::Event;
+use sdl2::keyboard::{Keycode, NOMOD};
 use sdl2::mouse::{MouseButton, MouseState};
 
 struct MockEventPump {
@@ -18,34 +18,30 @@ impl EventPump for MockEventPump {
 }
 
 macro_rules! key_event {
-    ($t:ident, $e:expr) => {
-        {
-            Event::$t {
-                keycode: Some($e),
-                timestamp: 0,
-                window_id: 0,
-                scancode: None,
-                repeat: false,
-                keymod: NOMOD,
-            }
+    ($t:ident, $e:expr) => {{
+        Event::$t {
+            keycode: Some($e),
+            timestamp: 0,
+            window_id: 0,
+            scancode: None,
+            repeat: false,
+            keymod: NOMOD,
         }
-    };
+    }};
 }
 
 macro_rules! mouse_event {
-    ($t:ident, $e:expr) => {
-        {
-            Event::$t {
-                mouse_btn: $e,
-                timestamp: 0,
-                window_id: 0,
-                which: 0,
-                clicks: 0,
-                x: 0,
-                y: 0,
-            }
+    ($t:ident, $e:expr) => {{
+        Event::$t {
+            mouse_btn: $e,
+            timestamp: 0,
+            window_id: 0,
+            which: 0,
+            clicks: 0,
+            x: 0,
+            y: 0,
         }
-    };
+    }};
 }
 
 #[test]

@@ -3,9 +3,9 @@ use state::State as AppState;
 
 use glm;
 use num_traits::Zero;
-use sdl2::mouse::MouseButton;
-use sdl2::keyboard::Keycode;
 use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
+use sdl2::mouse::MouseButton;
 
 use std::collections::HashSet;
 

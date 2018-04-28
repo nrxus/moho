@@ -5,13 +5,13 @@ extern crate moho;
 extern crate moho_derive;
 extern crate sdl2;
 
-use moho::engine::{self, Engine, NextScene};
-use moho::{input, timer};
 use moho::engine::step::{self, fixed};
+use moho::engine::{self, Engine, NextScene};
 use moho::font::{self, Font};
-use moho::texture::{self, Image, Texture};
 use moho::renderer::{self, align, options, ColorRGBA, Draw, Renderer};
 use moho::shape::{Rectangle, Shape};
+use moho::texture::{self, Image, Texture};
+use moho::{input, timer};
 
 use std::iter;
 use std::rc::Rc;

@@ -4,8 +4,8 @@ mod data;
 mod tile_sheet;
 
 pub mod animator;
-pub use self::data::Data;
 pub use self::animator::Animator;
+pub use self::data::Data;
 pub use self::tile_sheet::{Tile, TileSheet};
 
 #[derive(Debug)]
@@ -63,9 +63,9 @@ impl<T> LimitRun<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use glm;
     use std::rc::Rc;
     use texture::Texture;
-    use glm;
 
     #[test]
     fn tile() {

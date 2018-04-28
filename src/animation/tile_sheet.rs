@@ -1,6 +1,6 @@
-use texture::Texture;
-use renderer::{options, Draw, Options, Renderer, Show};
 use Result;
+use renderer::{options, Draw, Options, Renderer, Show};
+use texture::Texture;
 
 use glm;
 

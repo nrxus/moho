@@ -1,6 +1,6 @@
 pub mod align;
-pub mod options;
 mod destination;
+pub mod options;
 
 pub use self::destination::{Destination, Position};
 pub use self::options::Options;

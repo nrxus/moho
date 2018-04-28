@@ -1,6 +1,6 @@
-use {resource, Result};
 use renderer::{self, options};
 use texture as moho;
+use {resource, Result};
 
 use failure;
 use glm;

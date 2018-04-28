@@ -36,8 +36,7 @@ impl<T: Texture> Texture for Rc<T> {
     }
 }
 
-pub trait Loader<'a>
-    : resource::Loader<'a, <Self as Loader<'a>>::Texture, Args = str> {
+pub trait Loader<'a>: resource::Loader<'a, <Self as Loader<'a>>::Texture, Args = str> {
     type Texture;
 }
 

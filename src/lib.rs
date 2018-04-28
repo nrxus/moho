@@ -8,18 +8,18 @@ extern crate sdl2;
 extern crate moho_derive;
 pub use moho_derive::*;
 
-mod state;
-pub mod sdl2_helpers;
 pub mod animation;
+pub mod engine;
+pub mod font;
 pub mod input;
-pub mod shape;
 pub mod renderer;
+pub mod resource;
+pub mod sdl2_helpers;
+pub mod shape;
+mod state;
+pub mod texture;
 pub mod timer;
 pub mod window_wrapper;
-pub mod engine;
-pub mod resource;
-pub mod texture;
-pub mod font;
 
 use failure::Error;
 

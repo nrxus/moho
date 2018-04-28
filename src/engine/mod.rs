@@ -1,10 +1,10 @@
 pub mod step;
 
-pub use self::step::Step;
 use self::step::Runner;
-use {input, Result, State};
+pub use self::step::Step;
 use renderer::{Canvas, Show};
 use timer::{self, Timer};
+use {input, Result, State};
 
 use std::time::Duration;
 
