@@ -51,3 +51,19 @@ impl<R: Renderer, T: Draw<R>> Draw<R> for Image<T> {
         renderer.draw(&self.texture, options.at(self.dst))
     }
 }
+
+#[cfg(test)]
+pub mod mocks {
+    use glm;
+
+    #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+    pub struct MockTexture {
+        pub dims: glm::UVec2,
+    }
+
+    impl super::Texture for MockTexture {
+        fn dims(&self) -> glm::UVec2 {
+            self.dims
+        }
+    }
+}

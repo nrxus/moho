@@ -67,6 +67,7 @@ impl<'a, R: Renderer, T: Draw<R>> Draw<R> for Tile<'a, T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use texture::mocks::MockTexture;
 
     #[test]
     fn single_frame() {
@@ -110,16 +111,5 @@ mod tests {
         let tile = sheet.tile(5);
         assert_eq!(*tile.texture, texture);
         assert_eq!(tile.src, glm::uvec4(5, 5, 5, 5));
-    }
-
-    #[derive(Debug, PartialEq, Clone, Copy)]
-    struct MockTexture {
-        dims: glm::UVec2,
-    }
-
-    impl Texture for MockTexture {
-        fn dims(&self) -> glm::UVec2 {
-            self.dims
-        }
     }
 }
