@@ -63,3 +63,37 @@ pub trait Renderer {
         scene.show(self)
     }
 }
+
+#[cfg(test)]
+pub mod mocks {
+    use super::*;
+    use texture::mocks::MockTexture;
+
+    #[derive(Default)]
+    pub struct MockCanvas {
+        pub draw: Vec<(MockTexture, Options)>,
+    }
+
+    impl super::Renderer for MockCanvas {
+        fn set_draw_color(&mut self, color: ColorRGBA) {}
+
+        fn fill_rects(&mut self, rects: &[Destination]) -> Result<()> {
+            Ok(())
+        }
+
+        fn draw_rects(&mut self, rects: &[Destination]) -> Result<()> {
+            Ok(())
+        }
+    }
+
+    impl super::Canvas for MockCanvas {
+        fn clear(&mut self) {}
+        fn present(&mut self) {}
+    }
+
+    impl MockCanvas {
+        pub fn new() -> Self {
+            MockCanvas::default()
+        }
+    }
+}

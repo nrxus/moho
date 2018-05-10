@@ -65,7 +65,7 @@ mod tests {
     use super::*;
     use glm;
     use std::rc::Rc;
-    use texture::Texture;
+    use texture::mocks::MockTexture;
 
     #[test]
     fn tile() {
@@ -103,16 +103,5 @@ mod tests {
 
         let no_tile = animation.animate(Duration::from_secs(10));
         assert!(no_tile.is_none());
-    }
-
-    #[derive(Debug)]
-    struct MockTexture {
-        dims: glm::UVec2,
-    }
-
-    impl Texture for MockTexture {
-        fn dims(&self) -> glm::UVec2 {
-            self.dims
-        }
     }
 }

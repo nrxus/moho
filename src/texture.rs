@@ -54,16 +54,30 @@ impl<R: Renderer, T: Draw<R>> Draw<R> for Image<T> {
 
 #[cfg(test)]
 pub mod mocks {
-    use glm;
+    use super::*;
+    use renderer::mocks::MockCanvas;
 
     #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     pub struct MockTexture {
         pub dims: glm::UVec2,
     }
 
-    impl super::Texture for MockTexture {
+    impl Texture for MockTexture {
         fn dims(&self) -> glm::UVec2 {
             self.dims
+        }
+    }
+
+    impl Show<MockCanvas> for MockTexture {
+        fn show(&self, renderer: &mut MockCanvas) -> Result<()> {
+            Ok(())
+        }
+    }
+
+    impl Draw<MockCanvas> for MockTexture {
+        fn draw(&self, options: Options, renderer: &mut MockCanvas) -> Result<()> {
+            renderer.draw.push((*self, options));
+            Ok(())
         }
     }
 }

@@ -67,6 +67,8 @@ impl<'a, R: Renderer, T: Draw<R>> Draw<R> for Tile<'a, T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use renderer::mocks::MockCanvas;
+    use renderer::options::Flip;
     use texture::mocks::MockTexture;
 
     #[test]
@@ -111,5 +113,42 @@ mod tests {
         let tile = sheet.tile(5);
         assert_eq!(*tile.texture, texture);
         assert_eq!(tile.src, glm::uvec4(5, 5, 5, 5));
+    }
+
+    #[test]
+    fn draws_tiles() {
+        let src = glm::uvec4(5, 5, 5, 5);
+        let texture = MockTexture {
+            dims: glm::uvec2(20, 10),
+        };
+
+        let tile = Tile {
+            texture: &texture,
+            src,
+        };
+
+        let mut renderer = MockCanvas::new();
+        let options = options::flip(Flip::Horizontal);
+        assert!(renderer.draw(&tile, options.clone()).is_ok());
+        assert_eq!(renderer.draw.len(), 1);
+        assert_eq!(renderer.draw[0], (texture, options.from(src)));
+    }
+
+    #[test]
+    fn show_tiles() {
+        let src = glm::uvec4(3, 2, 4, 5);
+        let texture = MockTexture {
+            dims: glm::uvec2(20, 10),
+        };
+
+        let tile = Tile {
+            texture: &texture,
+            src,
+        };
+
+        let mut renderer = MockCanvas::new();
+        assert!(renderer.show(&tile).is_ok());
+        assert_eq!(renderer.draw.len(), 1);
+        assert_eq!(renderer.draw[0], (texture, options::from(src)));
     }
 }
