@@ -89,6 +89,16 @@ mod test {
     use texture::mocks::MockTexture;
 
     #[test]
+    fn scale_image() {
+        let texture = MockTexture {
+            dims: glm::uvec2(25, 30),
+        };
+        let position = align::center(45).top(23);
+        let image = texture.at(position).scale(3);
+        assert_eq!(image.dst, position.dims(texture.dims * 3));
+    }
+
+    #[test]
     fn draws_images() {
         let mut renderer = MockCanvas::new();
         let texture = MockTexture {
