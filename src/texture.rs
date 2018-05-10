@@ -69,8 +69,8 @@ pub mod mocks {
     }
 
     impl Show<MockCanvas> for MockTexture {
-        fn show(&self, renderer: &mut MockCanvas) -> Result<()> {
-            Ok(())
+        fn show(&self, _: &mut MockCanvas) -> Result<()> {
+            unimplemented!()
         }
     }
 
@@ -79,5 +79,41 @@ pub mod mocks {
             renderer.draw.push((*self, options));
             Ok(())
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use renderer::{align, options, mocks::MockCanvas};
+    use texture::mocks::MockTexture;
+
+    #[test]
+    fn draws_images() {
+        let mut renderer = MockCanvas::new();
+        let texture = MockTexture {
+            dims: glm::uvec2(25, 30),
+        };
+        let options = options::from(glm::uvec4(12, 34, 21, 34));
+        let position = align::left(45).top(23);
+        let image = texture.at(position);
+        assert!(renderer.draw(&image, options.clone()).is_ok());
+        assert_eq!(renderer.draw.len(), 1);
+        let dst = position.dims(texture.dims());
+        assert_eq!(renderer.draw[0], (texture, options.at(dst)));
+    }
+
+    #[test]
+    fn shows_images() {
+        let mut renderer = MockCanvas::new();
+        let texture = MockTexture {
+            dims: glm::uvec2(25, 30),
+        };
+        let position = align::left(45).top(23);
+        let image = texture.at(position);
+        assert!(renderer.show(&image).is_ok());
+        assert_eq!(renderer.draw.len(), 1);
+        let dst = position.dims(texture.dims());
+        assert_eq!(renderer.draw[0], (texture, options::at(dst)));
     }
 }

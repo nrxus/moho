@@ -75,14 +75,16 @@ pub mod mocks {
     }
 
     impl super::Renderer for MockCanvas {
-        fn set_draw_color(&mut self, color: ColorRGBA) {}
-
-        fn fill_rects(&mut self, rects: &[Destination]) -> Result<()> {
-            Ok(())
+        fn set_draw_color(&mut self, _: ColorRGBA) {
+            unimplemented!()
         }
 
-        fn draw_rects(&mut self, rects: &[Destination]) -> Result<()> {
-            Ok(())
+        fn fill_rects(&mut self, _: &[Destination]) -> Result<()> {
+            unimplemented!()
+        }
+
+        fn draw_rects(&mut self, _: &[Destination]) -> Result<()> {
+            unimplemented!()
         }
     }
 
