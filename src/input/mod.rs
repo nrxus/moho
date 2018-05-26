@@ -58,7 +58,8 @@ impl<P: EventPump> Manager<P> {
     }
 
     pub fn update(&mut self) -> AppState<&State, ()> {
-        let state = self.current.update(&mut self.event_generator);
-        state.map(move |_| &self.current)
+        self.current
+            .update(self.event_generator.iter())
+            .map(|s| &*s)
     }
 }
