@@ -34,7 +34,8 @@ impl Shape for Circle {
 
 impl Intersect<Rectangle> for Circle {
     fn intersects(&self, other: &Rectangle) -> bool {
-        self.contains(&other.top_left) || other.contains(&self.center)
+        self.contains(&other.top_left)
+            || other.contains(&self.center)
             || other.get_lines().iter().any(|l| self.intersects(l))
     }
 

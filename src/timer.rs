@@ -8,7 +8,7 @@ pub struct GameTime {
 
 impl GameTime {
     pub fn fps(&self) -> f64 {
-        const NANO_IN_SEC: f64 = 1000000000.;
+        const NANO_IN_SEC: f64 = 1_000_000_000.;
         let duration = self.since_update.as_secs() as f64
             + f64::from(self.since_update.subsec_nanos()) / NANO_IN_SEC;
         1. / duration

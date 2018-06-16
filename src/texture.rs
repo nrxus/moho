@@ -85,7 +85,7 @@ pub mod mocks {
 #[cfg(test)]
 mod test {
     use super::*;
-    use renderer::{align, options, mocks::MockCanvas};
+    use renderer::{align, mocks::MockCanvas, options};
     use texture::mocks::MockTexture;
 
     #[test]

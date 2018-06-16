@@ -3,8 +3,8 @@ mod state;
 pub use self::state::State;
 use state::State as AppState;
 
-use sdl2::EventPump as SdlEventPump;
 use sdl2::event::Event;
+use sdl2::EventPump as SdlEventPump;
 
 struct EventGenerator<E> {
     event_pump: E,

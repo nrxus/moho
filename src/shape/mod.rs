@@ -80,7 +80,8 @@ where
 {
     fn find_mtv(self, object: &impl Shape, fixed: &impl Shape) -> Option<glm::DVec2> {
         let mtvs: Vec<_> = self.collect::<Option<_>>()?;
-        let min = *mtvs.iter()
+        let min = *mtvs
+            .iter()
             .min_by(|&&x, &&y| glm::length(x).partial_cmp(&glm::length(y)).unwrap())?;
         let reversed = glm::dot(object.center() - fixed.center(), min) < 0.;
         Some(if reversed { min * -1. } else { min })

@@ -92,7 +92,8 @@ impl engine::World for World {
     type Quit = ();
 
     fn update(mut self, input: &input::State, _: Duration) -> moho::State<Self, ()> {
-        self.text.is_hovering = self.text
+        self.text.is_hovering = self
+            .text
             .body
             .contains(&glm::to_dvec2(input.mouse_coords()));
         moho::State::Running(self)

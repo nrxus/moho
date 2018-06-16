@@ -3,7 +3,6 @@ extern crate glm;
 extern crate num_traits;
 extern crate sdl2;
 
-#[allow(unused_imports)]
 #[macro_use]
 extern crate moho_derive;
 pub use moho_derive::*;
