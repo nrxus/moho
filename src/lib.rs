@@ -1,10 +1,9 @@
 extern crate failure;
 extern crate glm;
+extern crate moho_derive;
 extern crate num_traits;
 extern crate sdl2;
 
-#[macro_use]
-extern crate moho_derive;
 pub use moho_derive::*;
 
 pub mod animation;

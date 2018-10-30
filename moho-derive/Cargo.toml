@@ -4,18 +4,16 @@ version = "0.1.0"
 authors = ["Andres <andresnrx@gmail.com>"]
 
 [dependencies]
-syn = ">=0.12"
-quote = ">=0.4"
-
-[dependencies.synstructure]
-git = "https://github.com/nrxus/synstructure"
-branch = "specific_bounds"
-
-[dev-dependencies.moho]
-git = "https://github.com/nrxus/moho"
+syn = ">=0.15"
+quote = ">=0.6"
+proc-macro2 = ">=0.4"
+synstructure = "0.10.1"
 
 [dev-dependencies]
 glm = ">=0.2.3"
+
+[dev-dependencies.moho]
+git = "https://github.com/nrxus/moho"
 
 [lib]
 proc-macro = true

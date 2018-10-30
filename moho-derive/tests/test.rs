@@ -1,22 +1,33 @@
 extern crate glm;
 extern crate moho;
-#[macro_use]
-extern crate moho_derive;
 
-use moho::renderer::{align, ColorRGBA, Destination, Draw, Options, Renderer, Show};
-use inner::Assets;
-use moho::texture::Texture;
+use moho::{
+    renderer::{align, ColorRGBA, Destination, Draw, Options, Renderer, Show},
+    texture::Texture,
+};
 
 mod inner {
-    use moho::texture::Image;
+    use moho::{renderer::Show, texture::Image};
 
-    #[derive(Show)]
-    pub struct Assets<T> {
+    pub struct Scene<F> {
+        pub _ignored: F,
+    }
+
+    impl<R, F> Show<R> for Scene<F> {
+        fn show(&self, _: &mut R) -> moho::Result<()> {
+            Ok(())
+        }
+    }
+
+    #[derive(moho::Show)]
+    pub struct Assets<T, F> {
         pub image: Image<T>,
+        pub scene: Scene<F>,
         pub other: T,
         #[moho(skip)]
         pub ignored: i32,
     }
+
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -64,15 +75,18 @@ impl Renderer for MockRenderer {
 
 #[test]
 fn test() {
+    use inner::*;
     use moho::renderer::options;
 
     let assets = Assets {
         image: MockTexture {
             dims: glm::uvec2(30, 60),
-        }.at(align::top(30).left(50)),
+        }
+        .at(align::top(30).left(50)),
         other: MockTexture {
             dims: glm::uvec2(45, 20),
         },
+        scene: Scene { _ignored: 0 },
         ignored: 2,
     };
 

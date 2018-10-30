@@ -99,7 +99,7 @@ mod test {
             .map(|&d| {
                 total += d;
                 timer::GameTime {
-                    total: total,
+                    total,
                     since_update: d,
                 }
             })

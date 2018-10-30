@@ -133,7 +133,7 @@ mod tests {
     fn loader(error: Option<String>) -> (MockLoader, LoadTracker) {
         let tracker = Rc::new(Cell::new(Counter(0)));
         let loader = MockLoader {
-            error: error,
+            error,
             tracker: Rc::clone(&tracker),
         };
         (loader, tracker)

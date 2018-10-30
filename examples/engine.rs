@@ -1,21 +1,23 @@
 extern crate failure;
 extern crate glm;
 extern crate moho;
-#[macro_use]
-extern crate moho_derive;
 extern crate sdl2;
 
-use moho::engine::step::{self, fixed};
-use moho::engine::{self, Engine, NextScene};
-use moho::font::{self, Font};
-use moho::renderer::{self, align, options, ColorRGBA, Draw, Renderer};
-use moho::shape::{Rectangle, Shape};
-use moho::texture::{self, Image, Texture};
-use moho::{input, timer};
+use moho::{
+    engine::{
+        self,
+        step::{self, fixed},
+        Engine, NextScene,
+    },
+    font::{self, Font},
+    input,
+    renderer::{self, align, options, ColorRGBA, Draw, Renderer},
+    shape::{Rectangle, Shape},
+    texture::{self, Image, Texture},
+    timer,
+};
 
-use std::iter;
-use std::rc::Rc;
-use std::time::Duration;
+use std::{iter, rc::Rc, time::Duration};
 
 type Result<T> = std::result::Result<T, failure::Error>;
 
@@ -39,7 +41,7 @@ struct HoverText {
     is_hovering: bool,
 }
 
-#[derive(Show)]
+#[derive(moho::Show)]
 struct HoverTextScene<T> {
     image: Image<T>,
 }
