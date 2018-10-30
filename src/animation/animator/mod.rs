@@ -1,9 +1,9 @@
 mod data;
 mod limit_run;
 
-pub use self::data::Data;
+pub use self::{data::Data, limit_run::LimitRun};
+
 use self::data::Frame;
-pub use self::limit_run::LimitRun;
 
 use std::time::Duration;
 

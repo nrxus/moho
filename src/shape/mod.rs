@@ -1,10 +1,7 @@
 pub mod circle;
 pub mod rectangle;
 
-pub use self::circle::Circle;
-pub use self::rectangle::Rectangle;
-
-use glm;
+pub use self::{circle::Circle, rectangle::Rectangle};
 
 pub type Line = (glm::DVec2, glm::DVec2);
 

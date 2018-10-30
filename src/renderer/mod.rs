@@ -1,12 +1,14 @@
 pub mod align;
-mod destination;
 pub mod options;
 
-pub use self::destination::{Destination, Position};
-pub use self::options::Options;
-use Result;
+mod destination;
 
-use glm;
+pub use self::{
+    destination::{Destination, Position},
+    options::Options,
+};
+
+use crate::Result;
 
 use std::rc::Rc;
 

@@ -1,10 +1,7 @@
-use state::State as AppState;
+use crate::state::State as AppState;
 
-use glm;
 use num_traits::Zero;
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
-use sdl2::mouse::MouseButton;
+use sdl2::{event::Event, keyboard::Keycode, mouse::MouseButton};
 
 use std::collections::HashSet;
 

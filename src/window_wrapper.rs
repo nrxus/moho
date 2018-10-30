@@ -1,5 +1,3 @@
-use glm;
-
 pub fn wrap_rects(original: glm::IVec4, max: glm::UVec2) -> [Option<glm::IVec4>; 4] {
     let max = glm::to_ivec2(max);
     let left = (original.x + max.x) % max.x;

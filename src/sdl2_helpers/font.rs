@@ -1,12 +1,10 @@
-use font as moho;
-use {renderer, resource, Result};
+use crate::{font as moho, renderer, resource, Result};
 
-use failure;
-use glm;
-use sdl2::pixels::Color;
-use sdl2::render;
-use sdl2::ttf::Font as SdlFont;
-use sdl2::ttf::{self, Sdl2TtfContext};
+use sdl2::{
+    pixels::Color,
+    render,
+    ttf::{self, Font as SdlFont, Sdl2TtfContext},
+};
 
 pub struct Font<'t, 'f, T: 't> {
     inner: SdlFont<'f, 'static>,

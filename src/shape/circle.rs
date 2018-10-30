@@ -1,7 +1,5 @@
 use super::{Axis, FindMtv, Intersect, Line, Rectangle, Shape};
 
-use glm;
-
 use std::iter;
 
 #[derive(Debug, Clone, Copy)]

@@ -1,7 +1,5 @@
 use super::{Axis, Circle, FindMtv, Intersect, Line, Shape};
 
-use glm;
-
 #[derive(Debug, Clone, Copy)]
 pub struct Rectangle {
     pub dims: glm::DVec2,

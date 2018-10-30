@@ -1,9 +1,6 @@
-use Result;
+use crate::Result;
 
-use std::borrow::Borrow;
-use std::collections::HashMap;
-use std::hash::Hash;
-use std::rc::Rc;
+use std::{borrow::Borrow, collections::HashMap, hash::Hash, rc::Rc};
 
 pub trait Loader<'a, T> {
     type Args: ?Sized;
@@ -51,8 +48,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use failure;
+    use std::cell::Cell;
 
     type LoadTracker = Rc<Cell<Counter>>;
 
@@ -94,8 +90,6 @@ mod tests {
         assert_eq!(texture.path, "mypath/2");
         assert_eq!(tracker.get(), Counter(2));
     }
-
-    use std::cell::Cell;
 
     #[derive(Debug)]
     struct MockResource {

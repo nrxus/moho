@@ -1,4 +1,4 @@
-use renderer::Position;
+use crate::renderer::Position;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Vertical {

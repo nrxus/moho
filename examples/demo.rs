@@ -3,12 +3,14 @@ extern crate glm;
 extern crate moho;
 extern crate sdl2;
 
-use moho::font::{self, Font};
-use moho::input;
-use moho::renderer::{align, options, Canvas, ColorRGBA, Draw, Position};
-use moho::shape::*;
-use moho::texture::{self, Texture};
-use moho::timer::*;
+use moho::{
+    font::{self, Font},
+    input,
+    renderer::{align, options, Canvas, ColorRGBA, Draw, Position},
+    shape::*,
+    texture::{self, Texture},
+    timer::*,
+};
 
 pub struct MainGame<'f, 't, TL: 't, FL: 'f, R, E>
 where

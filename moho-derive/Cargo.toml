@@ -4,13 +4,13 @@ version = "0.1.0"
 authors = ["Andres <andresnrx@gmail.com>"]
 
 [dependencies]
-syn = ">=0.15"
-quote = ">=0.6"
-proc-macro2 = ">=0.4"
+syn = "0.15"
+quote = "0.6"
+proc-macro2 = "0.4"
 synstructure = "0.10.1"
 
 [dev-dependencies]
-glm = ">=0.2.3"
+glm = "0.2"
 
 [dev-dependencies.moho]
 git = "https://github.com/nrxus/moho"

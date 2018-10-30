@@ -1,6 +1,4 @@
-use renderer::align;
-
-use glm;
+use crate::renderer::align;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Position {

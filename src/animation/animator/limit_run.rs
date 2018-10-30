@@ -58,7 +58,7 @@ impl LimitRun {
 #[cfg(test)]
 mod test {
     use super::*;
-    use animation::animator::Data;
+    use crate::animation::animator::Data;
 
     #[test]
     fn limit_run_start() {

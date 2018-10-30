@@ -1,5 +1,4 @@
-use super::animator;
-use super::{Animation, LimitRun, TileSheet};
+use super::{animator, Animation, LimitRun, TileSheet};
 
 #[derive(Debug, Clone)]
 pub struct Data<T> {

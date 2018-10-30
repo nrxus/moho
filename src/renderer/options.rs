@@ -1,7 +1,5 @@
 use super::Destination;
 
-use glm;
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Rotation {
     pub angle: f64,

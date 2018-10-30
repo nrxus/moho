@@ -1,8 +1,8 @@
-use renderer::{options, Draw, Options, Renderer, Show};
-use texture::Texture;
-use Result;
-
-use glm;
+use crate::{
+    renderer::{options, Draw, Options, Renderer, Show},
+    texture::Texture,
+    Result,
+};
 
 #[derive(Debug, Clone)]
 pub struct TileSheet<T> {
@@ -67,9 +67,10 @@ impl<'a, R: Renderer, T: Draw<R>> Draw<R> for Tile<'a, T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use renderer::mocks::MockCanvas;
-    use renderer::options::Flip;
-    use texture::mocks::MockTexture;
+    use crate::{
+        renderer::{mocks::MockCanvas, options::Flip},
+        texture::mocks::MockTexture,
+    };
 
     #[test]
     fn single_frame() {

@@ -1,12 +1,15 @@
-use std::time::Duration;
-
 mod data;
 mod tile_sheet;
 
 pub mod animator;
-pub use self::animator::Animator;
-pub use self::data::Data;
-pub use self::tile_sheet::{Tile, TileSheet};
+
+pub use self::{
+    animator::Animator,
+    data::Data,
+    tile_sheet::{Tile, TileSheet},
+};
+
+use std::time::Duration;
 
 #[derive(Debug)]
 pub struct Animation<T> {
@@ -63,9 +66,8 @@ impl<T> LimitRun<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use glm;
+    use crate::texture::mocks::MockTexture;
     use std::rc::Rc;
-    use texture::mocks::MockTexture;
 
     #[test]
     fn tile() {

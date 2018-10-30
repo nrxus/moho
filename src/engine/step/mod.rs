@@ -1,9 +1,10 @@
-use {timer, Result, State};
+pub mod fixed;
+
+pub use self::fixed::FixedUpdate;
+
+use crate::{timer, Result, State};
 
 use std::time::Duration;
-
-pub mod fixed;
-pub use self::fixed::FixedUpdate;
 
 type GameState<W, A, S> = Result<State<Snapshot<W, A, S>, ()>>;
 

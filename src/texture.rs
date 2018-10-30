@@ -1,8 +1,10 @@
-use renderer::options::{self, Options};
-use renderer::{Destination, Draw, Position, Renderer, Show};
-use {resource, Result};
-
-use glm;
+use crate::{
+    renderer::{
+        options::{self, Options},
+        {Destination, Draw, Position, Renderer, Show},
+    },
+    resource, Result,
+};
 
 use std::rc::Rc;
 
@@ -55,7 +57,7 @@ impl<R: Renderer, T: Draw<R>> Draw<R> for Image<T> {
 #[cfg(test)]
 pub mod mocks {
     use super::*;
-    use renderer::mocks::MockCanvas;
+    use crate::renderer::mocks::MockCanvas;
 
     #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     pub struct MockTexture {
@@ -85,8 +87,10 @@ pub mod mocks {
 #[cfg(test)]
 mod test {
     use super::*;
-    use renderer::{align, mocks::MockCanvas, options};
-    use texture::mocks::MockTexture;
+    use crate::{
+        renderer::{align, mocks::MockCanvas, options},
+        texture::mocks::MockTexture,
+    };
 
     #[test]
     fn scale_image() {

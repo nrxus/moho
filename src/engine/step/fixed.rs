@@ -1,5 +1,5 @@
 use super::{GameState, Runner, Step};
-use state::State as AppState;
+use crate::state::State as AppState;
 
 use std::time::Duration;
 
@@ -89,8 +89,10 @@ impl Step for FixedUpdate {
 #[cfg(test)]
 mod test {
     use super::*;
-    use engine::step::mock::{self, GameStateHelper, MockRunner};
-    use timer;
+    use crate::{
+        engine::step::mock::{self, GameStateHelper, MockRunner},
+        timer,
+    };
 
     fn game_times(durations: Vec<Duration>) -> Vec<timer::GameTime> {
         let mut total = Duration::from_secs(0);

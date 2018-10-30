@@ -1,12 +1,13 @@
-use renderer::{self, options};
-use texture as moho;
-use {resource, Result};
+use crate::{
+    renderer::{self, options},
+    resource, texture as moho, Result,
+};
 
-use failure;
-use glm;
-use sdl2::image::LoadTexture;
-use sdl2::rect::{Point, Rect};
-use sdl2::render::{Canvas, RenderTarget, Texture, TextureCreator};
+use sdl2::{
+    image::LoadTexture,
+    rect::{Point, Rect},
+    render::{Canvas, RenderTarget, Texture, TextureCreator},
+};
 
 impl<'c> moho::Texture for Texture<'c> {
     fn dims(&self) -> glm::UVec2 {

@@ -1,10 +1,14 @@
 pub mod step;
 
-use self::step::Runner;
 pub use self::step::Step;
-use renderer::{Canvas, Show};
-use timer::{self, Timer};
-use {input, Result, State};
+
+use self::step::Runner;
+use crate::{
+    input,
+    renderer::{Canvas, Show},
+    timer::{self, Timer},
+    Result, State,
+};
 
 use std::time::Duration;
 

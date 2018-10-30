@@ -6,12 +6,12 @@ description = "Barebones Rust Game Library"
 license = "MIT"
 
 [dependencies]
-glm = ">=0.2.3"
-num-traits = ">=0.1.41"
-failure = ">=0.1.1"
+glm = "0.2"
+num-traits = "0.2"
+failure = "0.1"
 moho-derive = { path = "moho-derive" }
 
 [dependencies.sdl2]
-version = ">=0.31.0"
+version = "0.31"
 default-features = false
 features = ["image", "ttf"]

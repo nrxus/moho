@@ -1,7 +1,4 @@
-use renderer::ColorRGBA;
-use {resource, Result};
-
-use glm;
+use crate::{renderer::ColorRGBA, resource, Result};
 
 use std::rc::Rc;
 
