@@ -26,12 +26,12 @@ impl<T> Animation<T> {
         Animation { animator, sheet }
     }
 
-    pub fn animate(&mut self, delta: Duration) -> Tile<T> {
+    pub fn animate(&mut self, delta: Duration) -> Tile<'_, T> {
         let frame = self.animator.animate(delta);
         self.sheet.tile(frame)
     }
 
-    pub fn tile(&self) -> Tile<T> {
+    pub fn tile(&self) -> Tile<'_, T> {
         let frame = self.animator.frame();
         self.sheet.tile(frame)
     }
@@ -52,13 +52,13 @@ impl<T> LimitRun<T> {
         LimitRun { animator, sheet }
     }
 
-    pub fn animate(&mut self, delta: Duration) -> Option<Tile<T>> {
+    pub fn animate(&mut self, delta: Duration) -> Option<Tile<'_, T>> {
         let frame = self.animator.animate(delta);
         let sheet = &self.sheet;
         frame.map(|i| sheet.tile(i))
     }
 
-    pub fn tile(&self) -> Option<Tile<T>> {
+    pub fn tile(&self) -> Option<Tile<'_, T>> {
         self.animator.frame().map(|i| self.sheet.tile(i))
     }
 }

@@ -20,7 +20,7 @@ pub struct Tile<'a, T> {
 // https://github.com/rust-lang/rust/issues/40754
 // Generics whose type params do not implement Clone, cannot derive Clone
 // Manual implementation of it
-impl<'a, T> Clone for Tile<'a, T> {
+impl<T> Clone for Tile<'_, T> {
     fn clone(&self) -> Self {
         Tile {
             texture: self.texture,
@@ -40,7 +40,7 @@ impl<T: Texture> TileSheet<T> {
 }
 
 impl<T> TileSheet<T> {
-    pub fn tile(&self, index: u32) -> Tile<T> {
+    pub fn tile(&self, index: u32) -> Tile<'_, T> {
         let tile_pos = glm::uvec2(index % self.tiles.x, index / self.tiles.x);
         let position = tile_pos * self.dimensions;
         let src = glm::uvec4(position.x, position.y, self.dimensions.x, self.dimensions.y);
@@ -52,13 +52,13 @@ impl<T> TileSheet<T> {
     }
 }
 
-impl<'a, R: Renderer, T: Draw<R>> Show<R> for Tile<'a, T> {
+impl<R: Renderer, T: Draw<R>> Show<R> for Tile<'_, T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
         renderer.draw(self.texture, options::from(self.src))
     }
 }
 
-impl<'a, R: Renderer, T: Draw<R>> Draw<R> for Tile<'a, T> {
+impl<R: Renderer, T: Draw<R>> Draw<R> for Tile<'_, T> {
     fn draw(&self, options: Options, renderer: &mut R) -> Result<()> {
         renderer.draw(self.texture, options.from(self.src))
     }

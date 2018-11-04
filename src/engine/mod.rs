@@ -41,7 +41,7 @@ impl<'a, E, H> App<'a, E, H> {
     }
 }
 
-impl<'a, W, A, S, E, H> Runner<W, A, S> for App<'a, E, H>
+impl<W, A, S, E, H> Runner<W, A, S> for App<'_, E, H>
 where
     W: World<Quit = ()>,
     A: NextScene<W, S, H>,

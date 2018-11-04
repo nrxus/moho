@@ -54,7 +54,7 @@ mod tests {
     #[test]
     fn loads_resource() {
         let (loader, tracker) = loader(None);
-        let mut subject: Manager<String, _, _> = Manager::new(&loader);
+        let mut subject: Manager<'_, String, _, _> = Manager::new(&loader);
         let texture = subject.load("mypath/").unwrap();
         assert_eq!(texture.path, "mypath/");
         assert_eq!(tracker.get(), Counter(1));
@@ -63,7 +63,7 @@ mod tests {
     #[test]
     fn returns_error() {
         let (loader, tracker) = loader(Some("FAIL".into()));
-        let mut subject: Manager<String, _, _> = Manager::new(&loader);
+        let mut subject: Manager<'_, String, _, _> = Manager::new(&loader);
         let result = subject.load("mypath/");
         assert_eq!(result.is_err(), true);
         assert_eq!(tracker.get(), Counter(1));
@@ -72,7 +72,7 @@ mod tests {
     #[test]
     fn caches_resources() {
         let (loader, tracker) = loader(None);
-        let mut subject: Manager<String, _, _> = Manager::new(&loader);
+        let mut subject: Manager<'_, String, _, _> = Manager::new(&loader);
 
         //get new resource - number of calls 1
         let texture = subject.load("mypath/1").unwrap();
@@ -109,7 +109,7 @@ mod tests {
         }
     }
 
-    impl<'a> Loader<'a, MockResource> for MockLoader {
+    impl Loader<'_, MockResource> for MockLoader {
         type Args = str;
 
         fn load(&self, data: &str) -> Result<MockResource> {

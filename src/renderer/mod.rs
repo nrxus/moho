@@ -31,7 +31,7 @@ impl<R: Renderer, T: Show<R>> Show<R> for Rc<T> {
     }
 }
 
-impl<'a, R: Renderer, T: Show<R>> Show<R> for Vec<T> {
+impl<R: Renderer, T: Show<R>> Show<R> for Vec<T> {
     fn show(&self, renderer: &mut R) -> Result<()> {
         self.iter().map(|t| renderer.show(t)).collect()
     }
@@ -69,7 +69,7 @@ pub trait Renderer {
 #[cfg(test)]
 pub mod mocks {
     use super::*;
-    use texture::mocks::MockTexture;
+    use crate::texture::mocks::MockTexture;
 
     #[derive(Default)]
     pub struct MockCanvas {

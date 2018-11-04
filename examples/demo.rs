@@ -1,8 +1,3 @@
-extern crate failure;
-extern crate glm;
-extern crate moho;
-extern crate sdl2;
-
 use moho::{
     font::{self, Font},
     input,

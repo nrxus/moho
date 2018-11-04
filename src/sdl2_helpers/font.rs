@@ -11,7 +11,7 @@ pub struct Font<'t, 'f, T> {
     creator: &'t render::TextureCreator<T>,
 }
 
-impl<'t, 'f, T> moho::Font for Font<'t, 'f, T> {
+impl<'t, T> moho::Font for Font<'t, '_, T> {
     type Texture = render::Texture<'t>;
 
     fn measure(&self, text: &str) -> Result<glm::UVec2> {

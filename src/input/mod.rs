@@ -15,7 +15,7 @@ impl<E> EventGenerator<E> {
         EventGenerator { event_pump }
     }
 
-    fn iter(&mut self) -> EventIterator<E> {
+    fn iter(&mut self) -> EventIterator<'_, E> {
         EventIterator {
             event_pump: &mut self.event_pump,
         }
@@ -26,7 +26,7 @@ struct EventIterator<'a, E> {
     event_pump: &'a mut E,
 }
 
-impl<'a, E: EventPump> Iterator for EventIterator<'a, E> {
+impl<E: EventPump> Iterator for EventIterator<'_, E> {
     type Item = Event;
 
     fn next(&mut self) -> Option<Event> {

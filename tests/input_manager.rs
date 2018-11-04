@@ -1,7 +1,3 @@
-extern crate glm;
-extern crate moho;
-extern crate sdl2;
-
 use moho::input::*;
 use sdl2::{
     event::Event,

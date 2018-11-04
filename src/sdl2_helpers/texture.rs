@@ -9,7 +9,7 @@ use sdl2::{
     render::{Canvas, RenderTarget, Texture, TextureCreator},
 };
 
-impl<'c> moho::Texture for Texture<'c> {
+impl moho::Texture for Texture<'_> {
     fn dims(&self) -> glm::UVec2 {
         let query = self.query();
         glm::uvec2(query.width, query.height)
@@ -28,7 +28,7 @@ impl<'c, T> resource::Loader<'c, Texture<'c>> for TextureCreator<T> {
     }
 }
 
-impl<'t, T: RenderTarget> renderer::Show<Canvas<T>> for Texture<'t> {
+impl<T: RenderTarget> renderer::Show<Canvas<T>> for Texture<'_> {
     fn show(&self, renderer: &mut Canvas<T>) -> Result<()> {
         renderer.copy(self, None, None).map_err(failure::err_msg)
     }
@@ -40,7 +40,7 @@ impl From<renderer::Destination> for Rect {
     }
 }
 
-impl<'t, T: RenderTarget> renderer::Draw<Canvas<T>> for Texture<'t> {
+impl<T: RenderTarget> renderer::Draw<Canvas<T>> for Texture<'_> {
     fn draw(&self, options: renderer::Options, renderer: &mut Canvas<T>) -> Result<()> {
         let src = options
             .src

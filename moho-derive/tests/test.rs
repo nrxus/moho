@@ -75,7 +75,7 @@ impl Renderer for MockRenderer {
 
 #[test]
 fn test() {
-    use inner::*;
+    use crate::inner::*;
     use moho::renderer::options;
 
     let assets = Assets {

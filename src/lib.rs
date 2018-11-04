@@ -1,9 +1,3 @@
-extern crate failure;
-extern crate glm;
-extern crate moho_derive;
-extern crate num_traits;
-extern crate sdl2;
-
 pub mod animation;
 pub mod engine;
 pub mod font;
