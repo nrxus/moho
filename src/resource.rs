@@ -11,7 +11,6 @@ pub trait Loader<'a, T> {
 pub struct Manager<'l, K, R, L>
 where
     K: Hash + Eq,
-    L: 'l,
 {
     loader: &'l L,
     pub cache: HashMap<K, Rc<R>>,

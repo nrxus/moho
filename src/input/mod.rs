@@ -22,7 +22,7 @@ impl<E> EventGenerator<E> {
     }
 }
 
-struct EventIterator<'a, E: 'a> {
+struct EventIterator<'a, E> {
     event_pump: &'a mut E,
 }
 

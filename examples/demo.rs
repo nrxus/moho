@@ -12,7 +12,7 @@ use moho::{
     timer::*,
 };
 
-pub struct MainGame<'f, 't, TL: 't, FL: 'f, R, E>
+pub struct MainGame<'f, 't, TL, FL, R, E>
 where
     TL: texture::Loader<'t>,
     FL: font::Loader<'f>,

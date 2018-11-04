@@ -12,7 +12,7 @@ pub struct TileSheet<T> {
 }
 
 #[derive(Debug)]
-pub struct Tile<'a, T: 'a> {
+pub struct Tile<'a, T> {
     pub texture: &'a T,
     pub src: glm::UVec4,
 }

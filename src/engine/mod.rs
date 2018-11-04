@@ -25,7 +25,7 @@ pub trait NextScene<W, S, H>: Sized {
     fn next(self, world: &W, step: &S, helpers: &mut H) -> Result<Self>;
 }
 
-pub struct App<'a, E: 'a, H> {
+pub struct App<'a, E, H> {
     input_manager: &'a mut input::Manager<E>,
     helpers: H,
     timer: Timer,

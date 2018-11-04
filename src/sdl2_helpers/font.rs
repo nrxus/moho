@@ -6,7 +6,7 @@ use sdl2::{
     ttf::{self, Font as SdlFont, Sdl2TtfContext},
 };
 
-pub struct Font<'t, 'f, T: 't> {
+pub struct Font<'t, 'f, T> {
     inner: SdlFont<'f, 'static>,
     creator: &'t render::TextureCreator<T>,
 }
@@ -31,7 +31,7 @@ impl<'t, 'f, T> moho::Font for Font<'t, 'f, T> {
     }
 }
 
-pub struct Loader<'t, T: 't> {
+pub struct Loader<'t, T> {
     inner: Sdl2TtfContext,
     creator: &'t render::TextureCreator<T>,
 }
