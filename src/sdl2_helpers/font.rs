@@ -21,8 +21,8 @@ impl<'t, T> moho::Font for Font<'t, '_, T> {
             .map_err(failure::err_msg)
     }
 
-    fn texturize(&self, text: &str, color: &renderer::ColorRGBA) -> Result<Self::Texture> {
-        let &renderer::ColorRGBA(red, green, blue, alpha) = color;
+    fn texturize(&self, text: &str, color: renderer::ColorRGBA) -> Result<Self::Texture> {
+        let renderer::ColorRGBA(red, green, blue, alpha) = color;
         let color = Color::RGBA(red, green, blue, alpha);
         let surface = self.inner.render(text).blended(color)?;
         self.creator

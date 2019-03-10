@@ -8,7 +8,7 @@ pub trait Font {
     type Texture;
 
     fn measure(&self, text: &str) -> Result<glm::UVec2>;
-    fn texturize(&self, text: &str, color: &ColorRGBA) -> Result<Self::Texture>;
+    fn texturize(&self, text: &str, color: ColorRGBA) -> Result<Self::Texture>;
 }
 
 impl<F: Font> Font for Rc<F> {
@@ -18,7 +18,7 @@ impl<F: Font> Font for Rc<F> {
         self.as_ref().measure(text)
     }
 
-    fn texturize(&self, text: &str, color: &ColorRGBA) -> Result<Self::Texture> {
+    fn texturize(&self, text: &str, color: ColorRGBA) -> Result<Self::Texture> {
         self.as_ref().texturize(text, color)
     }
 }

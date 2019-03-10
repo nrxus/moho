@@ -90,10 +90,10 @@ where
         } else {
             ColorRGBA(255, 255, 0, 255)
         };
-        let button_texture = font.texturize(button_text, &color)?;
+        let button_texture = font.texturize(button_text, color)?;
         let button_dst = Position::from(glm::to_ivec2(rect.top_left)).dims(button_texture.dims());
         let fps = format!("{}", game_time.fps() as u32);
-        let font_texture = font.texturize(&fps, &ColorRGBA(255, 255, 0, 255))?;
+        let font_texture = font.texturize(&fps, ColorRGBA(255, 255, 0, 255))?;
         let font_dst = align::top(0).right(1280).dims(font_texture.dims());
         renderer.clear();
         renderer.draw(image, options::flip(options::Flip::Both))?;
