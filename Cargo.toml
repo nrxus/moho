@@ -13,6 +13,6 @@ failure = "0.1"
 moho-derive = { path = "moho-derive" }
 
 [dependencies.sdl2]
-version = "0.31"
+version = "0.32"
 default-features = false
 features = ["image", "ttf"]

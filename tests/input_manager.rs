@@ -1,7 +1,7 @@
 use moho::input::*;
 use sdl2::{
     event::Event,
-    keyboard::{Keycode, NOMOD},
+    keyboard::{self, Keycode},
     mouse::{MouseButton, MouseState},
 };
 
@@ -23,7 +23,7 @@ macro_rules! key_event {
             window_id: 0,
             scancode: None,
             repeat: false,
-            keymod: NOMOD,
+            keymod: keyboard::Mod::NOMOD,
         }
     }};
 }
