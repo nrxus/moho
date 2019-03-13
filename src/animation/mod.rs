@@ -13,17 +13,16 @@ use std::time::Duration;
 
 #[derive(Debug)]
 pub struct Animation<T> {
-    pub animator: Animator,
-    pub sheet: TileSheet<T>,
+    animator: Animator,
+    sheet: TileSheet<T>,
 }
 
 impl<T> Animation<T> {
-    pub fn from_data(data: Data<T>) -> Self {
-        Self::new(data.animator.start(), data.sheet)
-    }
-
-    pub fn new(animator: Animator, sheet: TileSheet<T>) -> Self {
-        Animation { animator, sheet }
+    pub fn new(animator: animator::Data, sheet: TileSheet<T>) -> Self {
+        Animation {
+            animator: animator.start(),
+            sheet,
+        }
     }
 
     pub fn animate(&mut self, delta: Duration) -> Tile<'_, T> {
@@ -44,12 +43,11 @@ pub struct LimitRun<T> {
 }
 
 impl<T> LimitRun<T> {
-    pub fn from_data(data: Data<T>, loops: u32) -> Self {
-        Self::new(data.animator.start().limit(loops), data.sheet)
-    }
-
-    pub fn new(animator: animator::LimitRun, sheet: TileSheet<T>) -> Self {
-        LimitRun { animator, sheet }
+    pub fn new(animator: animator::Data, sheet: TileSheet<T>, loops: u32) -> Self {
+        LimitRun {
+            animator: animator.limit_run_start(loops),
+            sheet,
+        }
     }
 
     pub fn animate(&mut self, delta: Duration) -> Option<Tile<'_, T>> {
@@ -67,43 +65,46 @@ impl<T> LimitRun<T> {
 mod tests {
     use super::*;
     use crate::texture::mocks::MockTexture;
-    use std::rc::Rc;
 
     #[test]
     fn tile() {
-        let texture = Rc::new(MockTexture {
+        let texture = MockTexture {
             dims: glm::uvec2(10, 10),
-        });
-        let animator = animator::Data::new(3, Duration::from_secs(5));
+        };
+        let animator = animator::Data {
+            max: 3,
+            duration: Duration::from_secs(5),
+        };
         let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
-        let data = Data::new(animator, sheet);
 
-        let mut animation = data.start();
-        assert_eq!(animation.tile().src, glm::uvec4(0, 0, 1, 10));
+        let mut animation = Animation::new(animator, sheet);
+        assert_eq!(animation.tile().rect(), glm::uvec4(0, 0, 1, 10));
         let tile = animation.animate(Duration::from_secs(6));
-        assert_eq!(tile.src, glm::uvec4(1, 0, 1, 10));
+        assert_eq!(tile.rect(), glm::uvec4(1, 0, 1, 10));
     }
 
     #[test]
-    fn limit_run_tile() {
-        let texture = Rc::new(MockTexture {
+    fn limit_run_tile() -> Result<(), String> {
+        let texture = MockTexture {
             dims: glm::uvec2(10, 10),
-        });
-        let animator = animator::Data::new(3, Duration::from_secs(5));
+        };
+        let animator = animator::Data {
+            max: 3,
+            duration: Duration::from_secs(5),
+        };
         let sheet = TileSheet::new(glm::uvec2(10, 1), texture);
-        let data = Data::new(animator, sheet);
 
-        let mut animation = data.limit_run_start(1);
-        assert!(animation.tile().is_some());
-        assert_eq!(animation.tile().unwrap().src, glm::uvec4(0, 0, 1, 10));
+        let mut animation = LimitRun::new(animator, sheet, 1);
+        let tile = animation.tile().ok_or("animation ended unexpectedly")?;
+        assert_eq!(tile.rect(), glm::uvec4(0, 0, 1, 10));
 
-        {
-            let tile = animation.animate(Duration::from_secs(6));
-            assert!(tile.is_some());
-            assert_eq!(tile.unwrap().src, glm::uvec4(1, 0, 1, 10));
-        }
+        let tile = animation
+            .animate(Duration::from_secs(6))
+            .ok_or("animation ended unexpectedly")?;
+        assert_eq!(tile.rect(), glm::uvec4(1, 0, 1, 10));
 
         let no_tile = animation.animate(Duration::from_secs(10));
         assert!(no_tile.is_none());
+        Ok(())
     }
 }

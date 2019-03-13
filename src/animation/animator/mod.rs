@@ -41,10 +41,6 @@ impl Animator {
         self.frame = Frame::default();
     }
 
-    pub fn limit(self, loops: u32) -> LimitRun {
-        LimitRun::new(self.max, self.duration, loops)
-    }
-
     pub fn stop(self) -> Data {
         Data {
             max: self.max,
@@ -59,13 +55,16 @@ mod test {
 
     #[test]
     fn start() {
-        let animator = Data::new(3, Duration::from_secs(5)).start();
-        assert_eq!(animator.frame(), 0);
+        let data = Data {
+            max: 3,
+            duration: Duration::from_secs(5),
+        };
+        assert_eq!(data.start().frame(), 0);
     }
 
     #[test]
     fn animate() {
-        let mut animator = Data::new(6, Duration::from_secs(5)).start();
+        let mut animator = Animator::new(6, Duration::from_secs(5));
 
         let frame = animator.animate(Duration::from_secs(5));
         assert_eq!(frame, 1);
@@ -87,7 +86,7 @@ mod test {
 
     #[test]
     fn repeat() {
-        let mut animator = Data::new(2, Duration::from_secs(2)).start();
+        let mut animator = Animator::new(2, Duration::from_secs(2));
 
         let frame = animator.animate(Duration::from_secs(2));
         assert_eq!(frame, 1);
@@ -103,7 +102,7 @@ mod test {
 
     #[test]
     fn restart() {
-        let mut animator = Data::new(2, Duration::from_secs(2)).start();
+        let mut animator = Animator::new(2, Duration::from_secs(2));
 
         let frame = animator.animate(Duration::from_secs(3));
         assert_eq!(frame, 1);

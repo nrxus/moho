@@ -7,15 +7,11 @@ pub struct Data<T> {
 }
 
 impl<T> Data<T> {
-    pub fn new(animator: animator::Data, sheet: TileSheet<T>) -> Data<T> {
-        Data { animator, sheet }
-    }
-
     pub fn start(self) -> Animation<T> {
-        Animation::from_data(self)
+        Animation::new(self.animator, self.sheet)
     }
 
     pub fn limit_run_start(self, loops: u32) -> LimitRun<T> {
-        LimitRun::from_data(self, loops)
+        LimitRun::new(self.animator, self.sheet, loops)
     }
 }

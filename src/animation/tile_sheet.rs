@@ -8,13 +8,13 @@ use crate::{
 pub struct TileSheet<T> {
     texture: T,
     tiles: glm::UVec2,
-    pub dimensions: glm::UVec2,
+    dimensions: glm::UVec2,
 }
 
 #[derive(Debug)]
 pub struct Tile<'a, T> {
-    pub texture: &'a T,
-    pub src: glm::UVec4,
+    texture: &'a T,
+    src: glm::UVec4,
 }
 
 // https://github.com/rust-lang/rust/issues/40754
@@ -49,6 +49,12 @@ impl<T> TileSheet<T> {
             texture: &self.texture,
             src,
         }
+    }
+}
+
+impl<T> Tile<'_, T> {
+    pub fn rect(&self) -> glm::UVec4 {
+        self.src
     }
 }
 
