@@ -53,3 +53,13 @@ impl<S, Q> State<S, Q> {
         }
     }
 }
+
+impl<S, Q, E> State<Result<S, E>, Q> {
+    pub fn transpose(self) -> Result<State<S, Q>, E> {
+        match self {
+            State::Quit(q) => Ok(State::Quit(q)),
+            State::Running(Err(e)) => Err(e),
+            State::Running(Ok(s)) => Ok(State::Running(s)),
+        }
+    }
+}

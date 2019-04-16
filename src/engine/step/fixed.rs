@@ -52,8 +52,14 @@ impl Step for FixedUpdate {
         runner: &mut impl Runner<W, A, State>,
     ) -> GameState<W, A, State> {
         let time = runner.time();
-        let mut current = AppState::Running(runner.tick(snapshot.world, &time));
-        let mut leftover = time.since_update + snapshot.step_state.leftover;
+
+        let Snapshot {
+            world,
+            assets,
+            step_state,
+        } = snapshot;
+        let mut current = AppState::Running(runner.tick(world, &time));
+        let mut leftover = time.since_update + step_state.leftover;
         let mut loops = 0;
 
         while leftover >= self.step && loops <= self.max_skip {
@@ -62,8 +68,8 @@ impl Step for FixedUpdate {
             loops += 1;
         }
 
-        let state = match current {
-            AppState::Running(world) => {
+        current
+            .map(|world| {
                 let interpolation =
                     f64::from(leftover.subsec_nanos()) / f64::from(self.step.subsec_nanos());
 
@@ -72,17 +78,15 @@ impl Step for FixedUpdate {
                     interpolation,
                 };
 
-                let assets = runner.advance(snapshot.assets, &world, &step_state)?;
-                AppState::Running(Snapshot {
+                let assets = runner.advance(assets, &world, &step_state)?;
+                Ok(Snapshot {
                     assets,
                     step_state,
                     world,
                 })
-            }
-            _ => AppState::Quit(()),
-        };
-
-        Ok(state)
+            })
+            .map_quit(|_| ()) //TODO: think about returning exit reason... or something?
+            .transpose()
     }
 }
 
