@@ -10,9 +10,12 @@ edition = "2018"
 glm = "0.2"
 num-traits = "0.2"
 failure = "0.1"
-moho-derive = { path = "moho-derive" }
+moho-derive = { path = "./moho-derive" }
 
 [dependencies.sdl2]
 version = "0.32"
 default-features = false
 features = ["image", "ttf"]
+
+[workspace]
+members = [".", "moho-derive"]
